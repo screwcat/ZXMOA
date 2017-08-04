@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>待我审批</title>
+<style type="text/css">
+
+.bb{float:left;padding-top: 4px;}
+.cc{margin-left:10px;width:100%;height:41px;}
+.dd{float:right;width:100%;}
+.tt{background-color:#66B3FF; height: 24px;width:120px;margin-right:25px;}
+.b{font-weight:bold;}
+.bb{font-weight:bold;color:#1E90FF;}
+/*  #t{background-color:#59AEEF;}  */
+.t1{background-color: #33ccFF;}
+.t4{float:left;margin-top:-1px;display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.form-control{width:100%;padding:.375rem .75rem;font-size:1rem;line-height:1.5;color:#55595c;background-color:#fff;background-image:none;}
+/* .form-control::-webkit-input-placeholder{color:#FFFFFF;font-weight:bold;} */
+.bb11{font-weight:bold;color:#1E90FF;}
+.bb22{font-weight:bold;float:left;margin-left:2%;margin-top:-7px;}
+.i3{text-align:left; display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;padding-felt:-30px;}
+.dropdown-menu{opacity:0.5;z-index: 1000;text-align:center;position:absolute;background-color:#66CCFF;}
+.customer_drop_menu_ico{display: inline-block;width: 16px;margin: 1px 6px;}
+ul.dropdown-menu{opacity:0.9;z-index: 1000;background-color:#66CCFF;min-width:87px;}
+.customer_drop_menu_ico{display: inline-block;width: 16px;margin: 1px 6px;}
+#ioa_approvelist_datas_wapper{position: absolute;top: 90px;bottom: 58px;width: 100%;z-index: 1;}
+ .tyt{color: #FFF;font-size: 13px;float:left;margin-left: 18px;font-weight:bold;} 
+</style>
+</head>
+<script type="text/javascript">
+	function initApprovalPage(){
+		initApproveListDatas(); 
+		$('#approva_ioaSearch').on('click',function(){
+			 approva_search();
+		 });
+	     
+		 $('#approva_pp1').on('click',function(){
+			 window.history.back();
+		 });
+		 initIoaAppoval();
+	 }
+
+ var approva_page = 1;
+ var approva_size = 1000;
+	
+	//初始化首页待审批数据
+	function initApproveListDatas(){
+		//初始化结构
+		$('#ioa_approvelist').datashow({
+			//不同分别率下显示个数
+			colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+			//是否使用上拉刷新和下拉加载
+			isScroll:true,
+			isup:false,
+			datas_wapper:'ioa_approvelist_datas_wapper',
+			//每个数据结构显示视图
+			adapter:function(data){
+				return '<div class="row ioa_approval_item" style="border-bottom:1px solid #d0d0d0;" data-state="'+data.apply_type_id+'">'+
+				    	'<div class="col-xs-6 col-sm-4" style="width:100%;padding-top: 10px;height: 60px;">'+
+				    	'<span class="bb11" style="float:left;margin-top:-7px;">&nbsp;&nbsp;&nbsp;'+data.sys_name+'</span>'+			    	
+				    	'<span   class="bb22" >['+data.apply_type_name+'申请]</span></br><span class="t4">&nbsp;&nbsp;&nbsp;'+
+				    	data.original_apply_personnel_name+data.original_apply_personnel_no+
+				    	'&nbsp;'+':'+'&nbsp;</span>'+
+				    	'<span 	class="Otime1"	style="float:right;padding-top: -20px;margin-top:-17px;margin-right:10px;" >'+data.create_timestamp+' </span>'+
+				    	'<span  class="i3">'+data.content+'</span>'+
+				    	'</div></div>';
+			},
+			//点击每个数据视图时候的回调方法  data 单元数据 index 索引 list 所有数据
+			onitemclick:function(data,index,list){
+				showViewInfo("ioa_approve_info",data.order_id,1,data.order_relation_id);
+			},
+			//上拉时候回调函数
+			onup:function(){
+				approva_page++;
+				loadApproveListData(false)
+			},
+			//下拉时候回调函数
+			ondown:function(){
+				loadApproveListData(true)
+			}
+		});
+		loadApproveListData(true);
+	}
+	//请求数据 flag  是否是刷新
+	
+	function loadApproveListData(flag){
+		if(flag){
+			approva_page = 1;
+			approva_size = 1000;
+		}
+		$.ajax({
+			url:_base_param.context_name+'/ioa/getApproveList.do',
+			type:'get',
+			data:{page:approva_page,size:approva_size},
+			success:function(result){
+				if(result.ret_code == '000'){
+					if(flag){
+						$('#ioa_approvelist').datashow('clearView');
+					}
+					$('#ioa_approvelist').datashow('adds',result.ret_data);
+					if(result.ret_data.length == 0){
+						$.message('没有更多数据了哦！');
+						approva_page--;
+					}
+				}else if(result.ret_code != null){
+					$.message(result.ret_msg);
+				}else{
+					$('#ioa_approvelist').html(result)
+				}
+				
+				approvelistSearch();
+				$('#ioa_approvelist').datashow('clearPull');
+			}
+		});
+	}
+	/* document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false); */
+	 function approva_search(){ 
+		approvelistSearch();
+	}
+	
+	function  initIoaAppoval(){	
+		$('#ioa_approval_dropdown').find('ul li a').off('click');
+		$('#ioa_approval_dropdown').find('ul li a').click(function(){
+				
+			var text = $(this).text();
+			$('#ioa_approval_dropdown').find('button span.drop_selected').text(text.trim());
+			 approvelistValue = $(this).data('value')+'';
+			 approvelistSearch();
+		}); 
+	}
+	
+	
+	//页面下拉列表数据
+	var approvelistValue = '';
+	//页面搜索框数据
+	var approveSearchValue = '';
+	
+	function approvelistSearch(){		
+		$('#ioa_approvelist').find('.datashow_item ').hide();		
+		if(approvelistValue == '' || approvelistValue == '-1'){
+			$('#ioa_approvelist').find('.datashow_item').show();
+		}else{
+			var appreval_drop_types = {
+					'1':[5,7,40,41,42,43,44],
+					'2':[12,18,20],
+					'3':[6,8,9,10,11],
+					'4':[23,24,25],
+					'5':[26,27,28,29,30,31,32,33,34,35,36,37,38,39,52,54,55]
+			}
+			var appreval_drop_type = appreval_drop_types[approvelistValue];
+			$('#ioa_approvelist').find('.datashow_item').each(function(){
+				var _apply_type_id = $(this).find('.ioa_approval_item').data('state');
+				var approval_item_flag = false;
+				for(var i=0;i<appreval_drop_type.length;i++){
+					if(appreval_drop_type[i] == _apply_type_id){
+						approval_item_flag = true;
+						break;
+					}
+				}
+				if(approval_item_flag){
+					$(this).show();
+				}else{
+					$(this).hide();
+				}
+			});
+		}		
+		approveSearchValue = $('#original_apply_personnel_name').val();
+		if(approveSearchValue != ''){
+			 $('#ioa_approvelist').find('.datashow_item:visible').each(function(index){
+				var name = $(this).find('.t4').text();
+				var time = $(this).find('.Otime1').text();
+				var content = $(this).find('.i3').text();
+				var apply_type_name = $(this).find('.bb22').text();
+				var sys_name = $(this).find('.bb11').text();
+			    if((name+time+content+apply_type_name+sys_name).indexOf(approveSearchValue)>=0){
+					$(this).show();
+				}else{
+					$(this).hide();
+				}
+			}); 
+		}
+		$('#ioa_approvelist').datashow('refreshScroll');
+}
+</script>
+<body>
+
+<div style="width:100%;">
+  <nav  id="t" class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+   <div style="height:25px;">
+	  <span id="approva_pp1" class="bb"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1zuo.png">
+	  </span>
+	  <div class="nav_title" style="font-size: 20px;">待我审批</div>
+	  </div>
+	  
+	 <form class="bs-example bs-example-form" role="form" style="width:100%;">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 100%;float:left;margin-left: 2%;">
+            <div class="input-group" style="margin-top: 10px;">
+                <div class="input-group-btn dropdown" id="ioa_approval_dropdown">
+             
+                  <button  type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#66CCFF;height:25px;font-size:10px;width:100%"> 
+                     	<div style="margin-top:-3px;padding-left:-10px"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">全部</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul  class="dropdown-menu" style="height:150px;" >
+                    <li><a style="color: #FFF;font-weight:bold;" data-value="-1" >                                                                                                                          
+                    <span style="font-size: 13px;float:left;margin-left: 18px;" >全部</span></a></li>
+               
+                     <li><a class="tyt" data-value="1">行政</a></li>
+                     <li><a class="tyt" data-value="2">人事</a></li>
+                     <li><a class="tyt" data-value="3">企划</a></li>
+                     <li><a class="tyt" data-value="4">权限</a></li>
+                     <li><a class="tyt" data-value="5">考勤</a></li>                                         
+                  </ul>
+                  
+               </div>
+                     
+               <input type="text" id="original_apply_personnel_name" name="original_apply_personnel_name" class="form-control" placeholder="请输入查询内容" style="width:90%;height:25px;background-color:#66CCFF;font-size:13px;">
+               <span  id="approva_ioaSearch" style="background-color:#66CCFF;line-height:25px;width:10%;float:left;">
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form>
+	  
+   <!-- <form class="bs-example bs-example-form" role="form" style="width:100%;">
+      <div class="row"  style="height:35px;">
+         <div class="col-lg-6 col-lg-offset-3">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 300px;margin: 0px auto;">
+            <div class="input-group" style="margin-top: 10px;">
+               <div class="input-group-btn dropdown" id="ioa_approval_dropdown">
+             
+                  <button  type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#66CCFF;text-align:center;height:25px;font-size:10px;"> 
+                     	<div style="margin-top:-3px;padding-left:-10px"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">全部</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul  class="dropdown-menu"  style="height:150px;">
+                    <li><a data-value="-1" ><span style="margin-top:10px;margin-left:-44px;"></span>                                                                                                                            
+                                                              全部</a></li>
+                     <li><a style="color: #FFF" data-value="1">行政</a></li>
+                     <li><a style="color: #FFF" data-value="2">人事</a></li>
+                     <li><a style="color: #FFF" data-value="3">企划</a></li>
+                     <li><a style="color: #FFF" data-value="4">权限</a></li>
+                     <li><a style="color: #FFF" data-value="5">考勤</a></li>
+                     
+                  </ul>
+				
+               </div>
+               <input type="text" id="original_apply_personnel_name" name="original_apply_personnel_name" class="form-control" placeholder="请输入关键字" style="width:260px;height:25px;background-color:#66CCFF;font-size:10px;">
+               <span  id="approva_ioaSearch" style="background-color:#66CCFF;line-height:25px;width:25px;float:left;">
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form> -->
+  </nav>
+ 
+  <div id="ioa_approvelist_datas_wapper">
+  	<div id="ioa_approvelist"></div>
+  </div>
+
+  </div>
+</body>
+</html>

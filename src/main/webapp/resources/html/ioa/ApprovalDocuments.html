@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+<title>单据详细信息</title>
+<script type="text/javascript" src="/MOA/resources/js/jquery.touchSwipe.min.js"></script>
+<script>
+			$(function(){  
+				
+			}); 
+			
+			function initApprovalDocumentsPage(_oid,_pageFlag,_rid){
+				pageFlag = _pageFlag;
+				order_id = _oid;
+				order_relation_id = _rid;
+				if(pageFlag==2){
+					$("#appFlag").hide();
+				}
+				
+				getDocumentsById();
+				
+				$("#showImgDiv").hide();
+			}
+			
+			//页面标识(1为审批页面 2为单据页面)
+			var pageFlag =1;
+			
+		  	function dealShowImg(){
+		  		var imgCount = $('#img_div').find('.touchslider-item').length;
+		  		imgCount = imgCount<1?1:imgCount;
+		  		var width = $(window).width();
+		  		var height = $(window).height();
+		  		$('#insideShow').css('width',width);
+		  		$('#insideShow').css('height',height);
+		  		$('#img_div').css('width',imgCount*(width+1));
+		  		$('#img_div').css('height',height);
+		  		$('#img_div').find('.touchslider-item').width(width);
+		  		$('#img_div').find('.touchslider-item').height(height);
+		  		$('#img_div').find('.touchslider-item').each(function(){
+		  			var img = new Image();
+		  			img.src = $(this).find('img').attr('src');
+		  			img.onload = function(){
+			  			var _w = this.width;
+			  			var _h = this.height;
+			  			var _num1 = _w/width;
+			  			var _num2 = _h/height;
+			  			var _num = _num1>_num2?_num1:_num2;
+			  			var _src = img.src.substring(img.src.lastIndexOf("="));
+			  			$('#img_div').find('.touchslider-item img[src$="'+_src+'"]').css('margin-top',(height-_h/_num)/2);
+			  			$('#img_div').find('.touchslider-item img[src$="'+_src+'"]').css('width',_w/_num);
+			  			$('#img_div').find('.touchslider-item img[src$="'+_src+'"]').css('height',_h/_num);
+// 			  			$('#img_div').find('.touchslider-item').each(function(){
+// 			  				if($(this).find('img').attr('src') == img.src){
+// 			  					$(this).find('img').css('width',_w/_num);
+// 			  					$(this).find('img').css('height',_h/_num);
+// 					  			return false;
+// 			  				}
+// 			  			});
+// 			  			alert(_w/_num);
+// 			  			alert($(this).width()+'~~~'+_num+'~~~');
+		  			}
+		  		});
+		  	}
+			
+		var order_id = 733;
+		
+		var order_relation_id = 2212;
+		
+		//根据单据编号获取单据信息
+		function getDocumentsById(){
+			
+			$.ajax({
+				type : "GET",
+				url : _base_param.context_name+"/ioa/getOrderInfo.do",
+				data : {
+					order_id : order_id
+				},
+				async : true,
+				success : function(json){
+					if(json.ret_code == '000'){
+						
+					}else if(json.ret_code != null){
+						$.message(json.ret_msg);
+						return;
+					}else{
+						$('#showImgDiv').html(json)
+						return;
+					}
+					
+					var titText = '<div>'+json.ret_data.apply_type_name+'</div>';
+					$("#titText").append(titText);
+					
+					var per = '<div class="row sty borderbottom"><div class="col-xs-3 tit">申请人</div><div class="col-xs-9 data rig">'+json.ret_data.original_apply_personnel_name+json.ret_data.original_apply_personnel_no+'</div></div>';
+					$("#docInfo").append(per);
+					
+					var docno = '<div class="row sty borderbottom"><div class="col-xs-4 tit">单据编号</div><div class="col-xs-8 data rig">'+json.ret_data.order_no+'</div></div>';
+					$("#docInfo").append(docno);
+
+					var time = '<div class="row sty borderbottom" id="time"><div class="col-xs-3 tit">日期</div><div class="col-xs-9 data rig">'+'<div style="text-align:left">'+json.ret_data.attendance_info+'</div></div></div>';
+					$("#docInfo").append(time);
+					
+					//需要判断单据类型 如果为空 则不显示时间
+					if(json.ret_data.attendance_info==null || json.ret_data.attendance_info==""){
+						$("#time").hide();
+					}else{
+						$("#time").show();
+					}
+					
+					var content = '<div class="row sty borderbottom "><div class="col-xs-3 tit">详情</div><div class="col-xs-9 data xq" style="word-wrap:break-word;">'+json.ret_data.content+'</div></div>';
+					$("#docInfo").append(content);
+					
+					
+					//处理文档附件					
+					var imgstr = json.ret_data.img_path;
+					var imgjson = eval('(' + imgstr + ')');
+					var imgname="";
+					var haveImg = false;
+					if(imgjson!=null && imgjson!=""){
+						for(var i=0;i<imgjson.length;i++){
+							if(isImg(imgjson[i].attachment_address)){
+								haveImg = true;
+								continue;
+							}
+							if(imgjson.length==1){
+								imgname +=  '<a href="/MOA/ioa/getFile.do?url='+imgjson[i].attachment_address+'">'+imgjson[i].attachment_old_name+'</a><br />';
+							}else if((i+1)==imgjson.length){
+								imgname += '<a href="/MOA/ioa/getFile.do?url='+imgjson[i].attachment_address+'">'+imgjson[i].attachment_old_name+'</a>'+"。<br />";
+							}else{
+								imgname += '<a href="/MOA/ioa/getFile.do?url='+imgjson[i].attachment_address+'">'+imgjson[i].attachment_old_name+'</a>'+"；<br />";
+							}
+							
+						}
+					}
+					//附件
+					var imgjsonlen = imgjson.length;
+
+
+					if(haveImg){ //图片格式
+// 						var enclosure = '<div class="row sty "><div class="col-xs-3 tit">附件</div><div class="col-xs-8 data rig">&nbsp;&nbsp;<img src="../images/iconfont-chakangray.png" id="lookimg"></div></div>';
+// 						$("#docInfo").append(enclosure);
+						imgname = '<img src="../images/iconfont-chakangray.png" id="lookimg">'+(imgname==''?'':('</br>'+imgname));
+						
+					}
+					if(imgjson=="[]" || imgjson==null || imgjson=="" || imgjsonlen==0){
+						var enclosure = '<div class="row sty "><div class="col-xs-3 tit">附件</div><div class="col-xs-8 data rig">&nbsp;&nbsp;<img src="../images/iconfont-chakangray.png" id="lookimg"></div></div>';
+						$("#docInfo").append(enclosure);
+					}else{ //其他文件添加下载
+						var enclosure = '<div class="row sty "><div class="col-xs-3 tit">附件</div><div class="col-xs-8 data rig">'+imgname+'</div></div>';
+						$("#docInfo").append(enclosure);
+					}
+	
+					if(imgjson!=null && imgjson!="" && imgjson!="[]"){
+						var img = imgjson[0].attachment_address;
+						for(var i =0;i<imgjson.length;i++){
+							if(!isImg(imgjson[i].attachment_address)){
+								continue;
+							}
+							var showImage = '<div class="touchslider-item"><img src="/MOA/ioa/getFile.do?url='+imgjson[i].attachment_address+'" onload="loadImage()"></div>';
+							$("#img_div").append(showImage);
+						}
+					}
+					$("#lookimg").attr("onclick","lookimgs()");
+
+					//无附件隐藏查看按钮
+					if(imgjsonlen<1){ 
+						$("#lookimg").hide();
+					}
+						
+					
+					//处理流程
+					var num = json.ret_data.history.length;
+					if(json.ret_data.history!=null && json.ret_data.history!="" && json.ret_data.history!="[]"){
+						$('#processshow_panel').show();
+						for(var i =0;i<num;i++){
+							if(json.ret_data.history[i].approve_state==1){
+								
+								if( i+1 == num ){
+									var process = '<div id="processshow"></div><div class="row prodiv"><div class="col-xs-2 moveprocess leftmoveline">'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div><div float="left" class=""><img src="../images/iconfont-tongguo.png"></div>'
+										+'<div class="proline " float="left"></div></div>'
+
+									+'<div class="whiteArrow leftmoveline" style="width:28px;heigth:32px;float:left; margin-top:47px;"> <img src="../images/004.png"></div>'
+									+'<div class="process " float="left" style="height:85px;width:75%; border-radius: 7px 7px 7px 7px;margin-top:20px">      <div style="background-color:#FFFFBB">  <div class="approvePostDept displayPart">&nbsp;&nbsp;&nbsp;'+json.ret_data.history[i]["approve_personnel_post_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_dept_name"]+'</div>   <div class="rightApprovalTime">'+json.ret_data.history[i]["approve_timestamp"]+'</div>  </div> <br/>'                                                      
+									+'<div class="approveNameCode">&nbsp;&nbsp;'+  json.ret_data.history[i]["approve_personnel_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_no"]+'</div><br/>'
+									+'<div class=" approveContent displayPart"  > &nbsp;&nbsp;&nbsp;'+ json.ret_data.history[i]["approve_content"]+'</div> </div>'
+// 									+'<div style="height: 40px"></div>';
+
+									$("#processshow").append(process);
+								}else{
+									var process = '<div id="processshow"></div><div class="row prodiv"><div class="col-xs-2 moveprocess leftmoveline">'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div><div float="left" class=""><img src="../images/iconfont-tongguo.png"></div>'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div></div>'
+
+									+'<div class="whiteArrow leftmoveline" style="width:28px;heigth:32px;float:left; margin-top:47px"> <img src="../images/004.png"></div>'
+									+'<div class="process " float="left" style="height:85px;width:75%; border-radius: 7px 7px 7px 7px;margin-top:20px">    <div class="approvePostDept displayPart">&nbsp;&nbsp;&nbsp;'+json.ret_data.history[i]["approve_personnel_post_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_dept_name"]+'</div>   <div class="rightApprovalTime">'+json.ret_data.history[i]["approve_timestamp"]+'</div> <br/>'                                                      
+									+'<div class="approveNameCode">&nbsp;&nbsp;'+  json.ret_data.history[i]["approve_personnel_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_no"]+'</div><br/>'
+									+'<div class=" approveContent displayPart"  > &nbsp;&nbsp;&nbsp;'+ json.ret_data.history[i]["approve_content"]+'</div> </div>'
+// 									+'<div style="height: 40px"></div></div>';
+
+									$("#processshow").append(process);
+								}
+								
+								
+								
+							}else if(json.ret_data.history[i].approve_state==2){
+								
+								if( i+1 == num){
+									var process = '<div id="processshow"></div><div class="row prodiv"><div class="col-xs-2 moveprocess leftmoveline">'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div><div float="left" class=""><img src="../images/iconfont-weitongguo.png"></div>'
+										+'<div class="proline " float="left"></div></div>'
+
+									+'<div class="whiteArrow leftmoveline" style="width:28px;heigth:32px;float:left; margin-top:47px"> <img src="../images/004.png"></div>'
+									+'<div class="process " float="left" style="height:85px;width:75%; border-radius: 7px 7px 7px 7px;margin-top:20px;">    <div class="approvePostDept displayPart">&nbsp;&nbsp;&nbsp;'+json.ret_data.history[i]["approve_personnel_post_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_dept_name"]+'</div>   <div class="rightApprovalTime">'+json.ret_data.history[i]["approve_timestamp"]+'</div> <br/>'                                                      
+									+'<div class="approveNameCode">&nbsp;&nbsp;'+  json.ret_data.history[i]["approve_personnel_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_no"]+'</div><br/>'
+									+'<div class=" approveContent displayPart"> &nbsp;&nbsp;&nbsp;'+ json.ret_data.history[i]["approve_content"]+'</div> </div>'
+// 									+'<div style="height: 40px"></div></div>';
+
+									$("#processshow").append(process);
+								}else{
+									var process = '<div id="processshow"></div><div class="row prodiv"><div class="col-xs-2 moveprocess leftmoveline ">'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div><div float="left" class=""><img src="../images/iconfont-weitongguo.png"></div>'
+										+'<div class="proline " float="left"><img src="../images/u69_line.png"></div></div>'
+
+									+'<div class="whiteArrow leftmoveline" style="width:28px;heigth:32px;float:left; margin-top:47px"> <img src="../images/004.png"></div>'
+									+'<div class="process " float="left" style="height:85px;width:75%; border-radius: 7px 7px 7px 7px;margin-top:20px;">    <div class="approvePostDept displayPart">&nbsp;&nbsp;&nbsp;'+json.ret_data.history[i]["approve_personnel_post_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_dept_name"]+'</div>   <div class="rightApprovalTime">'+json.ret_data.history[i]["approve_timestamp"]+'</div> <br/>'                                                      
+									+'<div class="approveNameCode">&nbsp;&nbsp;'+  json.ret_data.history[i]["approve_personnel_name"]+'&nbsp;'+json.ret_data.history[i]["approve_personnel_no"]+'</div><br/>'
+									+'<div class=" approveContent displayPart"> &nbsp;&nbsp;&nbsp;'+ json.ret_data.history[i]["approve_content"]+'</div> </div>'
+// 									+'<div style="height: 40px"></div></div>';
+
+									$("#processshow").append(process);
+								}
+							}
+						}
+						$(".approvePostDept").css({"font-size":"13px","color":"gray","float":"left","width":"65%","background-color":"#FFF8DC"});
+						$(".rightApprovalTime").css({"font-size":"13px","color":"gray","float":"right","width":"35%","background-color":"#FFF8DC"});
+						
+					}
+				}
+			});
+		}
+		
+		//同意按钮
+		function agree(){
+		
+			$.zx.confirm('提示','确定同意吗?',function(r){
+				if(r){
+					var content = $("#content").val();
+					$.ajax({
+						type : "POST",
+						url : _base_param.context_name+"/ioa/approveOrder.do",
+						data : {
+							order_id : order_id,
+							approve_state : 1,
+							content : content,
+							order_relation_id : order_relation_id
+						},
+						success : function(result){
+							if(result.ret_code == '000'){
+								returnPage();
+							}else if(result.ret_code != null){
+								$.zx.alert(result.ret_msg,"提示",function(){
+									if(result.ret_code == 402){
+										showViewInfo("ioa_order_info",order_id,2);
+									}
+								});
+							}else{
+								$('#img_div').html(result)
+								return;
+							}
+						},
+						error : function(res){
+							alert("审批发生异常，请重试");
+						}
+					});
+				}
+			});
+			
+		}
+		//驳回按钮
+		function reject(){
+			$.zx.confirm('提示','确定驳回吗?',function(r){
+				if(r){
+					var content = $("#content").val();
+					$.ajax({
+						type : "POST",
+						url : _base_param.context_name+"/ioa/approveOrder.do",
+						data : {
+							order_id : order_id,
+							approve_state : 2,
+							content : content,
+							order_relation_id : order_relation_id
+						},
+						success : function(result){
+							if(result.ret_code == '000'){
+								returnPage();
+							}else if(result.ret_code != null){
+								$.zx.alert(result.ret_msg,"提示",function(){
+									if(result.ret_code == 402){
+										showViewInfo("ioa_order_info",order_id,2);
+									}
+								});
+							}else{
+								$('#img_div').html(result)
+								return;
+							}
+						},
+						error : function(res){
+							alert("审批发生异常，请重试");
+						}
+					});
+				}
+			});
+			
+		}
+		
+		//图片预览
+		function lookimgs(){
+			$(".container").hide();
+			$("#showImgDiv").show();
+		}
+		
+		//关闭图片预览
+		function hideshowImgDiv(){	
+				$("#showImgDiv").hide();
+				$(".container").show();
+				
+		}
+		
+		//返回上一页
+		function returnPage(){
+			isShowNewViewFlag = true;
+			history.back();
+		}
+		
+		
+		//-------------------滑动---------------------------
+		var e=-1;
+			function roll(){
+				var esize = $(window).width();
+				$("#img_div").swipe({			
+					swipeLeft:function(){
+				
+// 						$("#img_div").css({left:-500});
+						e++;
+						if(e>=($('.touchslider-item').length)){
+							e = 0;
+						}
+						var t=-e*esize+"px";
+						doswipAndTab(e,t);
+					},
+					swipeRight:function() {
+					
+// 						$("#img_div").css({left:-500});
+						e--;
+						if(e<=-1){
+							e = $('.touchslider-item').length-1;
+						}						
+						var t=-e*esize+"px";
+						doswipAndTab(e,t);
+					},
+					click:function() {
+						hideshowImgDiv();
+						
+					}
+					
+				});
+		}
+
+		function doswipAndTab(e,t){
+			$('.touchslider-item').css({'-webkit-transform':"translateX("+t+")",'-webkit-transition':'500ms linear'});									
+		}
+		
+		var approveImgCount = 0;
+		function loadImage()
+		{
+			if(++approveImgCount == $('#img_div').find('.touchslider-item').length){
+				dealShowImg();
+				roll();
+			}
+		}
+		
+		function isImg(img){
+			if((img).substring((img).indexOf(".")) == ".jpg" ||  (img).substring((img).indexOf(".")) == ".jpge"|| (img).substring((img).indexOf(".")) == ".png" || (img).substring((img).indexOf("."))==".bmp" ||  (img).substring((img).indexOf(".")) == ".gif"){
+				return true;
+			}else{
+				return false;
+			}
+			
+		}
+			
+</script>
+<style type="text/css">
+	@CHARSET "UTF-8";
+	
+.displayPart{white-space: nowrap;  overflow: hidden;   text-overflow: ellipsis; width:100%}	
+.leftmoveline{margin-left:-10px}	
+	
+.container{
+	width: 100%;
+	heigth: 100%;
+	
+}
+.tit {
+	font-size: 15px;
+	font-weight: bold;
+	
+}
+
+.data {
+	color: gray;
+	font-size: 14px;
+}
+
+.headtext {
+	text-align: center
+}
+
+.rig {
+	text-align: right;
+}
+
+#pagetitle {
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.sty {
+	padding-bottom: 10px;padding-top:10px
+}
+
+.titcolor {
+	background-color: #1E90FF;
+}
+
+.tittext {
+	text-align: center;
+	line-height: 45px;
+/* 	overflow: hidden; */
+	font-size: 16px;
+	font-weight: bold;
+	color:#FFFFFF
+}
+
+.returnImg {
+	text-align: center;
+	line-height: 45px;
+/* 	overflow: hidden; */
+}
+
+.process {
+/* 	line-height: 15px; */
+	overflow: hidden;
+	background-color:#FFFFFF;
+
+}
+
+.proline {
+	width: 16px;
+	text-align: center;
+}
+
+.proPerInfo {
+	font-size: 13px;Line-height:15px
+}
+.proPerDept{
+	font-size: 12px;color: gray;
+}
+
+.lookicon {
+	margin-top: -4px
+}
+
+.moveprocess {
+	padding-left: 5%;
+}
+
+.BtnSty {
+	width: 90px;background:#11CD6E;
+}
+.redBtnSty{
+	width: 90px;background:#EB4F38;
+}
+.prodiv{
+	margin-top:0px;margin-bottom:0px
+}
+.borderbottom{
+	border-bottom:1px solid #E0E0E0;
+}
+.imgdiv{
+	text-align: center;
+}
+.insideShow{
+/* 	padding-top : 50%; */
+	text-align: center;
+}
+.touchslider-item{
+	float:left;
+	width: 100%;
+	height: 100%;
+}
+.img_div{
+	float:left;
+	text-align: center;
+	float:left;
+	heigth: 100%;
+}
+	
+#content::-webkit-input-placeholder  { /* WebKit browsers */
+    color:    #ccc;
+}
+ #content:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color:    #ccc;
+}
+ #content::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color:    #ccc;
+}
+ #content:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color:    #ccc;
+}
+
+<!-- 防止字母数字溢出 -->
+.xq{
+/* 	max-width:100%; */
+	word-wrap:break-word;
+}
+
+#processshow_panel{display: none;}
+
+<!-- 流程css -->
+ .approvePostDept{float:left; text-align :left;width:60%; font-size: 11px;color: gray;}
+ .rightApprovalTime{float:left; text-align : left;width:35%;font-size: 11px;color: gray;}
+ .approveNameCode{font-size: 15px; font-weight:bold;padding-top:5px;padding-bottom:-5px;margin-top:5px;}
+ .approveContent{font-size: 14px;color: gray;margin-top:-10px;}
+</style>
+</head>
+<body >
+	<!-- 主体部分 -->
+	<div class="container" id="main" style="position:absolute;">
+
+		<div class="row titcolor ">
+			<div class="col-xs-2 returnImg tittext">
+				<!-- 返回上一页图片 -->
+				<img src="../images/iconfont-ordinaryjiantou1zuo.png" onclick="javascript:history.back(-1);">
+			</div>
+			<div class="col-xs-8 tittext" id="titText"></div>
+		</div>
+		
+		<div id="docInfo"></div>
+
+		<div id="appFlag">
+		<div class="row ">
+			<div class="col-xs-12">
+				<form role="form" id="approvalForm">
+					<div class="form-group">
+						<textarea id="content" class="form-control content" rows="2" placeholder="请填写审批意见"></textarea>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="row sty ">
+			<div class="col-xs-6 headtext">
+				<div>
+					<button type="button center" class="btn btn-success BtnSty" onclick="agree()">同意</button>
+				</div>
+			</div>
+			<div class="cpl-xs-6 headtext">
+				<div>
+					<button type="button " class="btn btn-danger redBtnSty" onclick="reject()">驳回</button>
+				</div>
+			</div>
+		</div>
+		</div>
+
+		<!-- 审批流程 -->
+		<div id="processshow_panel" style="background-color:#DDDDDD; heigth:auto;width:auto;padding-top:10px;padding-bottom:30px;border-radius: 7px 7px 7px 7px;"> 
+			<div id="processshow" class="container"></div> 
+		</div>
+  </div>
+  <script type="text/javascript">
+  </script>
+ <div id="showImgDiv" style="width:100%;height:100%;background:#000000;position:absolute;overflow: hidden;" onclick="hideshowImgDiv()">
+ 	<div id ="insideShow" class="insideShow">
+ 		<div class="touchslider" style="overflow: hidden;">
+  			<div class="touchslider-viewport"  style="position: absolute;">
+  				<div id="img_div">
+<!--   					<div class="touchslider-item"> -->
+<!--   						<img src="../images/35695.png"> -->
+<!--   					</div> -->
+<!--   					<div class="touchslider-item"> -->
+<!--   						<img src="../images/641231.jpg"> -->
+<!--   					</div> -->
+<!--   					<div class="touchslider-item"> -->
+<!--   						<img src="../images/641231.jpg"> -->
+<!--   					</div> -->
+<!--   					<div class="touchslider-item"> -->
+<!--   						<img src="../images/35695.png"> -->
+<!--   					</div> -->
+  				</div>
+  			</div> 
+  		</div>
+
+ 	</div>
+ </div> 
+  
+</body>
+</html>

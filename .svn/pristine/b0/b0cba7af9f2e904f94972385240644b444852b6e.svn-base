@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.address.persist.AddressDao">
+	<!-- 常用联系人 -->
+    <select id="getContacts" resultType="map" parameterType="Integer">
+    	select
+			contacts_type as person_type,
+			contacts_id as personnel_id,
+			call_count as call_count
+		from
+			tel_top_contacts
+		where personnel_id = #{personnel_id}
+    </select>
+		
+	<!-- 热线 -->
+    <select id="getHot" resultType="map">
+    	select
+			hotline_name as hotLine_name,
+			hotline_personnel_name as hotLine_personName,
+			hotline_contact_tel as hotLine_phone
+		from
+			tel_hotline
+		where 
+			enable_flag = 1
+    </select>	
+    
+    <!-- 获取所有父部门 -->
+	<select id="getParentsDeptIds" parameterType="int" resultType="String">
+		select queryParentsDeptInfo(#{deptId}) 
+	</select>
+	
+	<!-- 获取所有子部门 -->
+	<select id="queryChildrenDeptInfo" parameterType="int" resultType="String">
+		select queryChildrenDeptInfo(#{deptId}) 
+	</select>
+	
+	<!-- 获取本职id跟兼职id -->
+	<select id="getDeptAndPost" parameterType="String" resultType="map">
+		SELECT 
+			personnel_deptId,
+			is_native_post
+		FROM 
+			view_personnel_dept_post 
+		WHERE 
+			personnel_shortcode = #{personnel_shortcode}
+	</select>
+	
+	<!-- 获取分管表集合 -->
+	<select id="getDManageByDeptId" parameterType="Integer" resultType="map">
+		select 
+			personnel_dept_manage_id,
+			personnel_id,
+			manage_deptId
+		from 
+			sys_personnel_dept_manage
+		where 
+			manage_deptId = #{deptId} 
+		and
+			enable_flag = 1
+	</select>
+	
+	<!-- 根据personnel——id查询联系人 -->
+	<select id="getPersonnel" parameterType="Integer" resultType="map">
+		select 
+			distinct 
+			a.personnel_id,
+			a.personnel_name,
+			a.personnel_shortcode,
+			a.personnel_deptId,
+			a.personnel_postName as post_name,
+			c.head_img_path as img_mini_url,
+			c.personnel_start,
+			b.dept_name as dept_name,
+			b.dept_pid,
+			a.is_native_post,
+			c.personnel_sex as personnel_sex,
+			IFNULL( 
+			(select 
+				dept_name
+		from 
+			sys_dept
+		where 
+			dept_id = b.dept_pid 
+		and 
+			enable_flag = 1),'') as parent_dept_name
+		from 
+				view_personnel_dept_post a INNER JOIN sys_dept b ON a.personnel_deptId = b.dept_id INNER JOIN pm_personnel c ON a.personnel_id = c.personnel_id
+		where 
+			a.personnel_id = #{personnel_id} 
+		and 
+			c.enable_flag = 1 
+		and 
+			b.enable_flag = 1
+		and 
+			c.personnel_state in (0,1,2)
+		and 
+			a.is_native_post = 1
+	
+		<!-- select 
+			a.personnel_id,
+			a.personnel_name,
+			a.personnel_shortcode,
+			a.personnel_deptId,
+			a.personnel_postName as post_name,
+			a.head_img_path as img_mini_url,
+			a.personnel_start,
+			b.dept_name as dept_name,
+			b.dept_pid,
+			a.personnel_sex as personnel_sex,
+			IFNULL( 
+			(select 
+				dept_name
+			from 
+				sys_dept
+			where 
+				dept_id = b.dept_pid 
+			and 
+				enable_flag = 1),'') as parent_dept_name
+		from
+			pm_personnel a INNER JOIN sys_dept b ON a.personnel_deptId = b.dept_id
+		where 
+			a.personnel_id = #{personnel_id} 
+		and 
+			a.enable_flag = 1 
+		and 
+			b.enable_flag = 1
+		and 
+			a.personnel_state in (0,1,2) -->
+	</select>
+	
+	<!-- 同级部门联系人 -->
+	<select id="getPerEqual" parameterType="Integer" resultType="map">
+		select 
+			distinct 
+			a.personnel_id,
+			a.personnel_name,
+			a.personnel_shortcode,
+			a.personnel_deptId,
+			a.personnel_postName as post_name,
+			c.head_img_path as img_mini_url,
+			c.personnel_start,
+			b.dept_name as dept_name,
+			b.dept_pid,
+			a.is_native_post,
+			c.personnel_sex as personnel_sex,
+			IFNULL( 
+			(select 
+				dept_name
+		from 
+			sys_dept
+		where 
+			dept_id = b.dept_pid 
+		and 
+			enable_flag = 1),'') as parent_dept_name
+		from 
+				view_personnel_dept_post a INNER JOIN sys_dept b ON a.personnel_deptId = b.dept_id INNER JOIN pm_personnel c ON a.personnel_id = c.personnel_id
+		where 
+			a.personnel_deptId = #{deptId}
+		and 
+			c.enable_flag = 1 
+		and 
+			b.enable_flag = 1
+		and 
+			c.personnel_state in (0,1,2)
+	</select>
+	
+	<select id="getDeptInfo" parameterType="map" resultType="map">
+		select dept_id dept_child_id,dept_name dept_child_name
+		from sys_dept
+		where 1=1
+		<if test="level !=null and level != ''">
+			and dept_level = #{level}
+		</if>
+		<if test="dept_id !=null and dept_id != ''">
+			and dept_pid = #{dept_id}
+		</if>
+		order by dept_id
+	</select>
+	
+	<select id="getPersonLevel2Dept" parameterType="int" resultType="String">
+		select queryParentsDeptInfo(#{value})
+	</select>
+	
+	<select id="getHotLine" resultType="map">
+		select hotline_name hotLine_name,
+			IF(glag = 1,hotline_personnel_name,null) hotLine_personName,
+			hotline_contact_tel hotLine_phone,
+			hotline_sort,
+			value_meaning
+		from tel_hotline inner join sys_dict_data on hotline_type = sys_dict_data_id
+		where tel_hotline.enable_flag = 1
+		and sys_dict_data.enable_flag =1 
+		order by hotline_type
+	</select>
+	
+	<select id="getPersonForList" parameterType="map" resultType="map">
+		select personnel_id
+		from pm_personnel
+		where 
+			enable_flag = 0
+			and personnel_state in (3,4,7)
+			and personnel_id in (
+			<foreach collection="list" item="item" separator=",">
+			#{item.personnel_id}
+			</foreach>
+			)
+	</select>
+	
+	<select id="getContactDetail" parameterType="int" resultType="map">
+		select personnel_id, personnel_name, personnel_shortCode personnel_shortcode,
+		personnel_sex,a.dept_name dept_name, b.dept_name dept_parent_name,post_name,
+		head_img_path,IFNULL(personnel_shortTel,"") tel,IFNULL(personnel_emial,"") email ,IFNULL(personnel_QQ,"") QQ
+		from pm_personnel 
+		left join sys_dept a on personnel_deptId = a.dept_id
+		left join sys_dept b on a.dept_pid = b.dept_id
+		left join sys_post on personnel_postId = sys_post.post_id
+		where personnel_id = #{value}
+		and pm_personnel.enable_flag = 1
+	</select>
+	
+	<!-- 根据部门id查询上级部门id -->
+	<select id="getPentDeptId" parameterType="Integer" resultType="Integer">
+		select 
+			dept_pid
+		from
+			sys_dept 
+		where 
+			dept_id = #{deptId}
+		and 
+			enable_flag = 1
+	</select>
+	
+	<!-- 根据部门id 查询部门name -->
+	<select id="getpentDeptName" parameterType="int" resultType="String">
+		select 
+			dept_name
+		from 
+			sys_dept
+		where 
+			dept_id = #{deptId} 
+		and 
+			enable_flag = 1
+	</select>
+	
+	<!-- 根据部门id 查询部门负责人id -->
+	<select id="getDeptPerson" parameterType="int" resultType="Integer">
+		select 
+			dept_personId
+		from 
+			sys_dept
+		where 
+			dept_id = #{deptId}
+		and 
+			enable_flag = 1
+	</select>
+	
+	<!-- 根据人员id 查询分管了那些部门的id -->
+	<select id="getFenBypersonId" parameterType="int" resultType="map">
+		select 
+			manage_deptId
+		from 
+			sys_personnel_dept_manage
+		where
+		 	personnel_id = #{personnel_id} 
+		and 
+			enable_flag = 1
+	</select>
+	
+	<!-- 数据权限 -->
+	<select id="getdeptIdByMenuid" parameterType="map" resultType="map">
+		SELECT 
+			dept_id 
+		from 
+			sys_personnel_dept_concern 
+		where 
+			personnel_id =#{personnel_id} 
+		and 
+			permissions_id =#{menuid}
+	</select>
+	
+</mapper>

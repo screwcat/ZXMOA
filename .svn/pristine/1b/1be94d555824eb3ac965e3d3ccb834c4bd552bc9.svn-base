@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.timeAttendance.persist.AttendanceDao">
+    <select id="getAttendanceList" parameterType="map" resultType="map">
+    	select
+			date_format(a.attendance_date,'%Y-%m-%d') as attendance_date,
+			a.attendance_workStart,
+			a.attendance_workEnd,
+			a.attentdance_status
+		from
+			time_attendance as a INNER JOIN pm_personnel as b on a.attendance_code = b.personnel_shortCode INNER JOIN sys_dept as c on b.personnel_deptId = c.dept_id
+		where
+			a.enable_flag = '1'
+			and IF(left(c.dept_code,3)='DHl' , a.attendance_type in (0,1,2), a.attendance_type=0 )
+		<if test="date_start != null">
+			and a.attendance_date &gt;= #{date_start}
+		</if>
+		<if test="date_end != null">
+			and a.attendance_date &lt;= #{date_end}
+		</if>
+		<if test="attendance_code != null">
+			and a.attendance_code = #{attendance_code}
+		</if>
+		order by a.attendance_date desc
+    </select>
+    
+    <select id="getWarnAttendancePersonnelList" resultType="map">
+		SELECT DISTINCT p.personnel_shortCode as accept_code,r.alias FROM time_attendance t INNER JOIN pm_personnel p ON t.attendance_code=p.personnel_attendanceCode INNER JOIN sys_app_user_record r ON p.personnel_shortCode=r.user_code
+		WHERE t.enable_flag=1 AND attendance_type=0 AND attentdance_status NOT IN ('-1','-2') AND attentdance_status REGEXP '1|2|8|9|10|11|12|13|14|15' AND DATE_FORMAT(attendance_date,'%Y-%m-%d')=ADDDATE(CURDATE(),-1) AND r.app_name='MOA'
+		AND p.personnel_postId NOT IN 
+				(SELECT post_id FROM sys_post WHERE enable_flag=0 AND post_number REGEXP 'PZXJKXXXXXX|PZXZXZCXXXX|PZXGJFZCXXX|PPHZXZJLXXX|PCFZXZJLXXX|PZNZXZJLXXX|PZNZXFZJLXX|PCFZXFZJLXX|PPHZXFZJLXX|PZNZJXXXXXX|PZNFZJXXXXX|PHLSXXXGXXX')
+    </select>
+    
+        <select id="findAllVacateSetting" resultType="map">
+	    select 
+			id,
+			holi_no,
+			holi_type,
+			holi_day,
+			holi_repair,
+			allow_holiday,
+			general_holiday,
+			legal_holiday,
+			flow1,
+			holi_name,
+			holi_cate,
+			organization_id,
+			seniority
+		from
+			time_holi
+		where
+			enable_flag = '1'
+			and holi_no like 'QJS%'
+	</select>
+	
+	<select id="findAllDept" resultType="map">
+		select
+		dept_id,
+		dept_code,
+		dept_name,
+		dept_personid,
+		dept_level,
+		dept_pid
+		from
+		sys_dept
+		where
+		enable_flag = 1
+	</select>
+	
+	<select id="findTimeVacateHistory" resultType="Integer" parameterType="map">
+		SELECT 
+			SUM(v.vacate_time )
+		FROM 
+			time_vacate v
+		LEFT JOIN
+			office_apply_order o
+		ON
+			v.vacate_oid = o.order_id
+		WHERE
+			o.order_state IN ('1','2','4','5','6')
+		AND 
+			o.original_apply_personnel_id = #{personnel_id}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &gt;= #{vacateS}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &lt;= #{vacateE}
+		and v.vacate_type = #{hoil_type}
+	</select>
+	
+	<select id="getVolumeInfo" parameterType="map" resultType="map">
+		select 
+			a.day_type as day_type,
+			b.work_time as start1, 
+			b.delay_time as start2,
+			b.off_work_time as off1,
+			b.start_work_time as off2,
+			b.start_absenteeism_time as rest1,
+			b.end_absenteeism_time as rest2,
+			b.day_type as over,
+			a.info_data
+		from 
+			time_volume_info a INNER JOIN time_shift b on a.shift_id = b.id 
+		where
+			a.personnel_id = #{personnel_id} 
+		and 
+			DATE_FORMAT(a.info_data,'%Y-%m-%d') &gt;= #{date_start}
+		and
+			DATE_FORMAT(a.info_data,'%Y-%m-%d') &lt;= #{date_end}
+		and 
+			a.enable_flag = 1
+		and 
+			b.enable_flag = 1
+		order by a.info_data asc
+	</select>
+</mapper>

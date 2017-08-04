@@ -1,0 +1,85 @@
+package com.zx.moa.wms.request.loan.util;
+
+public class WmsHelp{
+	//移动端贷款单据查询列表   --列表权限--筛选条件
+    public static final Integer DEPT_LEVEL_5=5;//营业部门等级-- 例如:沈阳营业一部	
+    public static final String DEPT_CODE_5="DPH%YY%";//部门编码 沈阳营业一部 鞍山营业二部 例如DPHSYYYYBXX001 or DPHASYYEBXX001
+    public static final String MENU_ID_QUERY_LIST="803";//菜单id 移动端贷款单据查询列表
+    //移动端贷款单据查询列表    --筛选条件
+    public static final Integer DEPT_LEVEL_6=6;//业务部门等级-- 例如:业务一部	
+    public static final String DEPT_CODE_6="DPHYW%";//部门编码 业务一部  业务二部 例如DPHYWYBXXXX004 or DPHYWEBXXXX001 
+    
+
+    public static final String MENU_ID_PROGRESS_LIST="805";//菜单id app首页进展中
+
+    public static final String MENU_ID_FCHC_LIST = "73";// 菜单id 房贷房产核查
+
+    public static final String MENU_ID_FKSP_LIST = "92";// 菜单id 房贷放款审批
+
+    public static final String TOP_DEPT_CODE="DPHCPGLBXXX001";//贷款端--DPHCPGLBXXX001 产品管理部   测试环境id=31 
+
+    public static final String TOP_DEPT_LEVEL_CODING = "001002001001";//产品管理部层次码
+    
+    /************菜单编码***************/
+    public static final String MENU_CODE_TDGL = "D030401";// 移动端团队管理菜单编码
+
+    public static final String MENU_CODE_MDGL = "D030501";// 移动端门店管理菜单编码
+
+    public static final String MENU_CODE_GSZL = "D030601";// 移动端公司战略菜单编码
+
+    public static final String MENU_CODE_JDCX = "D030202";// 移动端申请模块 中进度查询
+
+    /************菜单编码结束***************/
+
+    /*********菜单url开始**********/
+
+    public static final String MENU_URL_FCHC_LIST = "loanreview/houseCardApprovalList.html";// 审核管理》房贷》房产核查url
+
+    public static final String MENU_URL_FKSP_LIST = "loanappro/houseMakeLoanApprovalList.html";// 终审管理》房贷终审》放款审批url
+
+    /*********菜单url结束**********/
+
+    /************请求错误编码消息等***************/
+    public static final String RET_WARN_100 = "100";// 客户姓名不允许为空!
+                                                    // 手机端贷款申请,验证客户姓名是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_101 = "101";// 城市不允许为空! 手机端贷款申请,验证城市是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_102 = "102";// 城市不允许为空! 手机端贷款申请,验证城市是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_103 = "103";// 贷款金额不允许为空!
+                                                    // 手机端贷款申请,验证贷款金额是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_104 = "104";// 房产类型不允许为空!
+                                                    // 手机端贷款申请,验证房产类型是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_105 = "105";// 建筑面积不允许为空!
+                                                    // 手机端贷款申请,验证建筑面积是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_106 = "106";// 小区名称不允许为空!
+                                                    // 手机端贷款申请,验证小区名称是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_107 = "107";// 抵押房产地址不允许为空!
+                                                    // 手机端贷款申请,验证抵押房产地址是否为空
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_108 = "108";// 房产证图片不允许为空!
+                                                    // 手机端贷款申请,验证房产证图片是否上传
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_109 = "109";// 申请失败! 手机端贷款申请,申请操作抛异常
+                                                    // WMS_OUT_012
+
+    public static final String RET_WARN_110 = "110";// 保存失败! 手机端补录联系人,保存操作抛异常
+                                                    // WMS_OUT_018
+
+    public static final String RET_ERROR_VALUE = "操作失败，请联系客服!";// "操作失败，请联系客服!"
+    /************请求错误编码消息等***************/
+}

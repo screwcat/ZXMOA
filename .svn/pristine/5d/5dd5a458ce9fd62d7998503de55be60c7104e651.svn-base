@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsCreHousingApprovalInfoDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="WmsCreHousingApprovalInfo">
+		select
+        				wms_cre_housing_approval_info,
+        				wms_cre_credit_head_id,
+        				approval_type,
+        				approval_result,
+        				approval_user_id,
+        				approval_user_name,
+						date_format(approval_time,'%Y-%m-%d %H:%i:%s') as approval_time_str,
+        				approval_time,
+        				approval_advice,
+        				approval_task_type,
+        				approval_user_deptName,
+        				approval_user_postnub,
+        				enable_flag
+        	from
+        		wms_cre_housing_approval_info
+        	<where>
+				<if test="wms_cre_housing_approval_info != null">
+					and wms_cre_housing_approval_info = #{wms_cre_housing_approval_info}
+				</if>
+				<if test="wms_cre_credit_head_id != null">
+					and wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+				</if>
+		</where>
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count() as count
+		from wms_cre_housing_approval_info
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select 
+				d.value_meaning as approveResult,
+				CONCAT(i.approval_user_name,'/', pm.personnel_shortCode) as approvers,
+				date_format(i.approval_time,'%H:%i:%s') as approveTime,
+				i.approval_advice as approveAdvice,
+				i.approval_task_type as personnel_deptName
+		from wms_cre_housing_approval_info i
+				LEFT JOIN wms_sys_dict_data d on i.approval_result=d.value_code and d.wms_sys_dict_id=132
+				LEFT JOIN  pm_personnel pm on pm.personnel_id=i.approval_user_id 
+		<where>
+				i.enable_flag=1
+			<if test="wms_cre_credit_head_id != null">
+				and i.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !='' and sortname != null and sortorder !=null ">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="WmsCreHousingApprovalInfo" useGeneratedKeys="true" keyProperty="">
+		INSERT INTO wms_cre_housing_approval_info
+		(
+				wms_cre_housing_approval_info,
+
+				wms_cre_credit_head_id,
+
+				approval_type,
+
+				approval_result,
+
+				approval_user_id,
+
+				approval_user_name,
+
+				approval_time,
+
+				approval_advice,
+
+				approval_task_type,
+
+				approval_user_deptName,
+
+				approval_user_postnub,
+
+				enable_flag
+		)
+		VALUES
+		(
+				#{wms_cre_housing_approval_info},
+				#{wms_cre_credit_head_id},
+				#{approval_type},
+				#{approval_result},
+				#{approval_user_id},
+				#{approval_user_name},
+				#{approval_time},
+				#{approval_advice},
+				#{approval_task_type},
+				#{approval_user_deptName},
+				#{approval_user_postnub},
+				#{enable_flag}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="WmsCreHousingApprovalInfo">
+		update wms_cre_housing_approval_info
+		<set>
+					<if test="wms_cre_housing_approval_info != null">
+						 wms_cre_housing_approval_info = #{wms_cre_housing_approval_info},
+					</if>
+					<if test="wms_cre_credit_head_id != null">
+						 wms_cre_credit_head_id = #{wms_cre_credit_head_id},
+					</if>
+					<if test="approval_type != null">
+						 approval_type = #{approval_type},
+					</if>
+					<if test="approval_result != null">
+						 approval_result = #{approval_result},
+					</if>
+					<if test="approval_user_id != null">
+						 approval_user_id = #{approval_user_id},
+					</if>
+					<if test="approval_user_name != null">
+						 approval_user_name = #{approval_user_name},
+					</if>
+					<if test="approval_time != null">
+						 approval_time = #{approval_time},
+					</if>
+					<if test="approval_advice != null">
+						 approval_advice = #{approval_advice},
+					</if>
+					<if test="approval_task_type != null">
+						 approval_task_type = #{approval_task_type},
+					</if>
+					<if test="approval_user_deptName != null">
+						 approval_user_deptName = #{approval_user_deptName},
+					</if>
+					<if test="approval_user_postnub != null">
+						 approval_user_postnub = #{approval_user_postnub},
+					</if>
+					<if test="enable_flag != null">
+						 enable_flag = #{enable_flag},
+					</if>
+	   </set>
+		 where 
+	</update>
+	<select id="getListByEntity" parameterType="WmsCreHousingApprovalInfo" resultType="WmsCreHousingApprovalInfo">
+		select 
+				wms_cre_housing_approval_info,
+				wms_cre_credit_head_id,
+				approval_type,
+				approval_result,
+				approval_user_id,
+				approval_user_name,
+				date_format(approval_time,'%Y-%m-%d %H:%i:%s') as approval_time_str,
+				approval_time,
+				approval_advice,
+				approval_task_type,
+				approval_user_deptName,
+				approval_user_postnub,
+				enable_flag
+		from
+		wms_cre_housing_approval_info
+		<where>
+					<if test="wms_cre_housing_approval_info != null">
+						and wms_cre_housing_approval_info = #{wms_cre_housing_approval_info}
+					</if>
+					<if test="wms_cre_credit_head_id != null">
+						and wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+					</if>
+					<if test="approval_type != null">
+						and approval_type = #{approval_type}
+					</if>
+					<if test="approval_result != null">
+						and approval_result = #{approval_result}
+					</if>
+					<if test="approval_user_id != null">
+						and approval_user_id = #{approval_user_id}
+					</if>
+					<if test="approval_user_name != null">
+						and approval_user_name = #{approval_user_name}
+					</if>
+					<if test="approval_time != null">
+						and approval_time = #{approval_time}
+					</if>
+					<if test="approval_advice != null">
+						and approval_advice = #{approval_advice}
+					</if>
+					<if test="approval_task_type != null">
+						and approval_task_type = #{approval_task_type}
+					</if>
+					<if test="approval_user_deptName != null">
+						and approval_user_deptName = #{approval_user_deptName}
+					</if>
+					<if test="approval_user_postnub != null">
+						and approval_user_postnub = #{approval_user_postnub}
+					</if>
+					<if test="enable_flag != null">
+						and enable_flag = #{enable_flag}
+					</if>
+				 	<if test="isExcludePKFlag != null and isExcludePKFlag == true">
+					</if>
+		</where>
+	</select>
+	
+	<!-- WMS_OUT_027 获取团队、门店、公司单据统计信息 -->
+	<select id="getBizProgressStatistical" parameterType="map" resultType="map">
+		SELECT 
+			CAST(
+				IFNULL(SUM(CASE WHEN hai.approval_task_code='DKSQ' THEN 1 ELSE 0 END),0) 
+			AS CHAR)
+			AS apply_num,
+			CAST(
+				IFNULL(SUM(CASE WHEN hai.approval_task_code='FCCP' THEN 1 ELSE 0 END),0) 
+			AS CHAR)
+			AS intern_num,
+			CAST(
+				IFNULL(SUM(CASE WHEN hai.approval_task_code='ZSSP' THEN 1 ELSE 0 END),0) 
+			AS CHAR)
+			AS final_num,
+			CAST(
+				IFNULL(
+					SUM(CASE WHEN hai.approval_task_code='FKSP' THEN 
+								(CASE WHEN (SELECT wms_cre_credit_group_id FROM wms_cre_credit_head where wms_cre_credit_head_id=hai.wms_cre_credit_head_id) IS NULL THEN 1
+											ELSE 0 END)
+									 ELSE 0 END)
+				
+				,0)
+				+
+				IFNULL(
+					(SELECT COUNT(1) FROM(SELECT count(1) FROM (
+								SELECT * FROM (
+									SELECT wms_cre_housing_approval_info,wms_cre_credit_head_id,approval_type,approval_task_code,enable_flag 
+									FROM wms_cre_housing_approval_info WHERE approval_task_code IS NOT NULL ORDER BY approval_time DESC
+									) AS wms_cre_housing_approval_info 
+									WHERE approval_type = 1 AND approval_task_code='FKSP'
+									GROUP BY wms_cre_credit_head_id,approval_task_code
+								) hai 
+							INNER JOIN wms_cre_credit_head cre  ON cre.wms_cre_credit_head_id = hai.wms_cre_credit_head_id AND hai.enable_flag IN(1,2) AND  cre.wms_cre_credit_group_id IS NOT NULL
+							where DATE_FORMAT(cre.create_timestamp,'%Y-%m') = #{date_info}
+							<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+								AND cre.salesman_dept_id IN(
+									SELECT dept_id
+									FROM sys_dept
+									where 
+										dept_code =#{dept_info}
+									UNION
+									SELECT 
+										de.dept_id
+									FROM sys_dept de
+									WHERE 
+										de.enable_flag =1 
+										AND de.dept_pid =(
+											SELECT dept_id
+											FROM sys_dept
+											where dept_code =#{dept_info}
+											)
+								)
+							</if>
+							<!-- 公司战略下权限控制 -->
+							<if test="is_type=='3'.toString()">
+								AND FIND_IN_SET(cre.salesman_dept_id,#{dataAuthority})
+							</if>
+							GROUP BY cre.wms_cre_credit_group_id) t)
+					,0) 
+			AS CHAR)
+			AS number_loans,
+			CAST(
+				IFNULL((SELECT COUNT(1) FROM wms_cre_credit_head wcch 
+							WHERE 
+								wcch.bill_status IN('BJ','EJ','FZ','CZ','DZ','EZ','HZ','KZ')
+								AND wcch.enable_flag = 1 
+								<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+									AND wcch.salesman_dept_id IN(
+										SELECT dept_id
+											FROM sys_dept
+											where 
+												dept_code =#{dept_info}
+											UNION
+											SELECT 
+												de.dept_id
+											FROM sys_dept de
+											WHERE 
+												de.enable_flag =1 
+												AND de.dept_pid =(
+													SELECT dept_id
+													FROM sys_dept
+													where dept_code =#{dept_info}
+													)
+									)
+								</if>
+								AND DATE_FORMAT(wcch.create_timestamp,'%Y-%m') = #{date_info}
+								AND wcch.wms_cre_credit_group_id IS NULL
+								<if test="is_type=='3'.toString()">
+									AND FIND_IN_SET(wcch.salesman_dept_id,#{dataAuthority})
+								</if>
+					),0)
+					+
+					IFNULL(
+						(SELECT SUM(CASE WHEN c1 = c2 THEN 1 ELSE 0 END) FROM
+							(SELECT COUNT(1) AS c1,wcch.wms_cre_credit_group_id FROM wms_cre_credit_head wcch 
+								WHERE 
+									wcch.bill_status IN('BJ','EJ','FZ','CZ','DZ','EZ','HZ','KZ')
+									AND wcch.enable_flag = 1
+									<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+										AND wcch.salesman_dept_id IN(
+											SELECT dept_id
+												FROM sys_dept
+												where 
+													dept_code =#{dept_info}
+												UNION
+												SELECT 
+													de.dept_id
+												FROM sys_dept de
+												WHERE 
+													de.enable_flag =1 
+													AND de.dept_pid =(
+														SELECT dept_id
+														FROM sys_dept
+														where dept_code =#{dept_info}
+														)
+										)
+									</if>
+									AND DATE_FORMAT(wcch.create_timestamp,'%Y-%m') = #{date_info}
+									AND wcch.wms_cre_credit_group_id IS NOT NULL
+									<if test="is_type=='3'.toString()">
+										AND FIND_IN_SET(wcch.salesman_dept_id,#{dataAuthority})
+									</if>
+								GROUP BY wcch.wms_cre_credit_group_id) t1 INNER JOIN 
+								(SELECT COUNT(1) AS c2,wcch.wms_cre_credit_group_id FROM wms_cre_credit_head wcch 
+								WHERE 
+									wcch.bill_status NOT IN('A')
+									AND wcch.enable_flag = 1 
+									<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+										AND wcch.salesman_dept_id IN(
+											SELECT dept_id
+												FROM sys_dept
+												where 
+													dept_code =#{dept_info}
+												UNION
+												SELECT 
+													de.dept_id
+												FROM sys_dept de
+												WHERE 
+													de.enable_flag =1 
+													AND de.dept_pid =(
+														SELECT dept_id
+														FROM sys_dept
+														where dept_code =#{dept_info}
+														)
+										)
+									</if>
+									AND DATE_FORMAT(wcch.create_timestamp,'%Y-%m') = #{date_info}
+									AND wcch.wms_cre_credit_group_id IS NOT NULL
+									<if test="is_type=='3'.toString()">
+										AND FIND_IN_SET(wcch.salesman_dept_id,#{dataAuthority})
+									</if>
+								GROUP BY wcch.wms_cre_credit_group_id) t2 ON t1.wms_cre_credit_group_id = t2.wms_cre_credit_group_id)
+					,0) 
+			AS CHAR)
+			AS refused_num,
+			<if test="is_type=='3'.toString()">
+				'DPHCPGLBXXX001' AS dept_code,
+				'4' AS dept_level,
+				'产品管理部' AS dept_name
+			</if>
+			<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+				#{dept_info} AS dept_code,
+				CAST(
+					(SELECT dept_level FROM sys_dept WHERE dept_code = #{dept_info} ) 
+				AS CHAR)
+				AS dept_level,
+				<if test="is_type=='1'.toString()">
+					(SELECT 
+						CONCAT(dept_name,'(',LEFT(dept_person,CHAR_LENGTH(dept_person)-6),')')
+					FROM sys_dept WHERE dept_code = #{dept_info} ) 
+					AS dept_name
+				</if>
+				<if test="is_type=='2'.toString()">
+					(SELECT dept_name FROM sys_dept WHERE dept_code = #{dept_info} ) 
+				 	AS dept_name
+				</if>
+			</if>
+		FROM (
+			SELECT * FROM (
+				SELECT wms_cre_housing_approval_info,wms_cre_credit_head_id,approval_type,approval_task_code,enable_flag 
+				FROM wms_cre_housing_approval_info WHERE approval_task_code IS NOT NULL ORDER BY approval_time DESC
+				) AS wms_cre_housing_approval_info 
+				WHERE approval_type = 1
+				GROUP BY wms_cre_credit_head_id,approval_task_code
+			) hai 
+		INNER JOIN wms_cre_credit_head cre  ON cre.wms_cre_credit_head_id = hai.wms_cre_credit_head_id AND hai.enable_flag IN(1,2)
+		<where>
+			AND	DATE_FORMAT(cre.create_timestamp,'%Y-%m') = #{date_info}
+			<if test="is_type=='1'.toString() or is_type=='2'.toString()">
+				AND cre.salesman_dept_id IN(
+					SELECT dept_id
+					FROM sys_dept
+					where 
+						dept_code =#{dept_info}
+					UNION
+					SELECT 
+						de.dept_id
+					FROM sys_dept de
+					WHERE 
+						de.enable_flag =1 
+						AND de.dept_pid =(
+							SELECT dept_id
+							FROM sys_dept
+							where dept_code =#{dept_info}
+							)
+				)
+			</if>
+			<!-- 公司战略下权限控制 -->
+			<if test="is_type=='3'.toString()">
+				AND FIND_IN_SET(cre.salesman_dept_id,#{dataAuthority})
+			</if>
+		</where>
+	</select>
+	<!-- mis查询信息使用 -->
+	<select id="searchAllInfo" parameterType="map" resultType="java.util.HashMap">
+		select 
+					ifnull(d.value_meaning,"") as approveResult,
+					ifnull(CONCAT(i.approval_user_name,'/', pm.personnel_shortCode),"") as approvers,
+					date_format(i.approval_time,'%Y-%m-%d %H:%i:%s') as approveTime,
+					ifnull(i.approval_advice,"")as approveAdvice,
+					ifnull(i.approval_task_type,"") as approve_type,
+					ifnull(i.approval_user_deptName,"") as personnel_deptName,
+					ifnull(i.approval_user_postnub,"") as personnel_postName,
+					ifnull(IF(i.approval_task_code in ("DKSQ","WSXX"),"1","0"),"") as is_salesman
+			from wms_cre_housing_approval_info i
+					LEFT JOIN wms_sys_dict_data d on i.approval_result=d.value_code and d.wms_sys_dict_id=132
+					LEFT JOIN  pm_personnel pm on pm.personnel_id=i.approval_user_id 
+		<where>
+		 i.enable_flag=1
+			<if test="wms_cre_credit_head_id != null">
+				and wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+</mapper> 

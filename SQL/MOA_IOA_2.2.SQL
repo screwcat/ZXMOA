@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION ioadeve.queryChildrenApplyTypeInfo TO 'moadeve'@'%';

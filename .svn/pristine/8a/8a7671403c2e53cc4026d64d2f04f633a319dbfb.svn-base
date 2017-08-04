@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="screen-orientation" content="portrait">
+<meta name="x5-orientation" content="portrait">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="shortcut icon" href="/MOA/resources/images/logo_16.ico" type="image/x-icon" />
+<link rel="stylesheet" type="text/css" href="/MOA/resources/css/component.css" />
+<script type="text/javascript"
+	src="/MOA/resources/js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript"
+	src="/MOA/resources/js/util.js"></script>
+<title>卓信移动办公平台</title>
+
+<script type="text/javascript">
+	
+	function getWidth(){
+		return $('.loginbody').width();
+	}
+	$(function(){
+		//判断是否为UC浏览器
+		if(navigator.userAgent.indexOf('UCBrowser')>=0){
+			$('.del').css('z-index',0);
+		}
+		resize();
+		$(window).resize(function(){
+			resize();
+		});
+		$('.loginbtn').click(function(){
+			login();
+		});
+		$('.zxlogin span.del').off('click');
+		var _size = 2;
+		$('#username,#password').click(function(event){
+			var _x = event.pageX;
+			var _y = event.pageY;
+			var _l = $(this).next('.del').offset().left;
+			var _t = $(this).next('.del').offset().top;
+			var _w = $(this).next('.del').width();
+			var _h = $(this).next('.del').height();
+			if(_x>=(_l-_size) && _x<=(_l+_w+_size) && _y>=(_t-_size) && _y<=(_t+_h+_size)){
+				$(this).val('');
+			}
+		});
+		document.onkeydown=enter; 
+		$('.loginBg_img img').width($(window).width());
+		$('.loginBg_img img').height($(window).height());
+	});
+	function btnDelHide(id){
+		$('#'+id).next('.del').hide();
+	}
+	function resize(){
+		$('.zxlogin input').css('width',getWidth()-100);
+		
+	}
+	function login(){
+		if(validation()){
+// 			$.zxPost("/FLSJIM/login.do", {username:$('#username').val(),password:$('#password').val()}, function(data){
+// 				window.location.href = window.location.href.substring(0,window.location.href.lastIndexOf("/"))+'main.html';
+// 			});
+			username = $('#username').val();
+			password = $('#password').val();
+			$('input').blur();
+			$.ajax({
+				url:'/MOA/login.do',
+				async:true,
+				cache:false,
+				data:{username:username,password:password},
+				dataType:'json',
+				type:'post',
+				success:function(data){
+					if(data.ret_code == '000' ){
+						window.location.href = '/MOA/resources/html/index.html';
+					}else{
+						$.toast(data.ret_msg);
+					}
+					$('.loginbtn').text("登 录");
+				},
+				error:function(){$.toast('登录错误!');},
+				beforeSend:function(){
+					$('.loginbtn').text("登录中");
+				}
+			});
+		}
+	}
+	function validation(){
+		var username = $('#username').val();
+		var password = $('#password').val();
+		if(username == ''){
+			$.toast('登录帐号不能为空!');
+			return false;
+		}
+		if(isNaN(username)){
+			$.toast('登录帐号为员工短工号!');
+			return false;
+		}
+		if(password == ''){
+			$.toast('登录密码不能为空!');
+			return false;
+		}
+		return true;
+	}
+	var BASETIMER = 2;
+	var toast_time = BASETIMER;
+	var toast_timer = null;
+	$.toast = function(msg,time){
+		toast_time = time || BASETIMER;
+		if($('.zxtoast').length == 0){
+			$('body').append('<div class="zxtoastpanel"><div class="zxtoast"></div><div>');
+		}
+		$('.zxtoast').text(msg);
+		$('.zxtoastpanel').fadeIn('fast');
+		$('.zxtoastpanel').off('click');
+		$('.zxtoastpanel').click(function(){
+			toasthide();
+		});
+		toast_timer = setInterval('_doTime()',1000);
+	}
+	function toasthide(){
+		clearInterval(toast_timer);
+		$('.zxtoast').text('');
+		$('.zxtoastpanel').fadeOut('fast');
+	}
+	function _doTime(){
+		if(toast_time<=0){
+			toasthide();
+		}
+		toast_time--;
+	}
+	function enter(e){
+		var ev = e || window.event;
+		var obj = ev.target || ev.srcElement;
+		var t = obj.type || obj.getAttribute('type');
+		if(ev.keyCode==13 && (t=="password" || t=="text")){
+			var id = obj.id || obj.getAttribute('id');
+			if(id == 'username' || id == 'password'){
+				login();
+			}else{
+			}
+		}
+	}
+</script>
+<style type="text/css">
+.loginname,.loginpwd {position: relative;}
+.zxlogin label {
+	display: inline-block;
+	width: 42px;
+	height: 42px;
+/* 	background-image: url(resources/images/icon-main.png); */
+/* 	background-repeat: no-repeat; */
+	position: absolute;
+	top: 16px;
+	left: 25px;
+/* 	background-position: 0 -420px; */
+	z-index: 10;
+}
+.zxlogin input {
+	height: 40px;
+	font-size: 14px;
+	border-radius: 3px;
+	border: none;
+	border-bottom: 2px solid #ccc;
+	position: relative;
+	left: 67px;
+	text-align: left;
+}
+
+input:focus {border-bottom: 2px solid blue;outline: none;}
+input{background: none;}
+
+.loginpanel{text-align: center;}
+.loginbtn {
+	background-color: #149CFB;
+	border-radius: 20px;
+	border:none;
+	width: 80%;
+	height: 40px;
+	outline: none;
+	font-weight: bolder;
+	font-size:18px;
+	color: white;
+}
+.loginbtn:active{outline: none;}
+.loginbody {
+/* 	background-image: url(resources/images/login-bg.png); */
+/* 	background-repeat: repeat; */
+	background-attachment:fixed;
+	background-position: 100%;
+	max-width:720px;
+	margin: 0px;padding: 0px;
+	height: 100%;
+}
+.zxtitle{color: white;text-align: center;margin-top: 30%;margin-bottom: 20px;}
+.zxlogin,.zxcheckbox{margin-bottom: 40px;}
+.zxcheckbox {float: right;margin-right: 5px;}
+div.zxcheckbox div {display: inline-block;}
+div.zxcheckbox div.zxlabel {width: 80px;color: white;font-weight: bold;}
+.loginbody{/* max-width: 500px; */margin: 0px auto;}
+.zxtoast{max-width: 500px;margin: 0px auto;background-color: #8FABC8;padding: 10px;width: 90%;border-radius: 15px;}
+.zxtoastpanel{display: none;text-align: center;position: fixed;top: 20px;z-index: 1000;
+			width: 100%;margin: 0px;padding: 0px;opacity:0.6;}
+
+.zxinput{position: relative;}
+.del{display: block;position: absolute;right:35px;top: 15px;width: 18px;height: 18px;z-index: -1;}
+.del img{display: none; }
+.zxlogin input:FOCUS + span.del img{display: block;}
+.del img{width: 18px;height: 18px;}
+::-webkit-input-placeholder { /* WebKit browsers */
+    color:    #ccc;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color:    #ccc;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color:    #ccc;
+}
+:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color:    #ccc;
+}
+.loginBg_img{position: fixed;top: 0px;bottom: 0px; z-index: -1;width: 100%;height: 100%;padding: 0px;margin: 0px;}
+body {
+	margin: 0px;
+	pause: 0px;
+}
+</style>
+</head>
+<body style="overflow: hidden;">
+	<div class="loginBg_img"><img src="resources/images/login-bg.png"/></div>
+	<div class="loginbody">
+		<div class="zxtitle">
+			<img src="resources/images/login-logo.png" style="width:199px;height: 135px;"/>
+<!-- 			<h3>卓信移动办公平台</h3> -->
+		</div>
+		<div class="zxlogin">
+			<div class="loginname" class="zxinput">
+				<label for="username"><img width="28px" height="28px" alt="" src="resources/images/login-username.png"/></label> 
+				<input type="tel" placeholder="请输入登录帐号" id="username"><span class="del"><img src="resources/images/delete.png"></span>
+			</div>
+			<div class="loginpwd" class="zxinput">
+				<label for="password"><img width="28px" height="28px" alt="" src="resources/images/login-password.png"/></label> 
+				<input type="password" placeholder="请输入登录密码" id="password"><span class="del"><img src="resources/images/delete.png"></span>
+			</div>
+		</div>
+		<!-- <div class="zxcheckbox">
+			<div class="checkboxOne">
+				<input type="checkbox" value="1" id="checkboxOneInput" name=""
+					class="fuicomponent" /> <label for="checkboxOneInput"></label>
+			</div>
+			<div class="zxlabel">记住密码</div>
+		</div> -->
+		<div class="clearfix"></div>
+
+		<div class="loginpanel">
+			<button class="loginbtn">登&nbsp;录</button>
+		</div>
+	</div>
+</body>
+</html>

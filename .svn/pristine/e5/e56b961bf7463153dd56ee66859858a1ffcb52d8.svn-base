@@ -1,0 +1,16 @@
+package com.zx.moa.ioa.timeAttendance.persist;
+
+import java.util.List;
+import java.util.Map;
+
+import com.zx.moa.util.mybatis.MyBatisRepository;
+
+/**
+ * 获取IOA我的考勤数据层接口
+ * @author zWei
+ *
+ */
+@MyBatisRepository
+public interface AttendanceDao {
+	public List<Map<String, Object>> getAttendanceList(Map<String,Object> map);
+}

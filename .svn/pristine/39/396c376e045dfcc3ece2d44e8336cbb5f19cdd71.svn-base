@@ -1,0 +1,3404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsCreCreditHeadDao">
+	
+	<!-- 房产抵押列表查询 -->
+	<select id="searchHouseLoanList" parameterType="map" resultType="java.util.HashMap">
+	    select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.credit_purpose,
+            t1.max_repayment_limit_per_month,
+            t1.credit_limit,
+            t1.max_repayment_time_limit,
+            t1.enter_file_way,
+            t1.payroll_payment_way,
+            t1.data_type,
+            t1.is_complete,
+            t1.credit_limit,
+            t1.reference_type,
+            t1.is_other_corporation_done,
+            t1.is_to_public_stream,
+            t1.is_house_certificate_original,
+            t1.is_check,
+            t1.person_condition,
+            t1.salesman_id,
+            t1.salesman_code,
+            t1.salesman_name,
+            t1.city,
+            t1.cre_type,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            t1.water_appro_user_id,
+            t1.water_appro_user_name,
+            date_format(t1.water_appro_timestamp,'%Y-%m-%d') as water_appro_timestamp,
+            t1.water_appro_result,
+            t1.info_appro_user_id,
+            t1.info_appro_user_name,
+            date_format(t1.info_appro_timestamp,'%Y-%m-%d') as info_appro_timestamp,
+            t1.info_appro_result,
+            t1.phone_appro_user_id,
+            t1.phone_appro_user_name,
+            date_format(t1.phone_appro_timestamp,'%Y-%m-%d')as phone_appro_timestamp,
+            t1.phone_appro_result,
+            t1.certificate_appro_user_id,
+            t1.certificate_appro_user_name,
+            date_format(t1.certificate_appro_timestamp,'%Y-%m-%d') as certificate_appro_timestamp,
+            t1.certificate_appro_result,
+            IFNULL(t3.create_user_id,t1.salesman_id) as create_user_id,
+            IFNULL(t3.create_user_name,t1.salesman_name) as create_user_name,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            t1.last_update_user_id,
+            date_format(t1.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            t1.enable_flag,
+            t1.is_link_repeat,
+            t1.profession_type,
+            t1.is_verify,
+            t1.house_appro_result,
+            t1.cre_loan_type,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.cre_loan_type
+            and wms_sys_dict_id = 75)as cre_loan_type_name,
+            t1.loan_interest_rate,
+            t2.wms_cre_credit_line_customer_change_head_id,
+            t2.wms_cre_credit_head_id,
+            t2.wms_cus_customer_head_id,
+            t2.customer_code,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t2.customer_ever_name,
+            t2.customer_category,
+            t2.gender,
+            t2.max_degree,
+            date_format(t2.birthday,'%Y-%m-%d') as birthday,
+            t2.id_card,
+            t2.province,
+            t2.city,
+            t2.district,
+            t2.address_more,
+            t2.has_children,
+            t2.children_name,
+            t2.children_address,
+            t2.children_telephone,
+            t2.has_married,
+            t2.has_house,
+            t2.current_address_province,
+            t2.current_address_city,
+            t2.current_address_district,
+            t2.current_address_more,
+            t2.post_code,
+            t2.fixed_telephone,
+            t2.mobile_telephone1,
+            t2.service_password1,
+            t2.mobile_telephone2,
+            t2.service_password2,
+            t2.personal_year_income,
+            t2.customer_email,
+            t2.credit_card_limit,
+            t2.common_occupants,
+            t2.status,
+            t2.create_user_id,
+            t2.create_user_name,
+            t2.last_update_user_id,
+            date_format(t2.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp,
+            t2.enable_flag,
+            t1.is_review_back,
+            t1.water_appro_result_page,
+            t1.info_appro_result_page,
+            t1.phone_appro_result_page,
+            t1.certificate_appro_result_page,
+            t1.house_appro_result_page,
+            t1.salesman_shortcode,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name,"/",t1.salesman_shortcode) as salesman_name_str,
+            (case when t1.create_timestamp &lt; #{hprocess_time} then '1' else '2' end) as edition_num, 
+            '房贷产品' as product_type
+        from wms_cre_credit_head t1 
+        left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+            <if test="many_column_like != null">
+              <!--and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like})-->
+                  and t2.customer_name like #{many_column_like} 
+            </if>
+            <if test="is_bj != null">
+                and t1.house_appro_user_id = #{create_user_id}
+            </if>
+            <if test="is_bj == null">
+                and t1.salesman_id = #{create_user_id}
+            </if>
+            <if test="period != null">
+                and IFNULL(t3.create_timestamp, t1.create_timestamp) > DATE_SUB(CURDATE(), INTERVAL ${period} MONTH)
+            </if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+	</select>
+	
+	<!-- 房产抵押列表查询 -->
+    <select id="searchHouseLoanCount" parameterType="map" resultType="int">
+        select
+        count(t1.wms_cre_credit_head_id) as count
+        from wms_cre_credit_head t1 left wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+        and t2.is_major = '1' 
+        <where>
+            t1.cre_type = '2'
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+        </where>
+    </select>
+    
+    <!-- 根据主键查询(很多信息) -->
+    <select id="searchBeanByPkForMap" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.credit_purpose,
+            t1.max_repayment_limit_per_month,
+            t1.credit_limit,
+            t1.max_repayment_time_limit,
+            t1.enter_file_way,
+            t1.payroll_payment_way,
+            t1.data_type,
+            t1.is_complete,
+            t1.credit_limit,
+            t1.reference_type,
+            t1.is_other_corporation_done,
+            t1.is_to_public_stream,
+            t1.is_house_certificate_original,
+            t1.is_check,
+            t1.person_condition,
+            t1.salesman_id,
+            t1.salesman_code,
+            t1.salesman_name,
+            t1.city,
+            t1.cre_type,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            t1.water_appro_user_id,
+            t1.water_appro_user_name,
+            date_format(t1.water_appro_timestamp,'%Y-%m-%d') as water_appro_timestamp,
+            t1.water_appro_result,
+            t1.info_appro_user_id,
+            t1.info_appro_user_name,
+            date_format(t1.info_appro_timestamp,'%Y-%m-%d') as info_appro_timestamp,
+            t1.info_appro_result,
+            t1.phone_appro_user_id,
+            t1.phone_appro_user_name,
+            date_format(t1.phone_appro_timestamp,'%Y-%m-%d')as phone_appro_timestamp,
+            t1.phone_appro_result,
+            t1.certificate_appro_user_id,
+            t1.certificate_appro_user_name,
+            date_format(t1.certificate_appro_timestamp,'%Y-%m-%d') as certificate_appro_timestamp,
+            t1.certificate_appro_result,
+            IFNULL(t4.create_user_id,t1.salesman_id) as create_user_id,
+            IFNULL(t4.create_user_name,t1.salesman_name) as create_user_name,
+            date_format(IFNULL(t4.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            t1.last_update_user_id,
+            date_format(t1.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            t1.enable_flag,
+            t1.is_link_repeat,
+            t1.profession_type,
+            t1.is_verify,
+            t1.house_appro_result,
+            t1.cre_loan_type,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.cre_loan_type
+            and wms_sys_dict_id = 75)as cre_loan_type_name,
+            t1.loan_interest_rate,
+            t2.wms_cre_credit_line_customer_change_head_id,
+            t2.wms_cre_credit_head_id,
+            t2.wms_cus_customer_head_id,
+            t2.customer_code,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t2.customer_ever_name,
+            t2.customer_category,
+            t2.gender,
+            t2.max_degree,
+            date_format(t2.birthday,'%Y-%m-%d') as birthday,
+            t2.id_card,
+            t2.province,
+            t2.city,
+            t2.district,
+            t2.address_more,
+            t2.has_children,
+            t2.children_name,
+            t2.children_address,
+            t2.children_telephone,
+            t2.has_married,
+            t2.has_house,
+            t2.current_address_province,
+            t2.current_address_city,
+            t2.current_address_district,
+            t2.current_address_more,
+            t2.post_code,
+            t2.fixed_telephone,
+            IFNULL(t2.mobile_telephone1, '') as mobile_telephone1,
+            t2.service_password1,
+            t2.mobile_telephone2,
+            t2.service_password2,
+            t2.personal_year_income,
+            t2.customer_email,
+            t2.credit_card_limit,
+            t2.common_occupants,
+            t2.status,
+            t2.create_user_id,
+            t2.create_user_name,
+            t2.last_update_user_id,
+            date_format(t2.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            t2.enable_flag,
+            t1.is_review_back,
+            t1.water_appro_result_page,
+            t1.info_appro_result_page,
+            t1.phone_appro_result_page,
+            t1.certificate_appro_result_page,
+            t1.house_appro_result_page,
+            t1.salesman_shortcode,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name,"/",t1.salesman_shortcode) as salesman_name_str,
+            
+            IFNULL(t3.house_address_province, '') as house_address_province,
+            IFNULL(t3.house_address_city, '') as house_address_city,
+            IFNULL(t3.house_address_district, '') as house_address_district,
+            CONCAT(t3.house_address_province,t3.house_address_city,t3.house_address_district,t3.house_address_more) as house_address
+        from wms_cre_credit_head t1 left join wms_cre_credit_line_customer_change_head t2 
+                                           on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t1.cre_type = '2'
+                                    left join wms_cre_customer_change_line_houseinfo t3 
+                                           on t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id and t2.is_major = '1'
+                                    left join wms_cre_housing_file_info t4 on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id
+        where 1 = 1
+          and t1.wms_cre_credit_head_id = ${wms_cre_credit_head_id}
+          and t1.enable_flag = '1'
+    </select>
+    
+    <!--  房产代办件列表查询 -->
+	<select id="getwmsHousingCertificatesList" parameterType="map" resultType="java.util.HashMap">
+	    select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.credit_purpose,
+            t1.max_repayment_limit_per_month,
+            t1.credit_limit,
+            t1.max_repayment_time_limit,
+            t1.enter_file_way,
+            t1.payroll_payment_way,
+            t1.data_type,
+            t1.is_complete,
+            t1.credit_limit,
+            t1.reference_type,
+            t1.is_other_corporation_done,
+            t1.is_to_public_stream,
+            t1.is_house_certificate_original,
+            t1.is_check,
+            t1.person_condition,
+            t1.salesman_id,
+            t1.salesman_code,
+            t1.salesman_name,
+            t1.city,
+            t1.cre_type,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            t1.water_appro_user_id,
+            t1.water_appro_user_name,
+            date_format(t1.water_appro_timestamp,'%Y-%m-%d') as water_appro_timestamp,
+            t1.water_appro_result,
+            t1.info_appro_user_id,
+            t1.info_appro_user_name,
+            date_format(t1.info_appro_timestamp,'%Y-%m-%d') as info_appro_timestamp,
+            t1.info_appro_result,
+            t1.phone_appro_user_id,
+            t1.phone_appro_user_name,
+            date_format(t1.phone_appro_timestamp,'%Y-%m-%d')as phone_appro_timestamp,
+            t1.phone_appro_result,
+            t1.certificate_appro_user_id,
+            t1.certificate_appro_user_name,
+            date_format(t1.certificate_appro_timestamp,'%Y-%m-%d') as certificate_appro_timestamp,
+            t1.certificate_appro_result,
+            IFNULL(t3.create_user_id,t1.salesman_id) as create_user_id,
+            IFNULL(t3.create_user_name,t1.salesman_name) as create_user_name,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            t1.last_update_user_id,
+            date_format(t1.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            t1.enable_flag,
+            t1.is_link_repeat,
+            t1.profession_type,
+            t1.is_verify,
+            t1.house_appro_result,
+            t1.cre_loan_type,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.cre_loan_type
+            and wms_sys_dict_id = 75)as cre_loan_type_name,
+            t1.loan_interest_rate,
+            t2.wms_cre_credit_line_customer_change_head_id,
+            t2.wms_cre_credit_head_id,
+            t2.wms_cus_customer_head_id,
+            t2.customer_code,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t2.customer_ever_name,
+            t2.customer_category,
+            t2.gender,
+            t2.max_degree,
+            date_format(t2.birthday,'%Y-%m-%d') as birthday,
+            t2.id_card,
+            t2.province,
+            t2.city,
+            t2.district,
+            t2.address_more,
+            t2.has_children,
+            t2.children_name,
+            t2.children_address,
+            t2.children_telephone,
+            t2.has_married,
+            t2.has_house,
+            t2.current_address_province,
+            t2.current_address_city,
+            t2.current_address_district,
+            t2.current_address_more,
+            t2.post_code,
+            t2.fixed_telephone,
+            t2.mobile_telephone1,
+            t2.service_password1,
+            t2.mobile_telephone2,
+            t2.service_password2,
+            t2.personal_year_income,
+            t2.customer_email,
+            t2.credit_card_limit,
+            t2.common_occupants,
+            t2.status,
+            t2.create_user_id,
+            t2.create_user_name,
+            t2.last_update_user_id,
+            date_format(t2.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp,
+            t2.enable_flag,
+            t1.is_review_back,
+            t1.water_appro_result_page,
+            t1.info_appro_result_page,
+            t1.phone_appro_result_page,
+            t1.certificate_appro_result_page,
+            t1.house_appro_result_page,
+            t1.salesman_shortcode,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name,"/",t1.salesman_shortcode) as salesman_name_str,
+            (case when t1.create_timestamp &lt; #{hprocess_time} then '1' else '2' end) as edition_num,
+            (SELECT CONCAT(house_address_province,house_address_city,house_address_district,house_address_more)from wms_cre_customer_change_line_houseinfo where wms_cre_credit_line_customer_change_head_id=t2.wms_cre_credit_line_customer_change_head_id) as house_address, 
+            (SELECT  vehicle_evaluation_price  from wms_cre_housing_trial_assessment  where wms_cre_credit_head_id =t1.wms_cre_credit_head_id) as vehicle_evaluation_price,
+            '房贷产品' as product_type
+        from wms_cre_credit_head t1 
+        left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            and t1.create_user_city_code = #{create_user_city_code}
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}) 
+            </if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+	</select>
+	
+	<!-- 房产抵押列表查询 -->
+    <select id="getwmsHousingCertificatesCount" parameterType="map" resultType="int">
+        select
+        count(t1.wms_cre_credit_head_id) as count
+        from wms_cre_credit_head t1 left wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+        and t2.is_major = '1' 
+        <where>
+            t1.cre_type = '2'
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+        </where>
+    </select>
+    
+    
+    
+    
+    
+    <!-- 以下为外部接口调用 -->
+    
+    <!-- 房产抵押列表查询 -->
+    <select id="searchHouseLoanList_Request" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131) as bill_status_name,
+            IFNULL(t3.create_user_name,t1.salesman_name) as create_user_name,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            t1.last_update_user_id,
+            date_format(t1.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t1.create_user_city_code,
+            t1.salesman_name as salesman_name,
+            (case when t1.create_timestamp &lt; #{hprocess_time} then '1' else '2' end) as edition_num,
+            (case when t1.bill_status in ('A', 'B', 'C', 'D', 'L', 'J','I') then '1' else '0' end) as is_show_button_flag,
+            ifnull(t4.attachment_address, '') as attachment_address
+        from wms_cre_credit_head t1 
+        left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+        
+        left join (
+	        select b.wms_cre_credit_head_id,b.attachment_address 
+	          from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+	                  from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a,wms_cre_housing_apply_att b
+	         where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            <!-- 因为需要兼容新版本 此版本不应该查到最新版本的数据-->
+            and (t1.version_number is null or t1.version_number=1)
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+            <if test="many_column_like != null">
+              <!--and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like})-->
+                  and t2.customer_name like #{many_column_like} 
+            </if>
+            <if test="is_bj != null">
+                and t1.house_appro_user_id = #{create_user_id}
+            </if>
+            <if test="is_bj == null">
+                and t1.salesman_id = #{create_user_id}
+            </if>
+            <if test="period != null">
+                and IFNULL(t3.create_timestamp, t1.create_timestamp) > DATE_SUB(CURDATE(), INTERVAL ${period} MONTH)
+            </if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    <!--  房产代办件列表查询 -->
+    <select id="getwmsHousingCertificatesList_Request" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t1.salesman_shortcode,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+            IF(t2.mobile_telephone1 is null, null, t2.mobile_telephone1) as mobile_telephone1,
+            (SELECT CONCAT(house_address_province, house_address_city, house_address_district, house_address_more) 
+               from wms_cre_customer_change_line_houseinfo 
+              where wms_cre_credit_line_customer_change_head_id=t2.wms_cre_credit_line_customer_change_head_id LIMIT 0, 1) as house_address, 
+            IF(t6.vehicle_evaluation_price is null, null, CONCAT(t6.vehicle_evaluation_price, '万元')) as vehicle_evaluation_price,
+            ifnull(t4.attachment_address, '') as attachment_address
+        from wms_cre_credit_head t1 
+        left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+        left join (
+            select b.wms_cre_credit_head_id,b.attachment_address 
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a,wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join wms_cre_housing_trial_assessment t6 on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.version_number = '3'
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+<!--             <if test="create_user_id != null"> -->
+<!--                 and t1.create_user_id != #{create_user_id} -->
+<!--             </if> -->
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}) 
+            </if>
+            <!-- 权限控制 -->
+			<if test="childrendept != null">
+				and (FIND_IN_SET(t1.salesman_dept_id, #{childrendept}) > 0)
+			</if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 根据主键查询(很多信息) -->
+    <select id="searchBeanByPkForMap_Request" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131) as bill_status_name,
+            date_format(IFNULL(t4.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            IF(t2.mobile_telephone1 is null, null, t2.mobile_telephone1) as mobile_telephone1,
+            t1.salesman_name as salesman_name,
+            IFNULL(t3.house_address_province, '') as house_address_province,
+            IFNULL(t3.house_address_city, '') as house_address_city,
+            IFNULL(t3.house_address_district, '') as house_address_district,
+            CONCAT(t3.house_address_province,t3.house_address_city,t3.house_address_district,t3.house_address_more) as house_address,
+            ifnull(t5.attachment_address, '') as attachment_address
+        from wms_cre_credit_head t1 left join wms_cre_credit_line_customer_change_head t2 
+                                           on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t1.cre_type = '2'
+                                    left join wms_cre_customer_change_line_houseinfo t3 
+                                           on t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id and t2.is_major = '1'
+                                    left join wms_cre_housing_file_info t4 on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id
+                                    left join (
+							            select b.wms_cre_credit_head_id,b.attachment_address 
+							              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+							                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a,wms_cre_housing_apply_att b
+							             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+							        ) t5 on t5.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        where 1 = 1
+          and t1.wms_cre_credit_head_id = ${wms_cre_credit_head_id}
+          and t1.enable_flag = '1'
+        Limit 0, 1 
+    </select>
+    
+    <select id="getHousingCertificatesFlag_Request" parameterType="map" resultType="java.util.HashMap">
+        select (case when t1.bill_status in ('A', 'B', 'C', 'D', 'L', 'J', 'I') then '1' else '0' end) as is_sure_certificate_flag,
+               (case when t1.bill_status in ('C') then '1' else '0' end) as is_sure_handle_certificates_flag
+          from wms_cre_credit_head t1
+         where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+    </select>
+    
+    <!--根据主键查询(很多信息)移动端第二版本-->
+    <select id="searchBeanByPkForMapUp_Request" parameterType="map" resultType="java.util.HashMap">
+	 select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status and wms_sys_dict_id = 131) as bill_status_name,
+            date_format(IFNULL(t4.create_timestamp, t1.create_timestamp), '%Y-%m-%d') as create_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            IF(t2.mobile_telephone1 is null, null, t2.mobile_telephone1) as mobile_telephone1,
+		    CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+		    t1.salesman_shortcode as salesman_code,
+		    (case when t1.max_repayment_time_limit is NULL then '' else CONCAT(IFNULL(t1.max_repayment_time_limit, ''), '期') end) as max_repayment_time_limit, 
+		    (case when t1.appro_limit is NULL then '' else CONCAT(IFNULL(round(t1.appro_limit,2), ''), '万元') end) as appro_limit, 
+		    (case when t1.credit_limit is NULL then '' else CONCAT(IFNULL(round(t1.credit_limit,2), ''), '万元') end)  as credit_limit,
+            IFNULL(t3.house_address_province, '') as house_address_province,
+            IFNULL(t3.house_address_city, '') as house_address_city,
+            IFNULL(t3.house_address_district, '') as house_address_district,
+            CONCAT( IFNULL(t3.house_address_province, ''), IFNULL(t3.house_address_city, ''), IFNULL(t3.house_address_district, ''), IFNULL(t3.house_address_more, '')) as house_address,
+		    IFNULL((SELECT value_meaning from wms_sys_dict_data where  wms_sys_dict_id=130 and value_code=t2.customer_age), '') as customer_age,
+		    (case when (t3.houses_number is NULL or t3.houses_number ="") then '' else IFNULL(CONCAT(t3.houses_number, '处'), '') end) as houses_number, 
+		    IFNULL(t3.community_name, '') as community_name,
+		    IFNULL(t3.house_type, '') as house_type,
+		    (case when t3.house_building_area is NULL then '' else CONCAT(IFNULL(t3.house_building_area, ''),'㎡') end) as house_building_area, 
+            ifnull(t5.attachment_address, '') as attachment_address,
+            (case when t6.vehicle_evaluation_price is NULL then '' else CONCAT(IFNULL(t6.vehicle_evaluation_price, ''), '万元') end) as vehicle_evaluation_price,
+            IF(t7.principal_lower is null, '', CONCAT(FORMAT(t7.principal_lower, 2), '元')) as principal_lower,
+            IFNULL(t3.is_compound, '') as is_compound,
+            IFNULL(concat(t3.house_age, '年'), '') as house_age,
+            IFNULL(t3.house_remark, '') as house_remark,
+            IFNULL(date_format(t3.house_buy_date, '%Y年%m月%d日'), '') as house_buy_date,
+            ifnull(t3.city,"") as city
+       from wms_cre_credit_head t1 left join wms_cre_credit_line_customer_change_head t2 
+                                          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t1.cre_type = '2'
+                                   left join wms_cre_customer_change_line_houseinfo t3 
+                                          on t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id and t2.is_major = '1'
+                                   left join wms_cre_housing_file_info t4 on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id
+                                   left join (
+										select b.wms_cre_credit_head_id, b.attachment_address 
+										from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+														from wms_cre_housing_apply_att t  where data_detail_name in (846,1204,1205)   GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+									 	where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+								) t5 on t5.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+								left join wms_cre_housing_trial_assessment t6 ON t6.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+								left join wms_cre_appro_borrow_protocol t7
+               						on t1.wms_cre_credit_head_id = t7.wms_cre_credit_head_id and t7.enable_flag=1
+       where 1 = 1
+         and t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+         and t1.enable_flag = '1'
+       Limit 0, 1 
+    </select>
+    
+    <!-- 放款审批详情 -->
+    <select id="getLoanApprovalInfo" parameterType="int" resultType="map">
+        SELECT 
+      		t1.wms_cre_credit_head_id,
+			ifnull(t1.bill_code, '') as bill_code,
+			ifnull(t1.bill_status, '') as bill_status,
+			(select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+                and wms_sys_dict_id = 131) as bill_status_name,
+			ifnull(t2.customer_name, '') as customer_name,
+			ifnull(concat(FORMAT(t4.house_area, 2), '㎡'), '') as house_building_area,
+			ifnull(CONCAT(FORMAT(t3.principal_lower, 2), '元'), '') as principal_lower,
+			ifnull(CONCAT(FORMAT(t3.loan_amount, 2), '元'), '') as loan_amount,
+			ifnull(t3.payment_contract_type, '') as payment_contract_type,
+			ifnull(concat(t3.borrow_deadline,'期'), '') as borrow_deadline,
+			ifnull(concat(format(t3.borrow_interest, 2), '%'), '') as borrow_interest,
+			ifnull(concat(format(t3.liquidated_damages, 2), '元'), '') as liquidated_damages,
+			ifnull(concat(REPLACE(format(t6.consult_service_cost, 2),'.00', ''), '%'), '') as fees,
+			ifnull(CONCAT(format(t4.it_cost_fee, 2), '元'), '') as it_cost_fee,
+			ifnull(CONCAT(format(t4.expedited_fee, 2), '元'), '') as expedited_fee,
+			ifnull(t3.borrow_begin_date, '') as borrow_begin_date,
+			ifnull(t3.borrow_end_date, '') as borrow_end_date,
+			ifnull(t4.notary_is_finish, '') as notary_is_finish,
+			ifnull(t4.he_is_finish, '') as he_is_finish,
+			ifnull(t4.remark, '') as remark,
+			ifnull(t5.attachment_address, '') as attachment_address,
+			ifnull(t4.check_pay, '')as check_pay
+		 FROM 
+		 	wms_cre_credit_head t1 
+		 LEFT JOIN 
+		       wms_cre_credit_line_customer_change_head T2
+                ON                
+                    T2.is_major = '1' 
+                and 
+                    T2.enable_flag = '1' 
+                and 
+                    t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+		LEFT JOIN 
+			(select a.wms_cre_credit_head_id, 
+			        a.payment_contract_type, 
+			        a.borrow_deadline, 
+			        IFNULL(a.borrow_interest, 0) + IFNULL(b.service_cost_month, 0) as borrow_interest, 
+			        a.principal_lower, 
+			        a.borrow_begin_date, 
+			        a.borrow_end_date, 
+			        a.loan_amount,
+			        a.liquidated_damages 
+	           from wms_cre_appro_borrow_protocol a, wms_cre_appro_service_protocol b 
+	          where a.wms_cre_credit_head_id = b.wms_cre_credit_head_id and b.enable_flag = '1'
+	            and a.enable_flag = '1') t3
+        on 
+        	t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id 
+
+		LEFT JOIN 
+			wms_fina_cre_loan_app t4 
+        on 
+       		t3.wms_cre_credit_head_id = t4.wms_cre_credit_head_id 
+       	and 
+       		t4.enable_flag = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address 
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t5    on t5.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join wms_cre_appro_service_protocol t6
+               on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+       	WHERE
+       		t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+        ORDER BY t4.wms_fina_cre_loan_app desc LIMIT 0, 1
+    </select>
+    
+    <!-- 待办事项查询 -->
+	<select id="getHomePageInfoUp_Request" parameterType="map" resultType="java.util.HashMap">
+	    select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            concat('您有一条单据编号为',t1.bill_code,'的单据待审批') as todo_messge,
+	        t1.bill_status,
+	        (case t1.bill_status when 'D' then '100000' when 'K' then '200000' when 'G' then '400000' when 'HT' then '400000' when 'ET' then '500000'when 'BT' then '500000'  end ) as message_code,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            date_format(IFNULL(t1.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp 
+      from wms_cre_credit_head t1,v_customer_houseinfo t2
+        <where>
+        	 t1.version_number='3'
+             and t1.enable_flag = '1'
+             and t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id
+             and ((FIND_IN_SET(t1.salesman_dept_id,#{childrendeptfchc})>0 and t1.bill_status ='D' and ((t2.claim_user_id=#{salesman_id} and t2.is_claim=1) or t2.is_claim!=1))
+           		  or (FIND_IN_SET(t1.salesman_dept_id,#{childrendeptfksp})>0 and t1.bill_status ='K')
+       			  )
+        </where>
+	</select>
+	
+	<!-- 进展中数据查询 -->
+	<select id="getHomePageInfoProUp_Request" parameterType="map" resultType="java.util.HashMap">
+	    select 
+	        t.wms_cre_credit_head_id,
+	        t.bill_code,
+	        t.bill_status,
+	        t.bill_status_name,
+	        t.create_timestamp,
+	        t.salesman_id,
+	        t.salesman_code,
+	        t.vehicle_evaluation_price,
+	        t.customer_name,
+	        t.salesman_name,
+	        t.attachment_address,
+	        t.store_value from 
+	    ( 
+		    select
+	            t1.wms_cre_credit_head_id,
+	            t1.bill_code,
+		        t1.bill_status,
+	            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+	            and wms_sys_dict_id = 131) as bill_status_name,
+	            date_format(IFNULL(t1.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+	            date_format(IFNULL(t1.create_timestamp, t1.create_timestamp),'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+	            t1.salesman_id,
+	            t1.salesman_code,
+	            (SELECT (case  when vehicle_evaluation_price is NULL then '' else CONCAT(IFNULL(vehicle_evaluation_price,''),'万元') end)
+	 				from wms_cre_housing_trial_assessment where wms_cre_credit_head_id=t1.wms_cre_credit_head_id) as vehicle_evaluation_price,
+	            (SELECT customer_name from wms_cre_credit_line_customer_change_head where wms_cre_credit_head_id=t1.wms_cre_credit_head_id and is_major=1 ) as customer_name,
+	           	concat(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+	           	IFNULL((select  b.attachment_address 
+		              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+		                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+		             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+									and  b.wms_cre_credit_head_id=t1.wms_cre_credit_head_id), '') as attachment_address,
+	            (SELECT
+					(
+						CASE
+						WHEN d.dept_level &gt; 5 THEN 
+							(
+								SELECT
+									dept_name
+								FROM
+									sys_dept
+								WHERE
+									dept_id = d.dept_pid
+								AND enable_flag = 1
+							)
+						WHEN d.dept_level = 5 THEN
+							d.dept_name
+						WHEN d.dept_level &lt; 5 THEN
+							d.dept_name
+						END
+					) AS store_value
+				FROM
+					sys_dept d
+				WHERE
+					d.dept_id = t1.salesman_dept_id) as store_value
+	        from wms_cre_credit_head t1<!-- ,sys_post p-->
+	        left join (select t2.wms_cre_credit_head_id, t2.customer_name, t2.is_major, t2.wms_cre_credit_line_customer_change_head_id,t5.claim_user_id
+              from wms_cre_credit_line_customer_change_head t2, wms_cre_customer_change_line_houseinfo t5
+             where t2.wms_cre_credit_line_customer_change_head_id = t5.wms_cre_credit_line_customer_change_head_id) t2
+	          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id 
+	         and t2.is_major = '1'
+	        <where>
+	            t1.enable_flag = '1'
+	            and t1.bill_status in('B','BT','C','D','E','ET','EH','F','G','H','HT','I','K','KT')
+	            <!-- 组织架构变更 -->
+	            and (FIND_IN_SET(t1.salesman_dept_id,#{childrendept})>0)
+	            and t1.version_number='3'
+	            and t1.cre_type='2'
+	            <if test="create_user_id != null">
+                and (t1.house_appro_user_id = #{create_user_id}
+                 or t1.nullify_user_id = #{create_user_id}
+                 or (#{is_fchc} = '1' and t1.bill_status="D" and t2.claim_user_id=#{create_user_id})
+                 or (#{is_fksp} = '1')
+                )
+            	</if>
+	        </where>
+	        <if test="sortname != null and sortorder !=null">
+	            ORDER BY ${sortname} ${sortorder}
+	        </if>
+	        <if test="offset != null and pagesize !=null">
+	            LIMIT ${offset} , ${pagesize}
+	        </if>
+        ) t
+	</select>
+	
+	<!-- 获取放款审批信息列表 -->
+    <select id="getWmsMessageList" parameterType="map" resultType="map">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131) as bill_status_name,
+            IFNULL(t3.create_user_name, t1.salesman_name) as create_user_name,
+            DATE_FORMAT(IFNULL(t3.create_timestamp, t1.create_timestamp), '%Y-%m-%d') as create_timestamp,
+            DATE_FORMAT(IFNULL(t3.create_timestamp, t1.create_timestamp), '%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            t1.last_update_user_id,
+            DATE_FORMAT(t1.last_update_timestamp, '%Y-%m-%d') as last_update_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+            '1' as is_show_button_flag,
+            IFNULL(t4.attachment_address, '') as attachment_address,
+            IF(t2.mobile_telephone1 is null, '', CONCAT('*******', SUBSTRING(t2.mobile_telephone1, 8))) as mobile_telephone1,
+            IF(t5.principal_lower is null, '', CONCAT(format(t5.principal_lower, 2), '元')) as principal_lower
+        from wms_cre_credit_head t1 
+        left join (select t2.wms_cre_credit_head_id, 
+				          t2.customer_name, 
+				          t2.is_major, 
+				          t2.mobile_telephone1,
+				          t2.mobile_telephone2
+			         from wms_cre_credit_line_customer_change_head t2, wms_cre_customer_change_line_houseinfo t5
+			        where t2.wms_cre_credit_line_customer_change_head_id = t5.wms_cre_credit_line_customer_change_head_id) t2
+          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id 
+         and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id and t3.enable_flag = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join (
+            select wms_cre_credit_head_id,
+                   principal_lower 
+              from wms_cre_appro_borrow_protocol
+        ) t5    on t1.wms_cre_credit_head_id = t5.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.bill_status = 'K'
+            and t1.version_number = '3'
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}
+                  or t2.mobile_telephone1 like '${many_column_like}'
+                  or t2.mobile_telephone2 like '${many_column_like}') 
+            </if>
+            <if test="create_user_city_code != null">
+                 and (FIND_IN_SET(t1.salesman_dept_id,#{childrendept})>0)
+            </if>
+        </where>
+        <if test="sortname != null and sortorder != null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+
+    
+    <!-- 根据主键查询 -->
+    <select id="get" parameterType="Integer" resultType="WmsCreCreditHead">
+        select *
+          from wms_cre_credit_head
+         where wms_cre_credit_head_id = #{wms_cre_credit_head_id} and enable_flag=1
+    </select>
+    
+    <!--  房产代办件列表查询(Version 2.0) -->
+    <select id="getwmsHousingCertificatesList_Up" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.credit_purpose,
+            t1.max_repayment_limit_per_month,
+            t1.credit_limit,
+            t1.max_repayment_time_limit,
+            t1.enter_file_way,
+            t1.payroll_payment_way,
+            t1.data_type,
+            t1.is_complete,
+            t1.credit_limit,
+            t1.reference_type,
+            t1.is_other_corporation_done,
+            t1.is_to_public_stream,
+            t1.is_house_certificate_original,
+            t1.is_check,
+            t1.person_condition,
+            t1.salesman_id,
+            t1.salesman_code,
+            t1.salesman_name,
+            t1.city,
+            t1.cre_type,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            t1.water_appro_user_id,
+            t1.water_appro_user_name,
+            date_format(t1.water_appro_timestamp,'%Y-%m-%d') as water_appro_timestamp,
+            t1.water_appro_result,
+            t1.info_appro_user_id,
+            t1.info_appro_user_name,
+            date_format(t1.info_appro_timestamp,'%Y-%m-%d') as info_appro_timestamp,
+            t1.info_appro_result,
+            t1.phone_appro_user_id,
+            t1.phone_appro_user_name,
+            date_format(t1.phone_appro_timestamp,'%Y-%m-%d')as phone_appro_timestamp,
+            t1.phone_appro_result,
+            t1.certificate_appro_user_id,
+            t1.certificate_appro_user_name,
+            date_format(t1.certificate_appro_timestamp,'%Y-%m-%d') as certificate_appro_timestamp,
+            t1.certificate_appro_result,
+            IFNULL(t3.create_user_id,t1.salesman_id) as create_user_id,
+            IFNULL(t3.create_user_name,t1.salesman_name) as create_user_name,
+            date_format(IFNULL(t3.create_timestamp, t1.create_timestamp),'%Y-%m-%d') as create_timestamp,
+            t1.last_update_user_id,
+            date_format(t1.last_update_timestamp,'%Y-%m-%d') as last_update_timestamp,
+            t1.enable_flag,
+            t1.is_link_repeat,
+            t1.profession_type,
+            t1.is_verify,
+            t1.house_appro_result,
+            t1.cre_loan_type,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.cre_loan_type
+            and wms_sys_dict_id = 75)as cre_loan_type_name,
+            t1.loan_interest_rate,
+            t2.wms_cre_credit_line_customer_change_head_id,
+            t2.wms_cre_credit_head_id,
+            t2.wms_cus_customer_head_id,
+            t2.customer_code,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t2.customer_ever_name,
+            t2.customer_category,
+            t2.gender,
+            t2.max_degree,
+            date_format(t2.birthday,'%Y-%m-%d') as birthday,
+            t2.id_card,
+            t2.province,
+            t2.city,
+            t2.district,
+            t2.address_more,
+            t2.has_children,
+            t2.children_name,
+            t2.children_address,
+            t2.children_telephone,
+            t2.has_married,
+            t2.has_house,
+            t2.current_address_province,
+            t2.current_address_city,
+            t2.current_address_district,
+            t2.current_address_more,
+            t2.post_code,
+            t2.fixed_telephone,
+            t2.mobile_telephone1,
+            t2.service_password1,
+            t2.mobile_telephone2,
+            t2.service_password2,
+            t2.personal_year_income,
+            t2.customer_email,
+            t2.credit_card_limit,
+            t2.common_occupants,
+            t2.status,
+            t2.create_user_id,
+            t2.create_user_name,
+            t2.last_update_user_id,
+            date_format(t2.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp,
+            t2.enable_flag,
+            t1.is_review_back,
+            t1.water_appro_result_page,
+            t1.info_appro_result_page,
+            t1.phone_appro_result_page,
+            t1.certificate_appro_result_page,
+            t1.house_appro_result_page,
+            t1.salesman_shortcode,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name,"/",t1.salesman_shortcode) as salesman_name_str,
+            (case when t1.create_timestamp &lt; #{hprocess_time} then '1' else '2' end) as edition_num,
+            (SELECT CONCAT(house_address_province,house_address_city,house_address_district,house_address_more)from wms_cre_customer_change_line_houseinfo where wms_cre_credit_line_customer_change_head_id=t2.wms_cre_credit_line_customer_change_head_id) as house_address, 
+            (SELECT  vehicle_evaluation_price  from wms_cre_housing_trial_assessment  where wms_cre_credit_head_id =t1.wms_cre_credit_head_id) as vehicle_evaluation_price,
+            '房贷产品' as product_type
+        from wms_cre_credit_head t1 
+        left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            and t1.create_user_city_code = #{create_user_city_code}
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            and t1.enable_flag = '1'
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+            <if test="mobile_telephone != null">
+                and (t2.mobile_telephone1 like '${mobile_telephone}' or
+                t2.mobile_telephone2 like '${mobile_telephone}')
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}) 
+            </if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 房产核查列表查询 -->
+    <select id="getWmsHousingCertificatesList_RequestUp" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            ifnull(t1.bill_code, '') as bill_code,
+            ifnull(t1.bill_status, '') as bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131) as bill_status_name,
+            date_format(t1.create_timestamp, '%Y-%m-%d') as create_timestamp,
+            date_format(t1.create_timestamp, '%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            IFNULL(t2.customer_name, '') as customer_name,
+            ifnull(t1.salesman_shortcode, '') as salesman_code,
+            ifnull(t1.create_user_city_code, '') as create_user_city_code,
+            CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+            IF(t2.mobile_telephone1 is null, '', t2.mobile_telephone1) as mobile_telephone1,
+            ifnull(t7.house_address, '') as house_address,
+            ifnull(t7.community_name, '') as community_name,
+            IF(t6.vehicle_evaluation_price is null, '', CONCAT(t6.vehicle_evaluation_price, '万元')) as vehicle_evaluation_price,
+            ifnull(t4.attachment_address, '') as attachment_address,
+            #v2.1.0
+            IF(t7.is_claim = 0,'1','0') AS button_claim,#认领按钮
+			IF(t7.is_claim = 1,'1','0') AS button_check,#核查按钮
+			IF(t7.is_claim = 1,'1','0') AS button_revoke,#撤销按钮
+			IF(t7.is_claim = 1,'1','0') AS button_void #作废按钮
+        from wms_cre_credit_head t1 
+        
+        left join (SELECT
+                   b.wms_cre_credit_head_id, 
+                   ifnull(b.id_card, '') as id_card, 
+                   ifnull(b.customer_name, '') as customer_name, 
+                   ifnull(b.mobile_telephone1, '') as mobile_telephone1, 
+                   ifnull(b.mobile_telephone2, '') as mobile_telephone2
+               from  wms_cre_credit_line_customer_change_head b
+              where 
+               b.is_major = '1'and  b.enable_flag = '1') t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+        
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id and t3.enable_flag = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address 
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+                      from wms_cre_housing_apply_att t where data_detail_name in (846,1204,1205)  GROUP BY wms_cre_credit_head_id) a,wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join wms_cre_housing_trial_assessment t6 on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+        INNER JOIN (SELECT CONCAT(ifnull(a.house_address_province, ''), ifnull(a.house_address_city, ''), ifnull(a.house_address_district, ''),ifnull( a.house_address_more, '')) as house_address,
+                   ifnull(a.community_name, '') as community_name, 
+                   b.wms_cre_credit_head_id,
+                   #v2.1.0
+				   IFNULL(a.is_claim,'0') AS is_claim
+              from wms_cre_customer_change_line_houseinfo a, wms_cre_housing_customer_house b
+              where a.wms_cre_customer_change_line_houseinfo_id = b.wms_cre_customer_change_line_houseinfo_id 
+			  and a.enable_flag = '1' 
+			  #v2.1.0
+			  <if test="operation_type == null or operation_type == ''">
+			  	AND (IFNULL(a.is_claim,'0') = 0 OR claim_user_id = #{salesman_id})
+			  </if>
+			  <if test="operation_type == '2'.toString()">
+			  	AND IFNULL(a.is_claim,'0') = 0
+			  </if>
+			  <if test="operation_type == '1'.toString()">
+			  	AND claim_user_id = #{salesman_id}
+			  </if>
+			  
+			  ) t7 on t1.wms_cre_credit_head_id = t7.wms_cre_credit_head_id
+        <where>
+             t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.version_number = '3'
+            <!-- 因新流程影响需要添加此条件排除核查完毕的单据 
+            and t1.house_appro_result is null-->
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="id_card != null">
+                and t2.id_card like #{id_card}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            <if test="bill_code != null">
+                and t1.bill_code like '${bill_code}'
+            </if>
+            <if test="customer_name != null">
+                and t2.customer_name like '${customer_name}'
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}) 
+            </if>
+            <!-- 权限控制 -->
+			<if test="childrendept != null">
+				and (FIND_IN_SET(t1.salesman_dept_id, #{childrendept}) > 0)
+			</if>
+        </where>
+        <if test="sortname != null and sortorder !=null">
+            ORDER BY button_claim ASC,${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize !=null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+   <!-- 房产抵押列表查询 -->
+    <select id="searchHouseLoanListUp" parameterType="map" resultType="java.util.HashMap">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131) as bill_status_name,
+            IFNULL(t3.create_user_name,t1.salesman_name) as create_user_name,
+            DATE_FORMAT(t1.create_timestamp, '%Y-%m-%d') as create_timestamp,
+            DATE_FORMAT(t1.create_timestamp, '%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            t1.last_update_user_id,
+            DATE_FORMAT(t1.last_update_timestamp, '%Y-%m-%d') as last_update_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+            (case when (#{is_fchc} = '1'and t1.house_appro_user_id = #{create_user_id} and t1.bill_type ="01") then '1'  else '0' end) as is_show_button_flag,
+            IFNULL(t4.attachment_address, '') as attachment_address, 
+            (SELECT CONCAT(IFNULL(house_address_province, ''), IFNULL(house_address_city, ''), IFNULL(house_address_district, ''), IFNULL(house_address_more, '')) from wms_cre_customer_change_line_houseinfo where wms_cre_credit_line_customer_change_head_id=t2.wms_cre_credit_line_customer_change_head_id LIMIT 0, 1) as house_address_more,
+            <!--IFNULL((CASE T1.bill_status WHEN 'L' then '' ELSE CONCAT(t6.vehicle_evaluation_price, '万元') end), '') as vehicle_evaluation_price,-->
+            IF(t6.vehicle_evaluation_price is null, '', CONCAT(t6.vehicle_evaluation_price, '万元')) as vehicle_evaluation_price,
+            IF(t1.appro_limit is null, '', CONCAT(FORMAT(t1.appro_limit, 2), '万元')) as appro_limit,
+            IF(t8.principal_lower is null, '', CONCAT(FORMAT(t8.principal_lower, 2), '元')) as principal_lower,
+            (case  t1.bill_status when 'BT' then '1' when 'ET' then '1' else '0' end) as is_back_flag,
+            IFNULL(
+                (CASE  
+                     WHEN t1.bill_status like'%T' then IFNULL((SELECT approval_advice 
+                                    from wms_cre_housing_approval_info 
+                                   where approval_type = 2 
+                                     and enable_flag = 1 
+                                     and wms_cre_credit_head_id = t1.wms_cre_credit_head_id 
+                                ORDER BY approval_time DESC 
+                                   LIMIT 0, 1), '') 
+                     ELSE '' end), '') as complete_idea
+            
+        from wms_cre_credit_head t1 
+        left join (select t2.wms_cre_credit_head_id, t2.customer_name, t2.is_major, t2.wms_cre_credit_line_customer_change_head_id,t5.claim_user_id
+              from wms_cre_credit_line_customer_change_head t2, wms_cre_customer_change_line_houseinfo t5
+             where t2.wms_cre_credit_line_customer_change_head_id = t5.wms_cre_credit_line_customer_change_head_id) t2
+          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id 
+         and t2.is_major = '1'
+        left join wms_cre_housing_file_info t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id and t3.enable_flag = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address 
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t where data_detail_name in (846,1204,1205)  GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join wms_cre_housing_trial_assessment t6 
+               on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+<!--        left join (select MAX(a.wms_fina_cre_loan_app), a.wms_cre_credit_head_id, b.create_user_id, b.loan_approval_user_id 
+		             FROM wms_fina_cre_loan_app a, wms_fina_cre_loan_app b 
+		            where a.wms_fina_cre_loan_app = b.wms_fina_cre_loan_app 
+		         GROUP BY wms_cre_credit_head_id) t7 
+		       on t1.wms_cre_credit_head_id = t7.wms_cre_credit_head_id -->
+		left join sys_dept d on dept_id = #{salesman_dept_id}
+		left join wms_cre_appro_borrow_protocol t8
+               on t1.wms_cre_credit_head_id = t8.wms_cre_credit_head_id and t8.enable_flag=1
+        <where>
+            t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.version_number = '3'
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                 or t2.customer_name like #{many_column_like} 
+                 or t1.salesman_name like #{many_column_like})
+            </if>
+            <if test="create_user_id != null">
+                and (t1.house_appro_user_id = #{create_user_id}
+                 or t1.nullify_user_id = #{create_user_id}
+                 or (#{is_fchc} = '1' and t1.bill_status="D" and t2.claim_user_id=#{create_user_id})
+                 or (#{is_fksp} = '1')
+                )
+            </if>
+			<if test="childrendept != null">
+                and (FIND_IN_SET(t1.salesman_dept_id,#{childrendept})>0)
+            </if> 
+            <if test="dept_id != null and dept_id != ''">
+               and  (t1.salesman_dept_id = #{dept_id}
+               		or t1.salesman_dept_id in (select dept_id from sys_dept where dept_pid = #{dept_id}))
+            </if>
+            <if test="team_id != null and team_id != ''">
+               and  t1.salesman_dept_id =  #{team_id}
+            </if>
+            <if test="application_time != null">
+                and t1.create_timestamp > DATE_SUB(CURDATE(), INTERVAL ${application_time} MONTH)
+            </if>
+        </where>
+        <if test="sortname != null and sortorder != null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 获取补录初始化信息 -->
+    <select id="dispMakeUpInfo" parameterType="map" resultType="map">
+        select t1.wms_cre_credit_head_id,
+               replace(CAST(t1.credit_limit AS DECIMAL(10,2)),'.00','') as credit_limit,
+               t1.max_repayment_time_limit,
+               IFNULL(t3.city, '') as city,
+               t2.customer_name,
+               t2.customer_age,
+               t2.mobile_telephone1,
+               t3.community_name,
+               t3.houses_number,  
+               t3.house_type,
+                replace(CAST(t3.house_building_area AS DECIMAL(10,2)),'.00','') as house_building_area,
+               t3.house_address_more,
+               t3.wms_cre_customer_change_line_houseinfo_id,
+               IFNULL(t3.is_compound, '') as is_compound,
+               IFNULL(t3.house_age, '') as house_age,
+               IFNULL(t3.house_remark, '') as house_remark,
+               IFNULL(t3.house_buy_date, '') as house_buy_date,
+               (case when t1.bill_status in ('BT','ET') then "1" else "0" end ) as is_back,
+               (case when t1.bill_status in ('A','BT','ET') then "0" else "1" end ) as is_readonly,
+               t1.salesman_id,
+               t1.mort_flag
+          from wms_cre_credit_head t1
+     left join wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.is_major = '1'
+     left join wms_cre_customer_change_line_houseinfo t3 on t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id
+		 where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+      order by t1.wms_cre_credit_head_id, t3.wms_cre_customer_change_line_houseinfo_id desc        
+		 limit 0, 1
+    </select>
+    
+    <!-- 提交信息前校验单据状态 -->
+    <select id="isSureCertificateUp" parameterType="map" resultType="map">
+        select 
+        	   (case when #{is_readonly} = '1' then '1' when t1.salesman_id = #{create_user_id} then '1' else '0' end) as is_sure_certificate_flag,
+               (case when t1.bill_status in ('D') then '1' else '0' end) as is_sure_handle_certificates_flag,
+               (case when t1.bill_status in ('I') then '1' else '0' end) as is_sure_loan_application_flag,
+               (case when t1.bill_status in ('K') then '1' else '0' end) as is_sure_loan_approval_flag
+          from wms_cre_credit_head t1
+         where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+    </select>
+    
+    <!-- 获取放款申请信息列表 -->
+    <select id="searchLoanApplicationListUp" parameterType="map" resultType="map">
+        select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+                and wms_sys_dict_id = 131) as bill_status_name,
+            t1.salesman_name as create_user_name,
+            DATE_FORMAT(t1.create_timestamp, '%Y-%m-%d') as create_timestamp,
+            DATE_FORMAT(t1.create_timestamp, '%Y-%m-%d %H:%i:%s') as create_timestamp_order,
+            t1.last_update_user_id,
+            DATE_FORMAT(t1.last_update_timestamp, '%Y-%m-%d') as last_update_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            t1.create_user_city_code,
+            CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+            '1' as is_show_button_flag,
+            IFNULL(t4.attachment_address, '') as attachment_address,
+            IF(t2.mobile_telephone1 is null, '', CONCAT('*******', SUBSTRING(t2.mobile_telephone1, 8))) as mobile_telephone1,
+            IF(t1.appro_limit is null, '', CONCAT(FORMAT(t1.appro_limit, 2), '万元')) as appro_limit,
+            IFNULL(t5.advice, '') as advice
+        from wms_cre_credit_head t1 
+        left join (select t2.wms_cre_credit_head_id, 
+				          t2.customer_name, 
+				          t2.is_major, 
+				          t2.mobile_telephone1,
+				          t2.mobile_telephone2
+			            from wms_cre_credit_line_customer_change_head t2, wms_cre_customer_change_line_houseinfo t5
+			           where t2.wms_cre_credit_line_customer_change_head_id = t5.wms_cre_credit_line_customer_change_head_id) t2
+          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id 
+         and t2.is_major = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join (
+            select max(b.wms_fina_cre_loan_app) as wms_fina_cre_loan_app, 
+                   a.wms_cre_credit_head_id,
+                   a.loan_approval_result, 
+                   if(a.loan_approval_advice is null, '无', a.loan_approval_advice) as advice
+              from wms_fina_cre_loan_app a, wms_fina_cre_loan_app b 
+             where a.wms_fina_cre_loan_app = b.wms_fina_cre_loan_app 
+               and a.loan_approval_result = 2
+          GROUP BY b.wms_cre_credit_head_id) t5 
+                on t1.wms_cre_credit_head_id = t5.wms_cre_credit_head_id
+        <where>
+            t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.bill_status in ('E', 'F')
+         	and t1.version_number = '2'
+         	and t1.wms_cre_credit_group_id is null 
+            <if test="bill_status != null">
+                and t1.bill_status = #{bill_status}
+            </if>
+            <if test="create_user_city_code != null">
+                and t1.create_user_city_code = #{create_user_city_code}
+            </if>
+            <if test="idList != null">
+                and t1.wms_cre_credit_head_id in
+                <foreach collection="idList" item="wms_cre_credit_head_id"
+                    index="index" open="(" separator="," close=")">
+                    #{wms_cre_credit_head_id}
+                </foreach>
+            </if>
+            <if test="many_column_like != null">
+                and (t1.salesman_shortcode like #{many_column_like} 
+                  or t2.customer_name like #{many_column_like} 
+                  or t1.salesman_name like #{many_column_like}
+                  or t2.mobile_telephone1 like '${many_column_like}'
+                  or t2.mobile_telephone2 like '${many_column_like}') 
+            </if>
+            <if test="application_time != null">
+                and IFNULL(t3.create_timestamp, t1.create_timestamp) > DATE_SUB(CURDATE(), INTERVAL ${application_time} MONTH)
+            </if>
+        </where>
+        <if test="sortname != null and sortorder != null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 获取放款初始化信息 -->
+    <select id="getLoanApprovalInitiInfoUp" parameterType="map" resultType="map">
+        select 
+			t1.wms_cre_credit_head_id,
+			IFNULL(IFNULL(t6.house_building_area, t4.house_building_area), '') as house_building_area,
+			IFNULL(t5.payment_contract_type, '2') as payment_contract_type,
+			IFNULL(IFNULL(t5.borrow_deadline, t1.max_repayment_time_limit), 3) as borrow_deadline,
+			IFNULL(IFNULL(FORMAT(t5.borrow_interest, 2), FORMAT(t1.loan_interest_rate, 2)), '1.49') as borrow_interest,
+			REPLACE(IFNULL(t5.liquidated_damages, format(t1.appro_limit * 10000 * 0.005, 2)), ',', '') as liquidated_damages,
+			
+			IFNULL(t6.fees, (case IFNULL(t5.payment_contract_type, '2') when '1' then 
+                                                                      case IFNULL(IFNULL(t5.borrow_deadline, t1.max_repayment_time_limit), 3) when '3' then '3' 
+                                                                      when '12' then '3'
+                                                                      when '6' then '5'
+                                                                      else '3'
+                                                                      end
+                                                        when '2' then '2.5' end)) as fees,
+			
+			IFNULL(t6.it_cost_fee, 100) as it_cost_fee,
+			IFNULL(t6.expedited_fee, 200) as expedited_fee,
+			IFNULL(t5.borrow_begin_date, CURDATE()) as borrow_begin_date,
+			
+			IFNULL(t5.borrow_end_date, 
+			    DATE_SUB((DATE_ADD(CURDATE(), INTERVAL IFNULL(IFNULL(t5.borrow_deadline, t1.max_repayment_time_limit), 3) MONTH)), INTERVAL 1 day)
+			) as borrow_end_date,
+			
+			REPLACE(FORMAT(t1.appro_limit * 10000 * IFNULL(t5.borrow_interest, 1.49) / 100, 2), ',', '') as deduction_of_interest,
+			IFNULL(FORMAT(t5.principal_lower, 2), FORMAT(t1.appro_limit * 10000, 2)) as principal_lower,
+			IFNULL(FORMAT(t5.loan_amount, 2), '') as loan_amount,
+			IFNULL(t6.notary_is_finish, 1) as notary_is_finish,
+			IFNULL(t6.he_is_finish, 1) as he_is_finish,
+			IFNULL(t6.remark, '') as remark
+	      from wms_cre_credit_head t1
+	 left join (select t2.wms_cre_credit_head_id, 
+	                   t3.house_building_area 
+	              from wms_cre_credit_line_customer_change_head t2, wms_cre_customer_change_line_houseinfo t3 
+	             where t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id
+	               and t2.is_major = '1') t4
+			on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id
+	 left join (select a.wms_cre_credit_head_id, 
+				       a.payment_contract_type, 
+				       a.borrow_deadline, 
+				       IFNULL(a.borrow_interest, 0) + IFNULL(b.service_cost_month, 0) as borrow_interest, 
+				       a.principal_lower, 
+				       a.borrow_begin_date, 
+				       a.borrow_end_date, 
+				       a.loan_amount,
+				       a.liquidated_damages 
+		          from wms_cre_appro_borrow_protocol a, wms_cre_appro_service_protocol b 
+		         where a.wms_cre_credit_head_id = b.wms_cre_credit_head_id 
+		           and b.enable_flag = '1'
+		           and a.enable_flag = '1'
+		      ORDER BY a.wms_cre_appro_id desc) t5
+	        on t1.wms_cre_credit_head_id = t5.wms_cre_credit_head_id
+	 left join (
+	        select x.wms_fina_cre_loan_app, x.wms_cre_credit_head_id,
+			REPLACE(FORMAT(y.it_cost_fee, 0), ',', '') as it_cost_fee,
+                   REPLACE(FORMAT(y.expedited_fee, 0), ',', '') as expedited_fee,
+                   REPLACE(FORMAT(y.fees, 0), ',', '') as fees,
+                   y.notary_is_finish,
+                   y.he_is_finish,
+                   y.remark,
+                   FORMAT(y.house_area, 2) as house_building_area
+			  from
+				(select max(a.wms_fina_cre_loan_app) as wms_fina_cre_loan_app, 
+										 a.wms_cre_credit_head_id
+				   from wms_fina_cre_loan_app a
+				  where a.loan_approval_result = 2
+			   GROUP BY a.wms_cre_credit_head_id) x, wms_fina_cre_loan_app y
+			 where x.wms_fina_cre_loan_app = y.wms_fina_cre_loan_app
+	        ) t6
+            on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+		 where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+    </select>
+    
+    <!-- 查询房贷单据审批详情中图片list -->
+    <select id="selectApprovalAttList" parameterType="int" resultType="map">
+        select b.attachment_old_name, 
+		       b.attachment_new_name, 
+		       CONCAT('wms/getImg.do?url=', b.attachment_address) as attachment_address_complete, 
+		       b.attachment_address 
+		  from wms_fina_cre_loan_app a, 
+		       wms_fina_cre_loan_app_att b 
+		 where a.wms_fina_cre_loan_app = b.wms_fina_cre_loan_app_id
+		   and a.wms_cre_credit_head_id = #{_wms_cre_credit_head_id}
+		 union
+		select b.attachment_old_name, 
+		       b.attachment_new_name, 
+		       CONCAT('wms/getImg.do?url=', b.attachment_address) as attachment_address_complete, 
+		       b.attachment_address 
+		  from wms_cre_housing_apply_att b 
+		 where b.wms_cre_credit_head_id = #{_wms_cre_credit_head_id}
+    </select>
+    
+    <!-- 根据单据id查询房产信息 -->
+    <select id="selectHouseInfoByWmsCreCreditHeadId" parameterType="map" resultType="map">
+        SELECT T2.house_building_area FROM wms_cre_credit_line_customer_change_head T1, 
+        								   wms_cre_customer_change_line_houseinfo T2
+		 WHERE T1.wms_cre_credit_line_customer_change_head_id = T2.wms_cre_credit_line_customer_change_head_id
+		   AND T1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+		   AND T1.is_major = '1'
+    </select>
+    
+     <!-- 根据人的id和菜单id获取当前人对当前菜单的权限-->
+    <select id="queryChildrenDeptInfo" parameterType="map" resultType="map">
+        SELECT queryChildrenDeptInfo(#{salesman_id},#{menu_id}) as childrendept;
+    </select>
+    
+    
+     <select id="getListInfoforCreditConfirm" parameterType="map" resultType="java.util.HashMap">
+       SELECT
+			t1.wms_cre_credit_head_id,
+			t1.bill_code,
+			t1.bill_status,
+			(
+				SELECT
+					value_meaning
+				FROM
+					wms_sys_dict_data
+				WHERE
+					value_code = t1.bill_status
+				AND wms_sys_dict_id = 131
+			) AS bill_status_name,
+			CONCAT(t1.salesman_name,t1.salesman_shortcode) as salesman_name,
+			DATE_FORMAT(
+				t1.create_timestamp,
+				'%Y-%m-%d'
+			) AS create_timestamp,
+		
+			DATE_FORMAT(
+				t1.create_timestamp,
+				'%Y-%m-%d %H:%i:%s'
+			) AS create_timestamp_order,
+		
+			DATE_FORMAT(
+				t1.last_update_timestamp,
+				'%Y-%m-%d'
+			) AS last_update_timestamp,
+			IFNULL(t2.customer_name, '') AS customer_name,
+			t2.mobile_telephone1,
+			t3.house_address_province,
+			t3.house_address_city,
+			t3.house_address_district,
+			t3.house_address_more,
+			CONCAT(IFNULL(t3.house_address_province, ''), IFNULL(t3.house_address_city, ''), IFNULL(t3.house_address_district, ''), IFNULL(t3.house_address_more, '')) as house_address,
+			t3.community_name,
+		  	t4.vehicle_evaluation_price,
+		  	IFNULL(
+                (CASE  
+                     WHEN t1.bill_status like'HT' then IFNULL((SELECT approval_advice 
+                                    from wms_cre_housing_approval_info 
+                                   where approval_type = 2 
+                                     and enable_flag = 1 
+                                     and wms_cre_credit_head_id = t1.wms_cre_credit_head_id 
+                                ORDER BY approval_time DESC 
+                                   LIMIT 0, 1), '') 
+                     ELSE '' end), '') as complete_idea
+		FROM
+			wms_cre_credit_head t1
+		LEFT JOIN (
+			SELECT
+				t2.wms_cre_credit_head_id,
+				t2.customer_name,
+				t2.mobile_telephone1,
+				t2.is_major,
+				t2.is_finish,
+				t2.wms_cre_credit_line_customer_change_head_id
+			FROM
+				wms_cre_credit_line_customer_change_head t2,
+				wms_cre_customer_change_line_houseinfo t5
+			WHERE
+				t2.wms_cre_credit_line_customer_change_head_id = t5.wms_cre_credit_line_customer_change_head_id and t2.enable_flag = '1'
+		) t2 ON t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+		AND t2.is_major = '1' 
+		LEFT JOIN v_customer_houseinfo t3 on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id and t3.enable_flag = '1'
+		LEFT JOIN wms_cre_housing_trial_assessment t4 on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id and t4.enable_flag = '1'
+        <where>
+            t1.cre_type = '2'
+            and t1.enable_flag = '1'
+            and t1.version_number = '3'
+            AND t1.salesman_id = #{user_id}
+            AND t1.bill_status in ('C','D','E','F','G','HT')
+            and (t2.is_finish is null or t2.is_finish ='0')
+            <if test="many_column_like != null">
+                and 
+                (
+	                t1.salesman_shortcode like '${many_column_like}' 
+	                 or t2.customer_name like '${many_column_like}' 
+	                 or t2.mobile_telephone1 like '${many_column_like}' 
+	                 or t1.salesman_name like '${many_column_like}'
+                 )
+            </if>
+        </where>
+        <if test="sortname != null and sortorder != null">
+            ORDER BY ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+        
+    <!-- 根据人的贷款主表id查询房贷验房单是否已经保存过-->
+    <select id="getHouseAssessmentState" parameterType="int" resultType="map">
+        SELECT *from wms_cre_housing_check where wms_cre_credit_head_id=#{wms_cre_credit_head_id} and enable_flag=1
+    </select>
+    
+    <!-- 根据人的贷款主表id查看房产评估单填写状态-->
+    <select id="getHousingSpprovalInfo" parameterType="int" resultType="map">
+        SELECT * FROM  wms_cre_housing_approval_info WHERE wms_cre_credit_head_id = #{wms_cre_credit_head_id} and approval_task_code='FCHC' ORDER BY wms_cre_housing_approval_info DESC LIMIT 1
+    </select>
+    
+    <!-- 获取房产评估单基本信息初始化信息 -->
+    <select id="initHouseAssessmentBasicInfoOne" parameterType="map" resultType="map">
+        select t1.wms_cre_credit_head_id,
+ 			   ifnull(t3.customer_name, '') as customer_name,
+ 			   ifnull(t3.community_name, '') as community_name,
+			   t3.house_address,
+			   ifnull(t3.house_building_area, '') as house_building_area,
+			   ifnull(t2.total_floor, '') as total_floor,
+			   ifnull(t2.house_layer, '') as house_layer,
+			   ifnull(t3.house_buy_date, '') as house_buy_date,
+			   ifnull(t3.house_age, '') as building_age,
+			   ifnull(t2.is_mortgage, '0') as is_mortgage,
+			   ifnull(t2.house_lighting, '') as house_lighting,
+			   replace(ifnull(t2.housing_category, ''), ';', ',') as housing_category,
+			   ifnull(t2.decoration_standard, '') as decoration_standard,
+			   ifnull(t2.housing_pattern, '') as housing_pattern,
+			   ifnull(t2.house_usage, '') as house_usage,
+			   ifnull(t2.house_occupancy_rate, '') as house_occupancy_rate,
+			   ifnull(t2.is_active, '') as is_active,
+			   ifnull(t2.marital_status, '') as marital_status,
+			   ifnull(t2.online_fold, '') as online_fold,
+			   ifnull(t2.rental_price, '') as rental_price,
+			   ifnull(t2.house_transaction_price, '') as house_transaction_price
+          from wms_cre_credit_head t1 
+     left join wms_cre_housing_check t2
+		    on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t2.enable_flag = '1'
+	 left join (select a.wms_cre_credit_head_id, 
+					   a.customer_name, 
+					   b.community_name, 
+					   b.house_age,
+					   b.house_buy_date,
+				       concat(ifnull(b.house_address_province, ''), ifnull(b.house_address_city, ''), ifnull(b.house_address_district, ''), ifnull(b.house_address_more, '')) as house_address, 
+					   b.house_building_area 
+				   from wms_cre_credit_line_customer_change_head a
+			  left join wms_cre_customer_change_line_houseinfo b 
+			         on a.wms_cre_credit_line_customer_change_head_id = b.wms_cre_credit_line_customer_change_head_id) t3
+            on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+         where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+         limit 0, 1
+    </select>
+    
+    <!-- 获取房产评估单房屋信息初始化信息 -->
+    <select id="initHouseAssessmentBasicInfoTwo" parameterType="map" resultType="map">
+            select t1.wms_cre_credit_head_id,
+	           ifnull(t2.housing_towards, '') as housing_towards,
+			   ifnull(t2.residential_manage, '') as residential_manage,
+			   ifnull(t2.facilities, '') as facilities,
+			   ifnull(t2.co_habitation, '') as co_habitation,
+			   ifnull(t2.residential_environ, '') as residential_environ,
+			   ifnull(t2.house_cleanliness, '') as house_cleanliness,
+			   ifnull(t2.remark, '') as remark
+       from wms_cre_credit_head t1 
+	   left join wms_cre_housing_check t2 
+	         on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+		  where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+		  limit 0, 1
+        <!-- select t1.wms_cre_credit_head_id,
+	           ifnull(t2.housing_towards, '') as housing_towards,
+			   ifnull(t2.residential_manage, '') as residential_manage,
+			   ifnull(t2.facilities, '') as facilities,
+			   ifnull(t2.co_habitation, '') as co_habitation,
+			   ifnull(t2.residential_environ, '') as residential_environ,
+			   ifnull(t2.house_cleanliness, '') as house_cleanliness,
+			   ifnull(if(t2.remark is null or t2.remark = '', t3.remark , t2.remark), '') as remark
+       from wms_cre_credit_head t1 
+  left join wms_cre_housing_check t2 
+         on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+  left join (select a.wms_cre_credit_head_id, b.house_remark as remark 
+               from wms_cre_credit_line_customer_change_head a, wms_cre_customer_change_line_houseinfo b 
+              where a.wms_cre_credit_line_customer_change_head_id = b.wms_cre_credit_line_customer_change_head_id) t3
+         on t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+	    and t1.enable_flag = '1' and t2.enable_flag = '1'
+	  where t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+	  limit 0, 1 -->
+    </select>
+    
+    
+    <select id="getBizProgressDocuments" parameterType="map" resultType="java.util.HashMap">
+        SELECT  
+      		IFNULL(t2.customer_name,"") as customer_name,
+			if(
+				t1.wms_cre_credit_group_id IS NULL,
+				ifnull(replace(replace(format(cast((t1.credit_limit) as decimal), 2), ',', ''), '.00', ''),''), 
+				ifnull(replace(replace(format(cast((t1.appro_limit) as decimal), 2), ',', ''), '.00', ''),'')
+			) as loan_amount,		
+			date_format(t1.create_timestamp,'%Y-%m-%d') as apply_date,
+			t1.bill_status,
+			(select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+            and wms_sys_dict_id = 131)as bill_status_name,
+            '1' as bill_status_colour,
+			t1.wms_cre_credit_head_id  
+		from 
+			wms_cre_credit_head t1 
+		LEFT JOIN 
+			wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id 
+
+		LEFT JOIN 
+			wms_cre_appro_borrow_protocol t3 ON t3.wms_cre_credit_head_id=t1.wms_cre_credit_head_id and t3.enable_flag=1
+		where
+			t1.enable_flag=1 
+			and t2.is_major=1
+			and t1.bill_status in ('B', 'BT', 'C', 'D', 'E', 'EZ', 'EH', 'F', 'G', 'H', 'HT', 'I', 'K', 'KT') 
+			and t1.version_number='3'
+			and t1.create_user_id = #{user_id}
+		ORDER BY t1.last_update_timestamp DESC
+		<if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+    </select>
+    
+    
+     <select id="getBizProgressNumber" parameterType="int" resultType="int">
+        SELECT count(*) FROM (
+	        SELECT 
+	         	COUNT(t1.wms_cre_credit_head_id)
+			FROM 
+				wms_cre_housing_approval_info t1
+			LEFT JOIN 
+				wms_cre_credit_head t2
+			ON 
+				t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id
+	
+			WHERE 
+				t2.create_user_id=#{user_id}
+			AND 
+				approval_time  
+			between (select
+	         			last_update_timestamp
+	         		from
+	         			wms_cre_personnel_bill_change
+	         		where	
+						personnel_id = #{user_id}
+					and 
+						enable_flag = 1) 
+			AND 
+				now()
+			GROUP BY 
+				t1.wms_cre_credit_head_id
+		) t
+     </select>
+     
+     <!-- 获取成员单据详细信息 -->
+     <select id="getBizBillDetails" parameterType="map" resultType="map">
+     	SELECT 
+			#cre.wms_cre_credit_head_id,
+			cus.customer_name,
+			DATE_FORMAT(cre.create_timestamp,'%Y-%m-%d') AS apply_date,
+			REPLACE(CAST(
+				IFNULL(cre.credit_limit,0) 
+			AS DECIMAL(10,2)),'.00','')
+			AS appro_limit,
+			cre.bill_status AS bill_status_name
+		FROM wms_cre_credit_head cre
+		INNER JOIN wms_cre_credit_line_customer_change_head cus ON cus.wms_cre_credit_head_id = cre.wms_cre_credit_head_id AND cus.is_major = 1
+		WHERE 
+			cre.enable_flag=1
+			AND cre.cre_type=2
+			AND cre.version_number='3'
+			AND cre.bill_status NOT IN('A')
+			AND cre.salesman_shortcode = RIGHT(#{salesman_name},6)
+			<if test="status_info != null and status_info != '' ">
+				AND cre.bill_status =#{status_info}
+			</if>
+			<!-- 日期不包含日 2016-01 -->
+			<if test="has_day == 0">
+				AND DATE_FORMAT(cre.create_timestamp,'%Y-%m')=#{date_info}
+			</if>
+			<!-- 日期包含日 2016-01-01 -->
+			<if test="has_day == 1">
+				AND DATE_FORMAT(cre.create_timestamp,'%Y-%m-%d')=#{date_info}
+			</if>
+			<if test="customer_name != null">
+				AND cus.customer_name like #{customer_name}
+			</if>
+		ORDER BY apply_date DESC
+		<if test="offset != null and pagesize != null">
+            LIMIT ${offset} , ${pagesize}
+        </if>
+     </select>
+     
+     
+     
+    <!-- 接口编号: WMS_OUT_007 首页、个人、团队等业绩统计 -->
+    <select id="getBizHomePagePerformance" resultType="map" parameterType="map">
+        select <choose>
+        	   	   <when test="is_type != 1">
+        	   	   	   ifnull(replace(replace(format(cast(t6.annual_amount_loans as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_annual_loan,
+        	   	   </when>
+        	   	   <otherwise>
+        	   	       ''  as amount_annual_loan,
+        	   	   </otherwise>
+        	   </choose>
+        	   <choose>
+        	       <when test="is_type == 4">
+        	   	   	   ifnull(replace(replace(format(cast(t7.amount_stock as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as company_amount_stock,
+        	   	   </when>
+        	   	   <otherwise>
+        	   	       ''  as company_amount_stock,
+        	   	   </otherwise>
+        	   </choose>
+			   <choose>
+        	       <when test="is_type == 3">
+        	   	   	   ifnull(replace(replace(format(cast(t7.amount_stock as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as store_amount_stock,
+        	   	   </when>
+        	   	   <otherwise>
+        	   	       ''  as store_amount_stock,
+        	   	   </otherwise>
+        	   </choose>
+        	   <choose>
+        	       <when test="is_type == 2">
+        	   	   	   ifnull(replace(replace(format(cast(t7.amount_stock as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_team_stock,
+        	   	   </when>
+        	   	   <otherwise>
+        	   	       ''  as amount_team_stock,
+        	   	   </otherwise>
+        	   </choose>
+        	   <choose>
+        	       <when test="is_type == 1">
+        	   	   	   ifnull(replace(replace(format(cast(t7.amount_stock as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_stock,
+		  	   	       ifnull(cast(t8.count as char), '0') as refused_num,
+        	   	   </when>
+        	   	   <otherwise>
+        	   	       '' as amount_stock,
+		  	   	       '' as refused_num,
+        	   	   </otherwise>
+        	   </choose>
+		  	   ifnull(replace(replace(format(cast(t3.amount_loans as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans,
+               ifnull(replace(replace(format(cast(t4.amount_loans as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans_total, 
+			   ifnull(cast(t3.number_loans as decimal), '0') as number_loans,
+			   ifnull(cast(t4.number_loans as decimal), '0') as number_loans_total, 
+		   	   ifnull(replace(replace(format(cast(t5.amount_quarterly_roll as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_quarterly_roll
+		  from (select count(*) as number_loans,
+		  			   sum(t33.amount_loans) as amount_loans
+		  	      from (select count(a3.wms_cre_credit_notary_warn_id) as number_loans, 
+			                   sum(a3.appro_limit) as amount_loans 
+			              from wms_cre_credit_notary_warn a3
+			             where a3.bill_type = '01' 
+			               and a3.protocol_date like '${date_info_like}'
+			               and a3.enable_flag = '1'
+			               and a3.is_achievement = '1'
+		                   <if test="dept_info != null">
+		                       and a3.salesman_own_dept_id in (select b1.dept_id 
+						   								         from sys_dept b1 
+						   								        where b1.dept_level_coding 
+						   								         like concat((select b2.dept_level_coding 
+						   								                        from sys_dept b2 
+						   								                       where b2.dept_code = #{dept_info}), '%'))
+		                   </if>
+		                   <if test="dept_in != null">
+		                       and a3.salesman_own_dept_id in ${dept_in}
+		                   </if>
+		                   <if test="salesman_shortcode != null">
+		                       and a3.salesman_shortcode = #{salesman_shortcode}
+		                   </if>
+		              group by ifnull(a3.bill_code_group, uuid())) t33
+				) t3,
+			   (select count(*) as number_loans,
+		  			   sum(t33.amount_loans) as amount_loans
+		  	      from (select count(a3.wms_cre_credit_notary_warn_id) as number_loans, 
+			 				   sum(a3.appro_limit) as amount_loans 
+			 			  from wms_cre_credit_notary_warn a3
+			             where a3.protocol_date like '${date_info_like}'
+			               and a3.enable_flag = '1'
+			               and a3.is_achievement = '1'
+		                   <if test="dept_info != null">
+		                       and a3.salesman_own_dept_id in (select b1.dept_id 
+						   								         from sys_dept b1 
+						   								        where b1.dept_level_coding 
+						   								         like concat((select b2.dept_level_coding 
+						   								                        from sys_dept b2 
+						   								                       where b2.dept_code = #{dept_info}), '%'))
+		                   </if>
+		                   <if test="dept_in != null">
+		                       and a3.salesman_own_dept_id in ${dept_in}
+		                   </if>
+		                   <if test="salesman_shortcode != null">
+		                       and a3.salesman_shortcode = #{salesman_shortcode}
+		                   </if>
+		              group by ifnull(a3.bill_code_group, uuid())) t33
+				) t4,
+			   (select sum(a3.appro_limit) as amount_quarterly_roll 
+	              from wms_cre_credit_notary_warn a3
+	             where a3.protocol_date &gt;= date_format(date_sub(concat(#{date_info}, '-01'), interval 3 month), '%Y-%m-%d')
+                   and a3.protocol_date &lt;= date_sub(concat(#{date_info}, '-01'), interval 1 day)
+                   and a3.enable_flag = '1'
+                   and a3.is_achievement = '1'
+                   and a3.bill_type = '01'
+                   <if test="dept_info != null">
+                       and a3.salesman_own_dept_id in (select b1.dept_id 
+				   								         from sys_dept b1 
+				   								        where b1.dept_level_coding 
+				   								         like concat((select b2.dept_level_coding 
+				   								                        from sys_dept b2 
+				   								                       where b2.dept_code = #{dept_info}), '%'))
+                   </if>
+                   <if test="dept_in != null">
+                       and a3.salesman_own_dept_id in ${dept_in}
+                   </if>
+                   <if test="salesman_shortcode != null">
+                       and a3.salesman_shortcode = #{salesman_shortcode}
+                   </if>
+				) t5,
+			   (select sum(a3.appro_limit) as annual_amount_loans 
+	              from wms_cre_credit_notary_warn a3
+	             where year(a3.protocol_date) = year(str_to_date(#{date_info}, '%Y-%m'))
+	               and a3.enable_flag = '1'
+	               and a3.is_achievement = '1'
+	               and a3.bill_type = '01'
+                   <if test="dept_info != null">
+                       and a3.salesman_own_dept_id in (select b1.dept_id 
+				   								         from sys_dept b1 
+				   								        where b1.dept_level_coding 
+				   								         like concat((select b2.dept_level_coding 
+				   								                        from sys_dept b2 
+				   								                       where b2.dept_code = #{dept_info}), '%'))
+                   </if>
+                   <if test="dept_in != null">
+                       and a3.salesman_own_dept_id in ${dept_in}
+                   </if>
+                   <if test="salesman_shortcode != null">
+                       and a3.salesman_shortcode = #{salesman_shortcode}
+                   </if>
+				) t6,
+			   (select sum(a3.appro_limit) as amount_stock 
+	              from wms_cre_credit_notary_warn a3
+	             where (a3.repay_status = '1' or a3.repay_status is null)
+	               and a3.enable_flag = '1'
+	               and a3.cre_type in(1, 2)
+	               and a3.protocol_date &lt;= date_sub(date_add(concat(#{date_info}, '-01'), interval 1 month), interval 1 day)
+	               and a3.is_stock = '1'
+                   <if test="dept_info != null">
+                       and a3.salesman_own_dept_id in (select b1.dept_id 
+				   								         from sys_dept b1 
+				   								        where b1.dept_level_coding 
+				   								         like concat((select b2.dept_level_coding 
+				   								                        from sys_dept b2 
+				   								                       where b2.dept_code = #{dept_info}), '%'))
+                   </if>
+                   <if test="dept_in != null">
+                       and a3.salesman_own_dept_id in ${dept_in}
+                   </if>
+                   <if test="salesman_shortcode != null">
+                       and a3.salesman_shortcode = #{salesman_shortcode}
+                   </if>
+				) t7,
+			   (select (case count(*) 
+			            when 0 
+			            then '0' 
+			            else t1.count
+			             end) as count 
+			      from (select t.salesman_id,
+			      			   count(*) as count
+			      		  from (select c2.salesman_id, 
+					      			   c2.wms_cre_credit_group_id,
+					                   count(*) as count 
+				              	  from (select c3.salesman_id, 
+								               c1.wms_cre_credit_head_id,
+								               c3.wms_cre_credit_group_id
+							          	  from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+						             	 where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+					                       and c1.approval_type = 3
+					                       and (
+										   	       (c3.wms_cre_credit_group_id in (select x.wms_cre_credit_group_id
+																	         from (select count(*) as count,
+																	          		      t.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t
+																	          		where t.wms_cre_credit_group_id is not null
+																	             group by t.wms_cre_credit_group_id) x, 
+																	              (select count(*) as count,
+																	          		      t1.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t1, wms_cre_housing_approval_info t2
+																	          	    where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+																	          		  and t1.wms_cre_credit_group_id is not null
+																	          		  and t2.approval_type = 3
+																	             group by t1.wms_cre_credit_group_id, t2.approval_task_code) y
+																	        where x.count = y.count
+																	          and x.wms_cre_credit_group_id = y.wms_cre_credit_group_id)
+																	  and c3.wms_cre_credit_group_id is not null
+													) 
+												    or c3.wms_cre_credit_group_id is null
+											   )
+					                   <if test="salesman_id != null">
+			                               and c3.salesman_id = #{salesman_id}
+			                           </if>
+				                           and c3.create_timestamp like '${date_info_like}'
+						              group by c3.salesman_id, c1.wms_cre_credit_head_id, ifnull(c3.wms_cre_credit_group_id, uuid())) c2 
+						      group by c2.salesman_id, ifnull(c2.wms_cre_credit_group_id, uuid())) t) t1 
+			  group by t1.salesman_id) t8
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_019 获取我的业绩排名信息 -->
+    <select id="getBizPerformanceRanking" resultType="map" parameterType="map">
+        select @y:=@y + 1 as num, 
+        	   t3.* 
+          from (select t1.personnel_id, 
+          			   t1.personnel_name, 
+          			   ifnull(t2.total_appro_limit, 0) as total_appro_limit 
+          		  from (select a2.personnel_id, 
+          		  		       a2.personnel_name
+		                  from sys_dept a1, pm_personnel a2 
+		                 where a1.dept_id = a2.personnel_deptid
+		                   and a1.dept_level_coding like '${dept_level_coding_like}'
+		           		   and a2.enable_flag = 1
+		                 union
+		                select a4.salesman_id as personnel_id, 
+		                	   a3.personnel_name
+		                  from pm_personnel a3 
+		                  join wms_cre_credit_notary_warn a4
+				            on a3.personnel_shortcode = a4.salesman_shortcode
+				         where a4.salesman_shortcode is not null
+				           and a4.salesman_shortcode != ''
+				           and a4.salesman_own_dept_id = (select a5.dept_id 
+				           									from sys_dept a5 
+				           								   where a5.dept_level_coding = #{dept_level_coding})
+						   and date_format(a4.protocol_date, '%Y-%m') = date_format(now(), '%Y-%m')
+						   and a4.is_achievement = '1'
+		      		  group by a3.personnel_shortcode) t1
+		    left join (select b1.salesman_id, 
+		    				  b1.salesman_own_dept_id, 
+		    				  sum(b1.appro_limit) as total_appro_limit 
+		    			 from wms_cre_credit_notary_warn b1 
+						where b1.salesman_id is not null
+						  and date_format(b1.protocol_date, '%Y-%m') = date_format(now(), '%Y-%m')
+						  and b1.cre_type = #{cre_type}
+						  and b1.enable_flag = '1'
+						  and b1.is_achievement = '1'
+					 group by b1.salesman_id, b1.salesman_own_dept_id) t2
+						   on t1.personnel_id = t2.salesman_id
+					 order by t2.total_appro_limit desc, t1.personnel_name asc) t3, (select @y:=0) t4
+
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_022 获取月份业绩统计信息（我的业绩、团队、门店、公司）-->
+    <select id="getBizResultsStatisticalByMonth" resultType="map" parameterType="map">
+        select b2.month as month_num, 
+               cast(ifnull(b1.count, 0) as char) as piece_num, 
+               cast(ifnull(b1.appro_limit, 0) as char) as appro_limit
+          from (select count(*) as count, 
+          		       replace(replace(format(cast(sum(t.appro_limit) as decimal) / 10000, 2), ',', ''), '.00', '') as appro_limit,
+          		       t.month
+				  from (select count(t1.wms_cre_credit_notary_warn_id) as count, 
+	                           sum(t1.appro_limit) as appro_limit,
+		                       date_format(t1.protocol_date, '%Y-%m') as month 
+					      from (select a1.wms_cre_credit_notary_warn_id, 
+					                   a1.appro_limit, 
+					                   a1.protocol_date, 
+					                   a1.salesman_shortcode,
+					                   a1.bill_code_group
+						          from wms_cre_credit_notary_warn a1 
+						         where a1.salesman_shortcode != ''
+						           and a1.enable_flag = '1'
+						           and a1.is_achievement = '1'
+							     <if test="personnel_id != null">
+					                 and a1.salesman_shortcode = (select a2.personnel_shortcode 
+					                                                from pm_personnel a2 
+					                                               where a2.personnel_id = #{personnel_id})
+					             </if>
+						         <if test="dept_info != null">
+						             and salesman_own_dept_id
+						              in (select a3.dept_id
+								            from sys_dept a3 
+								           where a3.dept_level_coding 
+						                    like concat((select a4.dept_level_coding 
+					                                       from sys_dept a4 
+					                                      where a4.dept_code = #{dept_info}), '%')
+						                  )
+					             </if>
+					             <if test="dept_in != null">
+					                 and a1.salesman_own_dept_id in ${dept_in} 
+					             </if>
+			            ) t1 group by date_format(t1.protocol_date, '%Y-%m'), ifnull(t1.bill_code_group, uuid())) t 
+              group by t.month) b1
+    right join (select month 
+		          from get_past_24_month a3 
+		         where a3.month &gt;= (select concat(date_format(date_sub(curdate(), interval 1 year), '%Y'), '-01'))) b2
+		            on b1.month = b2.month
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_022 获取月份业绩统计信息（我的业绩、团队、门店、公司）-->
+    <select id="getBizResultsStatisticalByYear" resultType="map" parameterType="map">
+        select b2.year as year_num, 
+               cast(ifnull(b1.count, 0) as char) as piece_num_count, 
+               cast(ifnull(b1.appro_limit, 0) as char) as appro_limit_count
+          from (select count(*) as count, 
+                       replace(replace(format(cast(sum(t.appro_limit) as decimal) / 10000, 2), ',', ''), '.00', '') as appro_limit,
+                       t.year 
+                  from (select count(t1.wms_cre_credit_notary_warn_id) as count,
+		                       sum(t1.appro_limit) as appro_limit,
+		                       date_format(t1.protocol_date, '%Y') as year 
+					      from (select a1.wms_cre_credit_notary_warn_id, 
+					                   a1.appro_limit, 
+					                   a1.protocol_date, 
+					                   a1.salesman_shortcode,
+					                   a1.bill_code_group
+						          from wms_cre_credit_notary_warn a1 
+						         where a1.salesman_shortcode != ''
+						           and a1.enable_flag = '1'
+						           and a1.is_achievement = '1'
+							     <if test="personnel_id != null">
+					                 and a1.salesman_shortcode = (select a2.personnel_shortcode 
+					                                                from pm_personnel a2 
+					                                               where a2.personnel_id = #{personnel_id})
+					             </if>
+						         <if test="dept_info != null">
+						             and salesman_own_dept_id
+						                 in (select a3.dept_id
+								               from sys_dept a3 
+								              where a3.dept_level_coding 
+						                       like concat('%', (select a4.dept_level_coding 
+						                                          from sys_dept a4 
+						                                         where a4.dept_code = #{dept_info}), '%'))
+					             </if>
+					             <if test="dept_in != null">
+					                 and a1.salesman_own_dept_id in ${dept_in} 
+					             </if>
+			            ) t1 group by date_format(t1.protocol_date, '%Y'), ifnull(t1.bill_code_group,uuid())) t 
+	  		  group by t.year) b1
+    right join (select year(now()) as year 
+		         union 
+		        select year(date_sub(now(), interval 1 year)) as year) b2
+            on b1.year = b2.year
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_026 获取团队X月成员业绩统计信息 -->
+    <select id="getBizMonthMembers" resultType="map" parameterType="map">
+        select concat(t1.personnel_name, t1.personnel_shortcode) as salesman_name,
+        	   ifnull(replace(replace(format(cast(t3.amount_loans as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans,
+			   ifnull(replace(replace(format(cast(t4.amount_loans as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans_total, 
+			   ifnull(t3.number_loans, '0') as number_loans, 
+			   ifnull(t4.number_loans, '0') as number_loans_total,
+			   ifnull(replace(replace(format(cast(t5.amount_quarterly_roll as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_quarterly_roll, 
+			   ifnull(replace(replace(format(cast(t6.amount_stock as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_stock
+		  from (select a1.dept_id,
+		   			   a2.personnel_name,
+		   			   a2.personnel_shortcode
+		          from sys_dept a1, pm_personnel a2 
+		         where a1.dept_id = a2.personnel_deptid
+		           and a1.dept_code = #{dept_info}
+		           and a2.enable_flag = 1
+		         union
+		        select a3.personnel_deptid,
+		               a3.personnel_name,
+		        	   a3.personnel_shortcode
+		          from pm_personnel a3 
+		          join wms_cre_credit_notary_warn a4
+		            on a3.personnel_shortcode = a4.salesman_shortcode
+		         where a4.salesman_shortcode is not null
+		           and a4.salesman_shortcode != ''
+		           and a4.salesman_own_dept_code = #{dept_info}
+		           and date_format(a4.protocol_date, '%Y-%m') = #{date_info}
+		           and a4.enable_flag = '1'
+		           and a4.is_achievement = '1'
+		      group by a3.personnel_shortcode) t1
+	 left join (select t.salesman_shortcode, 
+	 				   count(*) as number_loans,
+	 				   sum(t.amount_loans) as amount_loans
+	 			  from (select a3.salesman_shortcode,
+				               count(a3.wms_cre_credit_notary_warn_id) as number_loans, 
+				               sum(a3.appro_limit) as amount_loans 
+				          from wms_cre_credit_notary_warn a3
+				         where a3.bill_type = '01' 
+					       and a3.protocol_date like '${date_info_like}'
+					       and a3.salesman_own_dept_code = #{dept_info}
+					       and a3.enable_flag = '1'
+					       and a3.salesman_shortcode != ''
+					       and a3.is_achievement = '1'
+					  group by a3.salesman_shortcode, ifnull(a3.bill_code_group, uuid())) t
+	          group by salesman_shortcode) t3
+            on t1.personnel_shortcode = t3.salesman_shortcode
+	 left join (select t.salesman_shortcode, 
+	 				   count(*) as number_loans,
+	 				   sum(t.amount_loans) as amount_loans 
+	 			  from (select a4.salesman_shortcode, 
+			 				   count(a4.wms_cre_credit_notary_warn_id) as number_loans, 
+			 				   sum(a4.appro_limit) as amount_loans 
+			 			  from wms_cre_credit_notary_warn a4
+			             where a4.protocol_date like '${date_info_like}'
+			               and a4.salesman_own_dept_code = #{dept_info}
+			               and a4.enable_flag = '1'
+			               and a4.salesman_shortcode != ''
+			               and a4.is_achievement = '1'
+			          group by a4.salesman_shortcode, ifnull(a4.bill_code_group, uuid())) t 
+			  group by salesman_shortcode) t4
+	        on t1.personnel_shortcode = t4.salesman_shortcode
+	 left join (select a3.salesman_shortcode, 
+	                   sum(a3.appro_limit) as amount_quarterly_roll 
+	              from wms_cre_credit_notary_warn a3
+	             where a3.protocol_date &gt;= date_format(date_sub(concat('${date_info}', '-01'), interval 3 month), '%Y-%m-%d')
+                   and a3.protocol_date &lt;= date_sub(concat('${date_info}', '-01'), interval 1 day)
+                   and a3.salesman_own_dept_code = #{dept_info}
+                   and a3.enable_flag = '1'
+                   and a3.is_achievement = '1'
+                   and a3.bill_type = '01'
+	          group by a3.salesman_shortcode) t5 
+	        on t1.personnel_shortcode = t5.salesman_shortcode 
+	 left join (select a3.salesman_shortcode, 
+	                   sum(a3.appro_limit) as amount_stock 
+	              from wms_cre_credit_notary_warn a3
+	             where (a3.repay_status = '1' or a3.repay_status is null)
+	               and a3.salesman_own_dept_code = #{dept_info}
+	               and a3.enable_flag = '1'
+	               and a3.protocol_date &lt;= date_sub(date_add(concat(#{date_info}, '-01'), interval 1 month), interval 1 day)
+	               and a3.is_stock = '1'
+	          group by a3.salesman_shortcode) t6 
+	        on t1.personnel_shortcode = t6.salesman_shortcode
+         where 1 = 1
+         <if test="salesman_info != null">
+	         and (t1.personnel_name like '${salesman_info}' or t1.personnel_shortcode like '${salesman_info}')
+         </if>
+      group by t1.personnel_shortcode
+         <if test="offset != null and pagesize != null">
+             limit ${offset}, ${pagesize}
+         </if>
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_028 获取成员单据统计信息 -->
+    <select id="getBizMembersProgressStatistical" resultType="map" parameterType="map">
+        select concat(e1.personnel_name, e1.personnel_shortcode) as salesman_name,
+	           cast(ifnull(e2.count, 0) as char) as apply_num,
+               cast(ifnull(e3.count, 0) as char) as intern_num,
+               cast(ifnull(e4.count, 0) as char) as final_num,
+               cast(ifnull(e5.count, 0) as char) as number_loans,
+               cast(ifnull(e6.count, 0) as char) as refused_num 
+	     from (select a2.personnel_id,
+		   			  a2.personnel_name,
+		   			  a2.personnel_shortcode
+		         from sys_dept a1, pm_personnel a2 
+		        where a1.dept_id = a2.personnel_deptid
+		          and a1.dept_code = #{dept_info}
+		          and a2.enable_flag = 1
+		          <if test="filter_employees != null">
+			          and (a2.personnel_name like '${filter_employees}' or a2.personnel_shortcode like '${filter_employees}')
+		          </if>
+		        union
+		       select a3.personnel_id,
+		              a3.personnel_name,
+		        	  a3.personnel_shortcode
+		         from pm_personnel a3, wms_cre_housing_approval_info a4, wms_cre_credit_head a5	           
+		        where 1 = 1
+		          <if test="date_info_like != null">
+			          and a5.create_timestamp like '${date_info_like}'
+		          </if>
+		          <if test="filter_employees != null">
+			          and (a3.personnel_name like '${filter_employees}' or a3.personnel_shortcode like '${filter_employees}')
+		          </if>
+                  and a3.personnel_deptName = a4.approval_user_deptName
+				  and a3.personnel_id = a5.salesman_id
+                  and a4.wms_cre_credit_head_id = a5.wms_cre_credit_head_id
+                  and a5.salesman_dept_id = (select dept_id 
+                  							   from sys_dept t 
+                  							  where t.dept_code = #{dept_info})
+		     group by a3.personnel_shortcode) e1
+	        left join (select c2.salesman_id, 
+			                  count(*) as count 
+			             from (select c3.salesman_id, 
+			                          c1.wms_cre_credit_head_id
+			                     from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							    where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							      and c1.approval_task_code = 'DKSQ'
+							      and c1.approval_type = 1
+							      <if test="date_info_like != null">
+							          and c3.create_timestamp like '${date_info_like}'
+						          </if>
+							 group by c3.salesman_id,c1.wms_cre_credit_head_id) c2 
+					 group by c2.salesman_id) e2 
+				   on e1.personnel_id = e2.salesman_id
+			left join (select c2.salesman_id, 
+			                  count(*) as count 
+			             from (select c3.salesman_id, 
+			                          c1.wms_cre_credit_head_id
+			                     from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							    where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							      and c1.approval_task_code = 'FCCP'
+							      and c1.approval_type = 1
+							      <if test="date_info_like != null">
+							          and c3.create_timestamp like '${date_info_like}'
+						          </if>
+					         group by c3.salesman_id,c1.wms_cre_credit_head_id) c2 
+					 group by c2.salesman_id) e3 
+				   on e1.personnel_id = e3.salesman_id
+			left join (select c2.salesman_id, 
+			                  count(*) as count 
+			             from (select c3.salesman_id, 
+			                          c1.wms_cre_credit_head_id
+			                     from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							    where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							      and c1.approval_task_code = 'ZSSP'
+							      and c1.approval_type = 1
+						          <if test="date_info_like != null">
+						              and c3.create_timestamp like '${date_info_like}'
+					              </if>
+							 group by c3.salesman_id,c1.wms_cre_credit_head_id) c2 
+					 group by c2.salesman_id) e4 
+				   on e1.personnel_id = e4.salesman_id
+			left join (select t.salesman_id,
+			 				  count(*) as count
+			 			 from (select c2.salesman_id, 
+									  count(*) as count 
+							    from (select c3.salesman_id, 
+								             c1.wms_cre_credit_head_id, 
+											 c1.approval_task_type,
+											 c3.wms_cre_credit_group_id 
+										from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+									         where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+									     and c1.approval_task_code = 'FKSP'
+									     and c1.approval_type = 1
+						                 <if test="date_info_like != null">
+									         and c3.create_timestamp like '${date_info_like}'
+								         </if>
+					                group by c3.salesman_id, c1.wms_cre_credit_head_id, ifnull(c3.wms_cre_credit_group_id, uuid())) c2 
+					                group by c2.salesman_id, ifnull(c2.wms_cre_credit_group_id, uuid()) 
+							  ) t 
+					 group by t.salesman_id) e5 
+				   on e1.personnel_id = e5.salesman_id
+			left join (select t.salesman_id,
+							  count(*) as count
+						 from (select c2.salesman_id, 
+							  		  c2.wms_cre_credit_group_id,
+					                  count(*) as count 
+					             from (select c3.salesman_id, 
+								              c1.wms_cre_credit_head_id,
+								              c3.wms_cre_credit_group_id
+								         from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							            where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+						                  and c1.approval_type = 3
+						                  and (
+										   	       (c3.wms_cre_credit_group_id in (select x.wms_cre_credit_group_id
+																	         from (select count(*) as count,
+																	          		      t.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t
+																	          		where t.wms_cre_credit_group_id is not null
+																	             group by t.wms_cre_credit_group_id) x, 
+																	              (select count(*) as count,
+																	          		      t1.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t1, wms_cre_housing_approval_info t2
+																	          	    where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+																	          		  and t1.wms_cre_credit_group_id is not null
+																	          		  and t2.approval_type = 3
+																	             group by t1.wms_cre_credit_group_id, t2.approval_task_code) y
+																	        where x.count = y.count
+																	          and x.wms_cre_credit_group_id = y.wms_cre_credit_group_id)
+																	  and c3.wms_cre_credit_group_id is not null
+													) 
+												    or c3.wms_cre_credit_group_id is null
+											   )
+						                  <if test="date_info_like != null">
+								              and c3.create_timestamp like '${date_info_like}'
+							              </if>
+							         group by c3.salesman_id, c1.wms_cre_credit_head_id, ifnull(c3.wms_cre_credit_group_id, uuid())) c2 
+							 group by c2.salesman_id, ifnull(c2.wms_cre_credit_group_id, uuid())) t
+					 group by t.salesman_id) e6 
+			       on e1.personnel_id = e6.salesman_id
+	    <if test="offset != null and pagesize != null">
+            limit ${offset}, ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_031 获取团队、门店X月业绩统计信息 -->
+    <select id="getBizStoreResultsStatistics" resultType="map" parameterType="map">
+        select (case #{is_type}
+        		when '1' then concat(t1.dept_name, '（', left(ifnull(t1.dept_person, ''), (length(ifnull(t1.dept_person, '')) - 6) / 3), '）')
+        		when '2' then t1.dept_name
+        		 end) as dept_name,	
+        	   t1.dept_code as dept_info, 
+        	   ifnull(replace(replace(format(cast(sum(t3.amount_loans) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans,
+			   ifnull(replace(replace(format(cast(sum(t4.amount_loans) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_loans_total, 
+			   ifnull(cast(sum(t3.number_loans) as decimal), '0') as number_loans,
+			   ifnull(cast(sum(t4.number_loans) as decimal), '0') as number_loans_total, 
+			   ifnull(replace(replace(format(cast(sum(t5.amount_quarterly_roll) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_quarterly_roll, 
+			   ifnull(replace(replace(format(cast(sum(t6.annual_amount_loans) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as annual_amount_loans,
+			   ifnull(replace(replace(format(cast(sum(t7.amount_stock) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as amount_stock
+		  from (select b2.dept_id, 
+					   b2.dept_name,
+					   b2.dept_code,
+					   b1.dept_person,
+					   b1.dept_id as dept_pid,
+					   b1.dept_name as dept_pname,
+					   b1.dept_code as dept_pcode
+				  from (select a2.dept_id, 
+							   a2.dept_name, 
+							   a2.dept_code,
+							   a2.dept_person, 
+							   a2.dept_level_coding 
+						  from sys_dept a2 
+						 where 1 = 1
+						 <if test="dept_info != null">
+						     and a2.dept_pid 
+						      in (select a1.dept_id 
+						            from sys_dept a1 
+						           where a1.dept_code = #{dept_info})
+						 </if>        
+						 ) b1
+			right join (select a4.dept_id, 
+							   a4.dept_name, 
+							   a4.dept_code, 
+							   a4.dept_level_coding 
+						  from sys_dept a4 
+						 where 1 = 1
+						 <if test="dept_info != null">
+						     and a4.dept_level_coding 
+						    like concat((select a3.dept_level_coding 
+						                   from sys_dept a3 
+						                  where a3.dept_code = #{dept_info}), '%')
+						                    and a4.dept_code != #{dept_info}
+						 </if>                    
+						 ) b2
+			        on b1.dept_level_coding = left(b2.dept_level_coding, length(b1.dept_level_coding))) t1 
+			 left join (select t.salesman_dept_code, 
+							   count(t.number_loans) as number_loans, 
+							   sum(t.amount_loans) as amount_loans 
+						  from (select a3.salesman_own_dept_code as salesman_dept_code,
+					                   count(a3.wms_cre_credit_notary_warn_id) as number_loans, 
+					                   sum(a3.appro_limit) as amount_loans 
+					              from wms_cre_credit_notary_warn a3
+					             where a3.bill_type = '01' 
+					               and a3.protocol_date like '${date_info_like}'
+					               and a3.enable_flag = '1'
+					               and a3.is_achievement = '1'
+					          group by a3.salesman_own_dept_code, ifnull(a3.bill_code_group, uuid())) t
+					  group by t.salesman_dept_code) t3 
+			        on t1.dept_code = t3.salesman_dept_code
+			 left join (select t.salesman_dept_code, 
+							   count(t.number_loans) as number_loans, 
+							   sum(t.amount_loans) as amount_loans 
+						  from (select a3.salesman_own_dept_code as salesman_dept_code,
+					 				   count(a3.wms_cre_credit_notary_warn_id) as number_loans, 
+					 				   sum(a3.appro_limit) as amount_loans 
+					 			  from wms_cre_credit_notary_warn a3
+					             where a3.protocol_date like '${date_info_like}'
+					               and a3.enable_flag = '1'
+					               and a3.is_achievement = '1'
+					          group by a3.salesman_own_dept_code, ifnull(a3.bill_code_group, uuid())) t
+					  group by t.salesman_dept_code) t4 
+			        on t1.dept_code = t4.salesman_dept_code
+			 left join (select a3.salesman_own_dept_code as salesman_dept_code,
+			                   sum(a3.appro_limit) as amount_quarterly_roll 
+			              from wms_cre_credit_notary_warn a3
+			             where a3.protocol_date &gt;= date_format(date_sub(concat(#{date_info}, '-01'), interval 3 month), '%Y-%m-%d')
+                           and a3.protocol_date &lt;= date_sub(concat(#{date_info}, '-01'), interval 1 day)
+                           and a3.enable_flag = '1'
+                           and a3.is_achievement = '1'
+                           and a3.bill_type = '01'
+			          group by a3.salesman_own_dept_code) t5 
+			        on t1.dept_code = t5.salesman_dept_code 
+			 left join (select a3.salesman_own_dept_code as salesman_dept_code, 
+			                   sum(a3.appro_limit) as annual_amount_loans 
+			              from wms_cre_credit_notary_warn a3
+			             where year(a3.protocol_date) = year(str_to_date(#{date_info}, '%Y-%m'))
+			               and a3.enable_flag = '1'
+			               and a3.is_achievement = '1'
+			               and a3.bill_type = '01'
+			          group by a3.salesman_own_dept_code) t6 
+			        on t1.dept_code = t6.salesman_dept_code
+			 left join (select a3.salesman_own_dept_code as salesman_dept_code,
+			                   sum(a3.appro_limit) as amount_stock 
+			              from wms_cre_credit_notary_warn a3
+			             where (a3.repay_status = '1' or a3.repay_status is null)
+			               and a3.enable_flag = '1'
+			               and a3.protocol_date &lt;= date_sub(date_add(concat(#{date_info}, '-01'), interval 1 month), interval 1 day)
+			          	   and a3.is_stock = '1'
+			          group by a3.salesman_own_dept_code) t7 
+			        on t1.dept_code = t7.salesman_dept_code
+			        <if test="dept_in">
+			            where t1.dept_pid in ${dept_in}
+			        </if>
+			  group by t1.dept_pid
+	    <if test="offset != null and pagesize != null">
+            limit ${offset}, ${pagesize}
+        </if>
+    </select>
+    
+    <!-- 接口编号: WMS_OUT_032 获取单据统计信息 -->
+    <select id="getBizCompanyProgressStatistical" resultType="map" parameterType="map">
+        select t1.dept_pname as dept_name, 
+               t1.dept_pcode as dept_code,
+			   cast(ifnull(sum(t2.count1), 0) as char) as apply_num, 
+			   cast(ifnull(sum(t2.count2), 0) as char) as intern_num, 
+			   cast(ifnull(sum(t2.count3), 0) as char) as final_num, 
+			   cast(ifnull(sum(t2.count4), 0) as char) as number_loans,
+			   cast(ifnull(sum(t2.count5), 0) as char) as refused_num
+		  from (select b2.dept_id, 
+					   b2.dept_name,
+					   b1.dept_id as dept_pid,
+					   b1.dept_code as dept_pcode,
+		               (case #{is_type}
+		        	    when '1' then concat(b1.dept_name, '（', left(ifnull(b1.dept_person, ''), (length(ifnull(b1.dept_person, '')) - 6) / 3), '）')
+		        	    when '2' then b1.dept_name
+		        	     end) as dept_pname
+				  from (select a2.dept_id, 
+				               a2.dept_name, 
+				               a2.dept_person, 
+				               a2.dept_code, 
+				               a2.dept_level_coding 
+				          from sys_dept a2 
+				         where a2.dept_pid = (select a1.dept_id 
+		                                        from sys_dept a1 
+		                                       where a1.dept_code = #{dept_info})) b1
+		    right join (select a4.dept_id, 
+			                   a4.dept_name, 
+			                   a4.dept_level_coding 
+			              from sys_dept a4 
+			             where a4.dept_level_coding 
+			              like concat((select a3.dept_level_coding 
+			                             from sys_dept a3 
+			                            where a3.dept_code = #{dept_info}), '%')
+				           and a4.dept_code != #{dept_info}) b2
+				    on b1.dept_level_coding = left(b2.dept_level_coding, length(b1.dept_level_coding))) t1 
+	 left join (select e1.salesman_dept_id, 
+	                   ifnull(e2.count, 0) as count1,
+	                   ifnull(e3.count, 0) as count2,
+	                   ifnull(e4.count, 0) as count3,
+	                   ifnull(e5.count, 0) as count4,
+	                   ifnull(e6.count, 0) as count5 
+	              from (select d1.salesman_dept_id 
+	                      from wms_cre_credit_head d1, wms_cre_housing_approval_info d2 
+	                     where d1.wms_cre_credit_head_id = d2.wms_cre_credit_head_id 
+	                  group by d1.salesman_dept_id) e1
+			 left join (select c2.salesman_dept_id, 
+			                   c2.approval_task_type,
+			                   count(*) as count 
+			              from (select c3.salesman_dept_id, 
+			                           c1.wms_cre_credit_head_id, 
+			                           c1.approval_task_type
+			                      from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							     where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							       and c1.approval_task_code = 'DKSQ'
+							       and c1.approval_type = 1
+							       <if test="date_info_like != null">
+								       and c3.create_timestamp like '${date_info_like}'
+							       </if>
+							  group by c3.salesman_dept_id, c1.wms_cre_credit_head_id, c1.approval_task_type) c2 
+					  group by c2.salesman_dept_id, c2.approval_task_type) e2 
+				    on e1.salesman_dept_id = e2.salesman_dept_id
+			 left join (select c2.salesman_dept_id, 
+			                   c2.approval_task_type, 
+			                   count(*) as count 
+			              from (select c3.salesman_dept_id, 
+			                           c1.wms_cre_credit_head_id,
+			                           c1.approval_task_type 
+			                      from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+					             where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+					               and c1.approval_task_code = 'FCCP'
+					               and c1.approval_type = 1
+					               <if test="date_info_like != null">
+								       and c3.create_timestamp like '${date_info_like}'
+							       </if>
+					          group by c3.salesman_dept_id, c1.wms_cre_credit_head_id, c1.approval_task_type) c2 
+					  group by c2.salesman_dept_id, c2.approval_task_type) e3 
+				    on e1.salesman_dept_id = e3.salesman_dept_id
+			 left join (select c2.salesman_dept_id, 
+							   c2.approval_task_type, 
+							   count(*) as count 
+						  from (select c3.salesman_dept_id, 
+						               c1.wms_cre_credit_head_id, 
+						               c1.approval_task_type
+						          from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							     where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							       and c1.approval_task_code = 'ZSSP'
+							       and c1.approval_type = 1
+							       <if test="date_info_like != null">
+								       and c3.create_timestamp like '${date_info_like}'
+							       </if>
+							  group by c3.salesman_dept_id, c1.wms_cre_credit_head_id, c1.approval_task_type) c2 
+					  group by c2.salesman_dept_id, c2.approval_task_type) e4 
+					on e1.salesman_dept_id = e4.salesman_dept_id
+			 left join (select t.salesman_dept_id,
+			 				   count(*) as count
+			 			  from (select c2.salesman_dept_id, 
+									   c2.approval_task_type, 
+									   count(*) as count 
+								  from (select c3.salesman_dept_id, 
+								               c1.wms_cre_credit_head_id, 
+											   c1.approval_task_type,
+											   c3.wms_cre_credit_group_id 
+										  from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							             where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+							               and c1.approval_task_code = 'FKSP'
+							               and c1.approval_type = 1
+							               <if test="date_info_like != null">
+										       and c3.create_timestamp like '${date_info_like}'
+									       </if>
+							          group by c3.salesman_dept_id, c1.wms_cre_credit_head_id, ifnull(c3.wms_cre_credit_group_id, uuid())) c2 
+							  group by c2.salesman_dept_id, c2.approval_task_type, ifnull(c2.wms_cre_credit_group_id, uuid())) t
+					  group by t.salesman_dept_id) e5 
+					on e1.salesman_dept_id = e5.salesman_dept_id
+			 left join (select t.salesman_dept_id, 
+			 			       count(*) as count 
+			 			  from (select c2.salesman_dept_id,
+					 				   c2.wms_cre_credit_group_id,
+					                   count(*) as count 
+					              from (select c3.salesman_dept_id, 
+								               c1.wms_cre_credit_head_id, 
+								               c1.approval_task_type,
+								               c3.wms_cre_credit_group_id 
+								          from wms_cre_housing_approval_info c1, wms_cre_credit_head c3
+							             where c1.wms_cre_credit_head_id = c3.wms_cre_credit_head_id
+						                   and c1.approval_type = 3
+										   and (
+										   	       (c3.wms_cre_credit_group_id in (select x.wms_cre_credit_group_id
+																	         from (select count(*) as count,
+																	          		      t.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t
+																	          		where t.wms_cre_credit_group_id is not null
+																	             group by t.wms_cre_credit_group_id) x, 
+																	              (select count(*) as count,
+																	          		      t1.wms_cre_credit_group_id
+																	          		 from wms_cre_credit_head t1, wms_cre_housing_approval_info t2
+																	          	    where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+																	          		  and t1.wms_cre_credit_group_id is not null
+																	          		  and t2.approval_type = 3
+																	             group by t1.wms_cre_credit_group_id, t2.approval_task_code) y
+																	        where x.count = y.count
+																	          and x.wms_cre_credit_group_id = y.wms_cre_credit_group_id)
+																	  and c3.wms_cre_credit_group_id is not null
+													) 
+												    or c3.wms_cre_credit_group_id is null
+											   )
+						                   <if test="date_info_like != null">
+										       and c3.create_timestamp like '${date_info_like}'
+									       </if>
+							          group by c3.salesman_dept_id, c1.wms_cre_credit_head_id, ifnull(c3.wms_cre_credit_group_id, uuid())) c2 
+							  group by c2.salesman_dept_id, ifnull(c2.wms_cre_credit_group_id, uuid())) t 
+					  group by t.salesman_dept_id) e6 
+				on e1.salesman_dept_id = e6.salesman_dept_id) t2 
+	        on t1.dept_id = t2.salesman_dept_id
+	        <if test="dept_in">
+	            where t1.dept_pid in ${dept_in}
+	        </if>
+	  group by t1.dept_pid      
+	  <if test="offset != null and pagesize != null">
+          limit ${offset}, ${pagesize}
+      </if>
+    </select>
+    
+     <select id="getBizHouseLoanListUp"  parameterType="map" resultType="java.util.HashMap">
+          SELECT  
+      		IFNULL(t2.customer_name,"") as customer_name,
+			IFNULL(replace(CAST(t1.appro_limit AS DECIMAL(10,2)),'.00',''),"") as appro_limit,
+			date_format(t1.create_timestamp,'%Y-%m-%d') as create_timestamp,
+			t1.bill_status,
+			(select value_meaning from wms_sys_dict_data where value_code = t1.bill_status and wms_sys_dict_id = 131)as bill_status_name,
+			t1.wms_cre_credit_head_id,
+			t1.bill_code,
+			IFNULL(t2.address_more,"")as address_more,
+			(SELECT IFNULL(community_name,"") from wms_cre_housing_customer_house ho,wms_cre_customer_change_line_houseinfo hi where t1.wms_cre_credit_head_id=ho.wms_cre_credit_head_id and hi.wms_cre_customer_change_line_houseinfo_id=ho.wms_cre_customer_change_line_houseinfo_id) as community_name,
+			IFNULL((select vehicle_evaluation_price from wms_cre_housing_trial_assessment where  wms_cre_credit_head_id = t2.wms_cre_credit_head_id), '') as vehicle_evaluation_price,
+			IFNULL(replace(CAST(t3.principal_lower AS DECIMAL(10,2)),'.00',''),'') as principal_lower,
+			IFNULL(t4.attachment_address,"") as attachment_address,
+			IFNULL(t2.mobile_telephone1,"") as mobile_telephone,
+			IFNULL(replace(CAST(t1.credit_limit AS DECIMAL(10,2)),'.00',''),'') as credit_limit,
+			<!--  IFNULL(replace(CAST(if(t1.wms_cre_credit_group_id is null,t1.credit_limit,t1.appro_limit) AS DECIMAL(10,2)),'.00',''),'') as credit_limit,-->
+			(case  when t1.bill_status like "%T" then (SELECT  ifnull(approval_advice,"") from wms_cre_housing_approval_info where enable_flag=1 and approval_type=2 and wms_cre_credit_head_id=t1.wms_cre_credit_head_id GROUP BY wms_cre_housing_approval_info desc LIMIT 0,1)
+			WHEN (t1.bill_status like "%J" or t1.bill_status like "%Z")  then 
+			(SELECT  ifnull(approval_advice,"") from wms_cre_housing_approval_info where enable_flag=1 and approval_type=3 and wms_cre_credit_head_id=t1.wms_cre_credit_head_id GROUP BY wms_cre_housing_approval_info desc LIMIT 0,1) else "" end) as complete_idea,
+			(case when #{is_type}=1 then'1' else "0"end)as button_show_update,
+			(case  when t1.bill_status in ('A','BT','ET') then "1" else "0"end) as button_show_delete,
+			(case  when (t1.bill_status in ('C','D','E','EH','F','G','HT','I') and (t2.is_finish is NULL OR t2.is_finish="0") and t1.bill_type="01")then "1" else "0"end) as button_show_make,
+			(SELECT IFNULL(house_address_more,"") from wms_cre_housing_customer_house ch ,wms_cre_customer_change_line_houseinfo lh where ch.wms_cre_customer_change_line_houseinfo_id =lh.wms_cre_customer_change_line_houseinfo_id and t1.wms_cre_credit_head_id=ch.wms_cre_credit_head_id ) as house_address_more
+		from 
+			wms_cre_credit_head t1 
+		LEFT JOIN 
+			wms_cre_credit_line_customer_change_head t2 on t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id and t2.is_major=1 
+
+		LEFT JOIN 
+			wms_cre_appro_borrow_protocol t3 ON t3.wms_cre_credit_head_id=t1.wms_cre_credit_head_id and t3.enable_flag=1
+   		left join (
+            select b.wms_cre_credit_head_id, b.attachment_address
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t where t.data_detail_name in (846,1204,1205)   GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t4    on t4.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+		where
+			t1.enable_flag=1 
+			and t2.is_major=1
+			and t1.cre_type=2
+			and t1.salesman_id=#{salesman_id}
+			and t1.version_number='3'
+			<if test="bill_status_code != null and bill_status_code !=  '' and bill_status_code != 'T'.toString() and bill_status_code != 'QT'.toString() and is_type=='1'.toString()" >
+			    and t1.bill_status = #{bill_status_code}
+			</if>
+			<if test="bill_status_code != null and bill_status_code !=  '' and bill_status_code == 'QT'.toString() and is_type=='1'.toString()" >
+			     and t1.bill_status in ('C','D','EH','F','I') 
+			</if>
+			<if test="bill_status_code != null and bill_status_code !=  '' and bill_status_code == 'T'.toString() and is_type=='1'.toString()" >
+			     and t1.bill_status like '%T%' 
+			</if>
+			<if test="bill_status_code != null and bill_status_code !=  '' and is_type=='2'.toString()" >
+			    and t1.bill_status = #{bill_status_code}
+			</if>
+			<if test="is_type=='1'.toString()" >
+			    and (t1.bill_status not like "%Z" and  t1.bill_status not like "%J" and  t1.bill_status != "W") 
+			</if>
+			<if test="is_type=='2'.toString()" >
+			    and (t1.bill_status  like "%Z" or t1.bill_status  like "%J" or t1.bill_status = "W") 
+			</if>
+			<if test="many_column_like != null " >
+<!-- 			    and (t3.debtor_name like #{many_column_like}  or t2.customer_name like #{many_column_like}) -->
+			     and CONCAT(IFNULL(t3.debtor_name,t2.customer_name),mobile_telephone1) like #{many_column_like}
+			</if>
+				ORDER BY ${sortname}  ${sortorder}
+            <if test="offset != null and pagesize != null">
+	            LIMIT ${offset} , ${pagesize}
+	        </if>
+    </select>
+     
+     
+     <!-- 查询审批详情中图片list -->
+    <select id="selectApprovalAttListForFour" parameterType="int" resultType="map">
+        select b.attachment_old_name, 
+		       b.attachment_new_name, 
+		       CONCAT('wms/getImg.do?url=', b.attachment_address) as attachment_address_complete, 
+		       b.attachment_address 
+		  from wms_fina_cre_loan_app a, 
+		       wms_fina_cre_loan_app_att b 
+		 where a.wms_fina_cre_loan_app = b.wms_fina_cre_loan_app_id
+		   and a.wms_cre_credit_head_id = #{_wms_cre_credit_head_id}
+		 union
+		select b.attachment_old_name, 
+		       b.attachment_new_name, 
+		       CONCAT('wms/getImg.do?url=', b.attachment_address) as attachment_address_complete, 
+		       b.attachment_address 
+		  from wms_cre_housing_apply_att b 
+		 where b.wms_cre_credit_head_id = #{_wms_cre_credit_head_id}
+    </select>
+    
+    
+     <select id="getBizDetailsDocuments" parameterType="int" resultType="map">
+        SELECT 
+      		t1.wms_cre_credit_head_id,
+			ifnull(t1.bill_code, '') as bill_code,
+			ifnull(t1.bill_status, '') as bill_status,
+			(select value_meaning from wms_sys_dict_data where value_code = t1.bill_status
+                and wms_sys_dict_id = 131) as bill_status_name,
+			ifnull(t2.customer_name, '') as customer_name,
+			ifnull(concat(FORMAT(t4.house_area, 2), '㎡'), '') as house_building_area,
+			ifnull(CONCAT(FORMAT(t3.principal_lower/10000, 4), '万元'), '') as principal_lower,
+			ifnull(CONCAT(FORMAT(t3.loan_amount/10000, 4), '万元'), '') as loan_amount,
+			ifnull(t3.payment_contract_type, '') as payment_contract_type,
+			ifnull(concat(t3.borrow_deadline,'期'), '') as borrow_deadline,
+			ifnull(concat(format(t3.borrow_interest, 2), '%'), '') as borrow_interest,
+			ifnull(concat(format(t3.liquidated_damages, 2), '元'), '') as liquidated_damages,
+			ifnull(concat(format(t6.consult_service_cost, 2), '%'), '') as fees,
+			ifnull(format(t4.it_cost_fee, 2), '') as it_cost_fee,
+			ifnull(format(t4.expedited_fee, 2), '') as expedited_fee,
+			ifnull(t3.borrow_begin_date, '') as borrow_begin_date,
+			ifnull(t3.borrow_end_date, '') as borrow_end_date,
+			ifnull(t4.notary_is_finish, '') as notary_is_finish,
+			ifnull(t4.he_is_finish, '') as he_is_finish,
+			ifnull(t4.remark, '') as remark,
+			ifnull(t5.attachment_address, '') as attachment_address
+		 FROM 
+		 	wms_cre_credit_head t1 
+		 LEFT JOIN 
+		       wms_cre_credit_line_customer_change_head T2
+                ON                
+                    T2.is_major = '1' 
+                and 
+                    T2.enable_flag = '1' 
+                and 
+                    t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+		LEFT JOIN 
+			(select a.wms_cre_credit_head_id, 
+			        a.payment_contract_type, 
+			        a.borrow_deadline, 
+			        IFNULL(a.borrow_interest, 0) + IFNULL(b.service_cost_month, 0) as borrow_interest, 
+			        a.principal_lower, 
+			        a.borrow_begin_date, 
+			        a.borrow_end_date, 
+			        a.loan_amount,
+			        a.liquidated_damages 
+	           from wms_cre_appro_borrow_protocol a, wms_cre_appro_service_protocol b 
+	          where a.wms_cre_credit_head_id = b.wms_cre_credit_head_id and b.enable_flag = '1'
+	            and a.enable_flag = '1') t3
+        on 
+        	t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id 
+
+		LEFT JOIN 
+			wms_fina_cre_loan_app t4 
+        on 
+       		t3.wms_cre_credit_head_id = t4.wms_cre_credit_head_id 
+       	and 
+       		t4.enable_flag = '1'
+        left join (
+            select b.wms_cre_credit_head_id, b.attachment_address 
+              from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id, attachment_address 
+                      from wms_cre_housing_apply_att t GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+             where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+        ) t5    on t5.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+        left join wms_cre_appro_service_protocol t6
+               on t1.wms_cre_credit_head_id = t6.wms_cre_credit_head_id
+       	WHERE
+       		t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+        ORDER BY t4.wms_fina_cre_loan_app desc LIMIT 0, 1
+    </select>
+     
+     
+     
+     <select id="getNotaryWarnInfo" parameterType="map" resultType="java.util.HashMap">
+	   SELECT
+	 		wa.wms_cre_credit_notary_warn_id as  costomer_id,
+			wa.customer_name,
+			wa.appro_limit,
+			ifnull(replace(replace(format(cast((wa.appro_limit) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as loan_amount,
+			wa.protocol_date,
+			(select value_meaning from wms_sys_dict_data where value_code = wa.repay_status
+			and wms_sys_dict_id = 122) as repay_status,
+			(select value_meaning from wms_sys_dict_data where wms_sys_dict_data_id = wa.category_name
+			and wms_sys_dict_id = 27)as category_name,
+			wa.wms_cre_credit_head_id,
+			(case when wa.repay_status in ('1','3') then '0' else '1' end) as repay_status_colour 
+		FROM
+			wms_cre_credit_notary_warn wa
+			left join  wms_cre_appro_protocol_attach att
+			on att.wms_cre_credit_head_id=wa.wms_cre_credit_head_id and att.enable_flag=1
+		 <where>
+			1=1
+			and wa.repay_status !="3"
+			<if test="id_card != null">
+			    and (wa.id_card = #{id_card} or wa.com_debtor_identity_id =#{id_card})
+			    and wa.cre_type=1
+			</if>
+			<if test="customer_name != null and house_address_more != null">
+         		and wa.customer_name = #{customer_name}
+         		and (wa.current_address_more = #{house_address_more} 
+         			or att.explicit_address=#{house_address_more})
+         		and wa.cre_type=2
+         	</if>
+         </where>
+          	 <if test="sortname != null and sortorder !=null">
+				ORDER BY ${sortname} ${sortorder}
+			</if>
+	         <if test="offset != null and pagesize != null">
+	            LIMIT ${offset} , ${pagesize}
+	        </if>
+     </select>
+     
+     
+     
+     <select id="getHeadInfo" parameterType="map" resultType="java.util.HashMap">
+         	SELECT
+				t1.debtor_name,
+				t1.creditor_address,
+				t1.cre_loan_type,
+				t1.appro_limit,
+				t1.protocol_date,
+				t1.wms_cre_credit_head_id
+				from wms_cre_appro_borrow_protocol t1
+			RIGHT JOIN 
+				wms_cre_credit_head t2
+			on 
+				t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id
+			<where>
+			    t1.enable_flag=1
+				AND t2.enable_flag=1
+				<if test="id_card != null">
+				    and t1.debtor_identity_id = #{id_card}
+				    and t2.cre_type=1
+				</if>
+				<if test="customer_name != null and current_address_more != null">
+	         		and t1.debtor_name = #{customer_name}
+	         		and t1.creditor_address = #{current_address_more}
+	         		and t2.cre_type=2
+	         	</if>
+         	</where>
+     </select>
+             <!--根据主键查询3.2.15   WMS_OUT_015 获取单据详细信息-->
+    <select id="getBizDetailsDocumentsAll" parameterType="map" resultType="java.util.HashMap">
+	 select
+            t1.wms_cre_credit_head_id,
+            t1.bill_code,
+            t1.bill_status,
+            (select value_meaning from wms_sys_dict_data where value_code = t1.bill_status and wms_sys_dict_id = 131) as bill_status_name,
+            date_format(IFNULL(t4.create_timestamp, t1.create_timestamp), '%Y-%m-%d') as create_timestamp,
+            IFNULL(t2.customer_name, '') as customer_name,
+            IF(t2.mobile_telephone1 is null, null, t2.mobile_telephone1) as mobile_telephone1,
+		    CONCAT(t1.salesman_name, t1.salesman_shortcode) as salesman_name,
+		    t1.salesman_shortcode as salesman_code,
+		    (case when t1.max_repayment_time_limit is NULL then '' else CONCAT(IFNULL(t1.max_repayment_time_limit, ''), '期') end) as max_repayment_time_limit, 
+		    (case when t1.appro_limit is NULL then '' else IFNULL(replace(CAST(t1.appro_limit AS DECIMAL(10,2)),'.00',''), '') end) as appro_limit, 
+		    IFNULL(replace(CAST(if(t1.wms_cre_credit_group_id is null,t1.credit_limit,t1.appro_limit) AS DECIMAL(10,2)),'.00',''),'') as credit_limit,
+            IFNULL(t3.house_address_province, '') as house_address_province,
+            IFNULL(t3.house_address_city, '') as house_address_city,
+            IFNULL(t3.house_address_district, '') as house_address_district,
+            CONCAT( IFNULL(t3.house_address_province, ''), IFNULL(t3.house_address_city, ''), IFNULL(t3.house_address_district, ''), IFNULL(t3.house_address_more, '')) as house_address,
+		    IFNULL((SELECT value_meaning from wms_sys_dict_data where  wms_sys_dict_id=130 and value_code=t2.customer_age), '') as customer_age,
+		    (case when t3.houses_number is NULL then '' else CONCAT(IFNULL(t3.houses_number, ''), '处') end) as houses_number, 
+		    IFNULL(t3.community_name, '') as community_name,
+		    IFNULL(t3.house_type, '') as house_type,
+		    (case when t3.house_building_area is NULL then '' else CONCAT(IFNULL(replace(CAST(t3.house_building_area AS DECIMAL(10,2)),'.00',''), ''),'㎡') end) as house_building_area, 
+            ifnull(t5.attachment_address, '') as attachment_address,
+            (case when t6.vehicle_evaluation_price is NULL then '' else IFNULL(t6.vehicle_evaluation_price, '')end) as vehicle_evaluation_price,
+            IF(t7.principal_lower is null, '', replace(CAST(t7.principal_lower AS DECIMAL(10,2)),'.00','')) as principal_lower,
+            IFNULL(t3.is_compound, '') as is_compound,
+            IFNULL(t3.house_age, '') as house_age,
+            IFNULL(t3.house_remark, '') as house_remark,
+            IFNULL(date_format(t3.house_buy_date, '%Y年%m月%d日'), '') as house_buy_date,
+            IFNULL(t3.city,"") as city,
+            IFNULL(t2.id_card,"") as id_card,
+            IFNULL(CONCAT(t2.current_address_province,t2.current_address_city,t2.current_address_district,t2.current_address_more),"") as house_address_more
+            
+            
+       from wms_cre_credit_head t1 left join wms_cre_credit_line_customer_change_head t2 
+                                          on t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id and t1.cre_type = '2'
+                                   left join wms_cre_customer_change_line_houseinfo t3 
+                                          on t2.wms_cre_credit_line_customer_change_head_id = t3.wms_cre_credit_line_customer_change_head_id and t2.is_major = '1'
+                                   left join wms_cre_housing_file_info t4 on t1.wms_cre_credit_head_id = t4.wms_cre_credit_head_id
+                                   left join (
+										select b.wms_cre_credit_head_id, b.attachment_address 
+										from (select min(wms_cre_housing_apply_att_id) as wms_cre_housing_apply_att_id,attachment_address 
+														from wms_cre_housing_apply_att t  where data_detail_name in (846,1204,1205)  GROUP BY wms_cre_credit_head_id) a, wms_cre_housing_apply_att b
+									 	where a.wms_cre_housing_apply_att_id = b.wms_cre_housing_apply_att_id
+								) t5 on t5.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+								left join wms_cre_housing_trial_assessment t6 ON t6.wms_cre_credit_head_id = t1.wms_cre_credit_head_id
+								left join wms_cre_appro_borrow_protocol t7
+               						on t1.wms_cre_credit_head_id = t7.wms_cre_credit_head_id and t7.enable_flag=1
+       where 1 = 1
+         and t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+         and t1.enable_flag = '1'
+       Limit 0, 1 
+    </select>
+     
+    
+    <select id="getRefuseloan" parameterType="map" resultType="int">
+		SELECT count(*) FROM(
+			select 
+				IFNULL(t2.debtor_address,t4.house_address_more) as house_address_more,
+				IFNULL(t2.debtor_name,t3.customer_name) as contact_name,
+				IFNULL(t2.debtor_identity_id,t3.id_card) as id_card
+			from  
+				wms_cre_credit_head t1 
+			LEFT JOIN  
+				wms_cre_appro_borrow_protocol t2 
+			ON 
+				t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id and t2.enable_flag=1
+			LEFT	JOIN 
+				wms_cre_credit_line_customer_change_head t3 
+			ON 
+				t3.wms_cre_credit_head_id=t1.wms_cre_credit_head_id and  t3.is_major=1  and t3.enable_flag=1
+			LEFT JOIN 
+				wms_cre_housing_customer_house t5
+			ON 
+				t5.wms_cre_credit_head_id=t1.wms_cre_credit_head_id  
+			LEFT JOIN 
+				wms_cre_customer_change_line_houseinfo t4
+			ON 
+				t4.wms_cre_customer_change_line_houseinfo_id =t5.wms_cre_customer_change_line_houseinfo_id and t4.enable_flag=1
+			where 
+				1=1
+				<if test="credit_type != null">
+				    and t1.cre_type=#{credit_type}
+         		</if>
+				AND t1.enable_flag=1 
+				AND (t1.bill_status like "%J" or t1.bill_status like "%Z" or  t1.bill_status =9)
+			) t
+			<where>
+				<if test="customer_name != null">
+				    and t.contact_name=#{customer_name}
+         		</if>
+				<if test="house_address_more != null">
+				    and t.house_address_more=#{house_address_more}
+         		</if>
+				<if test="id_card != null">
+				    and t.id_card=#{id_card}
+         		</if>
+				
+			</where>
+    </select>
+    
+    
+    
+     <select id="getHeadInfoForId" parameterType="map" resultType="java.util.HashMap">
+         	SELECT
+				t1.debtor_name,
+				t1.creditor_address,
+				t1.cre_loan_type,
+				t1.appro_limit,
+				t1.protocol_date,
+				t1.wms_cre_credit_head_id
+				from wms_cre_appro_borrow_protocol t1
+			RIGHT JOIN 
+				wms_cre_credit_head t2
+			on 
+				t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id
+			<where>
+			    t1.enable_flag=1
+				AND t2.enable_flag=1
+				<if test="wms_cre_credit_head_id != null">
+				    and t2.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+         		</if>
+         		<if test="cre_type != null">
+				    and t2.cre_type = #{cre_type}
+         		</if>
+         	</where>
+     </select>
+     
+     
+    <!-- 上单、放款总件数、金额汇总 -->
+	<select id="loansStatisticsAll" parameterType="map" resultType="java.util.HashMap">
+		select a.count1
+		  from (select count(*) as count1 from wms_cre_credit_head t1 
+	             where date_format(t1.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+			  	   and t1.is_group_flag = 0
+			  	   and t1.bill_status != 'A') a
+	</select> 
+     
+    <!-- 上单、放款数汇总(年) -->
+	<select id="searchBillStatusStaticsByYear" parameterType="map" resultType="java.util.HashMap">
+		select concat(t1.year, '年') as time,
+		       t1.year as real_time,
+			   ifnull(t2.count1, 0) as count1, 
+			   ifnull(t3.count2, 0) as count2, 
+			   ifnull(replace(replace(format(cast(t4.sum as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as sum
+		  from (select date_format(now(), '%Y') as year 
+			     union 
+				select date_format(date_sub(now(), interval 1 year), '%Y') as year) t1
+	 left join (select count(*) as count1, 
+	 				   a.year 
+	 			  from (select date_format(create_timestamp, '%Y') as year
+	 			          from wms_cre_credit_head t1 
+					     where date_format(create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+					       and t1.is_group_flag = 0
+					       and t1.bill_status != 'A') a 
+			  group by a.year) t2
+            on t1.year = t2.year
+	 left join (select count(*) as count2, 
+	 				   a.year 
+	 			  from (select date_format(t2.loan_date, '%Y') as year
+	 			          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2 
+			             where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+						   and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+						   and t2.loan_date is not null
+						   and t1.bill_status = 'W'
+					  	   and t1.is_group_flag = 0) a 
+			  group by a.year) t3
+            on t1.year = t3.year
+	 left join (select sum(a.appro_limit) as sum, 
+	 				   a.year 
+	 			  from (select date_format(t2.loan_date, '%Y') as year, 
+	 			               sum(t3.appro_limit) as appro_limit
+	 			          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2, wms_cre_appro_borrow_protocol t3 
+	      				 where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+				           and t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+					       and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+				           and t2.loan_date is not null
+				           and t1.bill_status = 'W') a 
+			  group by a.year) t4
+		    on t1.year = t4.year
+         where t1.year &gt;= date_format(#{effective_time}, '%Y')
+	</select>
+	
+	<!-- 上单、放款数汇总(月) -->
+	<select id="searchBillStatusStaticsByMonth" parameterType="map" resultType="java.util.HashMap">
+	    select ifnull(count(*), 0) as data, 
+			   a.month as time,
+			   '1' as type
+		  from (select date_format(create_timestamp, '%Y-%m') as month
+			      from wms_cre_credit_head t1 
+			     where date_format(t1.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+			       and date_format(t1.create_timestamp, '%Y') = #{statistics_time}
+			  	   and t1.is_group_flag = 0
+			  	   and t1.bill_status != 'A') a 
+	  group by a.month
+	     union
+	    select ifnull(count(*), 0) as data,  
+			   a.month,
+			   '2' as type 
+		  from (select date_format(t2.loan_date, '%Y-%m') as month
+		          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2 
+	             where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+				   and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+				   and date_format(t2.loan_date, '%Y') = #{statistics_time}
+				   and t2.loan_date is not null
+				   and t1.bill_status = 'W'
+			  	   and t1.is_group_flag = 0) a 
+	  group by a.month
+	    union
+	   select ifnull(replace(replace(format(cast(sum(a.appro_limit) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as data,
+			  a.month,
+			  '3' as type 
+			  from (select date_format(t2.loan_date, '%Y-%m') as month, 
+			               t3.appro_limit
+			          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2, wms_cre_appro_borrow_protocol t3 
+					 where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+			           and t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+				       and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+				       and date_format(t2.loan_date, '%Y') = #{statistics_time}
+			           and t2.loan_date is not null
+			           and t1.bill_status = 'W') a 
+	  group by a.month
+	</select>
+	
+	<!-- 上单、放款数汇总(日) -->
+	<select id="searchBillStatusStaticsByDay" parameterType="map" resultType="java.util.HashMap">
+	    select ifnull(count(*), 0) as data, 
+			   a.day as time,
+			   '1' as type
+		  from (select date_format(create_timestamp, '%Y-%m-%d') as day
+			      from wms_cre_credit_head t1 
+			     where date_format(t1.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+			       and date_format(t1.create_timestamp, '%Y-%m') = #{statistics_time}
+			  	   and t1.is_group_flag = 0
+			  	   and t1.bill_status != 'A') a 
+	  group by a.day
+	     union
+	    select ifnull(count(*), 0) as data, 
+			   a.day as time,
+			   '2' as type 
+		  from (select date_format(t2.loan_date, '%Y-%m-%d') as day 
+		          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2 
+	             where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+				   and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+				   and date_format(t2.loan_date, '%Y-%m') = #{statistics_time}
+				   and t2.loan_date is not null
+				   and t1.bill_status = 'W'
+			  	   and t1.is_group_flag = 0) a 
+	  group by a.day
+	    union
+	   select ifnull(replace(replace(format(cast(sum(a.appro_limit) as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as data,
+			  a.day as time,
+			  '3' as type 
+			  from (select date_format(t2.loan_date, '%Y-%m-%d') as day, 
+			               t3.appro_limit
+			          from wms_cre_credit_head t1, wms_fina_cre_loan_app t2, wms_cre_appro_borrow_protocol t3 
+					 where t1.wms_cre_credit_head_id = t2.wms_cre_credit_head_id
+			           and t1.wms_cre_credit_head_id = t3.wms_cre_credit_head_id
+				       and date_format(t2.loan_date, '%Y-%m-%d') &gt;= #{effective_time}
+				       and date_format(t2.loan_date, '%Y-%m') = #{statistics_time}
+			           and t2.loan_date is not null
+			           and t1.bill_status = 'W') a 
+	  group by a.day
+	</select>
+	
+	<!-- 单据状态统计 -->
+	<select id="loansStatistics" parameterType="map" resultType="java.util.HashMap">
+	    select * 
+	      from (select concat(t3.value_meaning, '(申请金额)') as value_meaning,
+	      			   t1.bill_status, 
+			      	   ifnulL(t2.count, 0) as count, 
+			      	   ifnull(t2.total_amount, 0) as total_amount,
+			      	   '' as remark
+	      	      from (select 'B' as bill_status 
+						 union select 'BT' as bill_status 
+						 union select 'BJ' as bill_status 
+						 union select 'C' as bill_status
+						 union select 'CZ' as bill_status 
+						 union select 'D' as bill_status 
+						 union select 'DZ' as bill_status 
+						 union select 'E' as bill_status 
+						 union select 'EJ' as bill_status 
+						 union select 'EZ' as bill_status) t1 
+			 left join (select a.bill_status, 
+			                   count(*) as count, 
+			                   sum(a.credit_limit) as total_amount 
+			              from wms_cre_credit_head a
+						 where date_format(a.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+					  group by a.bill_status) t2 
+					on t1.bill_status =  t2.bill_status
+			 left join wms_sys_dict_data t3
+				    on t1.bill_status = t3.value_code
+				   and t3.wms_sys_dict_id = 131
+				   
+				 union
+				 
+				select concat(t3.value_meaning, '(终审金额)') as value_meaning,
+					   t1.bill_status, 
+				       ifnull(t2.count, 0) as count, 
+				       ifnull(cast(t2.total_amount as signed), 0) as total_amount,
+				       '【终审】' as remark 
+				  from (select 'F' as bill_status 
+							   union select 'FZ' as bill_status 
+							   union select 'G' as bill_status
+							   union select 'H' as bill_status 
+							   union select 'HT' as bill_status 
+							   union select 'HZ' as bill_status) t1 
+			 left join (select b.bill_status,
+			 				   count(*) as count,
+			                   sum(b.total_amount) as total_amount
+			              from (select a.bill_status, 
+					                   count(*) as count, 
+					                   sum(a.appro_limit) as total_amount 
+					              from wms_cre_credit_head a
+			                     where date_format(a.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+					          group by a.bill_status, ifnull(a.wms_cre_credit_group_id, uuid())) b
+					  group by b.bill_status) t2
+			        on t1.bill_status = t2.bill_status
+		     left join wms_sys_dict_data t3
+				    on t1.bill_status = t3.value_code
+			       and t3.wms_sys_dict_id = 131
+			        
+				 union
+				 
+			    select concat(t3.value_meaning, '(合同金额)') as value_meaning,
+			    	   t1.bill_status, 
+			           ifnull(t2.count, 0) as count, 
+			           ifnull(replace(replace(format(cast(t2.principal_lower as decimal) / 10000, 2), ',', ''), '.00', ''), '0') as total_amount,
+			           '' as remark
+			      from (select 'I' as bill_status 
+					     union 
+					    select 'W' as bill_status) t1 
+			 left join (select b.bill_status,
+			 				   count(*) as count,
+			                   sum(b.principal_lower) as principal_lower
+			              from (select a.bill_status, 
+					                   count(*) as count, 
+					                   sum(b.principal_lower) as principal_lower 
+					              from wms_cre_credit_head a, wms_cre_appro_borrow_protocol b
+					             where a.wms_cre_credit_head_id = b.wms_cre_credit_head_id
+				                   and date_format(a.create_timestamp, '%Y-%m-%d') &gt;= #{effective_time}
+				              group by a.bill_status, ifnull(a.wms_cre_credit_group_id, uuid())) b
+					  group by b.bill_status) t2
+		            on t1.bill_status = t2.bill_status
+		      left join wms_sys_dict_data t3
+				     on t1.bill_status = t3.value_code
+				    and t3.wms_sys_dict_id = 131) a
+	</select>
+     
+</mapper> 

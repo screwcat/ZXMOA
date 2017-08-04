@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="portrait">
+<meta name="x5-orientation" content="portrait">
+<link rel="shortcut icon" href="/MOA/resources/images/logo_16.ico" type="image/x-icon" />
+<script type="text/javascript" src="/MOA/resources/js/zx-all.js"></script>
+<title>卓信移动办公平台</title>
+<script type="text/javascript">
+	$(function(){
+		initviewpage();
+		initBottomMenu();
+// 		initfastmenu();
+		winBack();
+	});
+	var bi = _base_param.context_name+"/resources/images/";
+	var bbi = bi+"bottom_menu/bottom-menu-";
+	//初始化底部导航菜单
+	function initBottomMenu(){
+		//默认显示那个菜单索引
+		var _checked = 0;
+		//初始化
+		$('#tabs').zxbottommenu({
+			//数据
+			items:bottominfo,
+			//每个数据元显示视图
+			adapter:function(item,index){
+				return '<div><img width="32px" height="32px" src="'+bbi+item.img+(_checked==index?'-check':'')+'.png'+'"/></div><span>'+item.text+'</span>';
+			},
+			//中间显示时的显示视图
+			centeradapter:function(){
+				return '<span><img src="'+bbi+'center.png"/></span>';
+			},
+			//当导航菜单项被电击时回调函数 item 点击菜单数据  index 索引
+			itemclick:function(item,index){
+				dialog_hide();
+				showbottomitem(index);
+				isShowNewViewFlag = true;
+				showViewInfo(item.view);
+			},
+			//当中间按钮点击时回调函数
+			centerclick:function(){
+				$('#tabs').find('.zxbottommenu_center span img').attr('src',bbi+'center-check.png');
+				dialog();
+			},
+			//是否显示中间项
+			center:true});
+		//处理中减圆钮
+		$('#tabs .zxbottommenu_center span').css({position:'relative',top:'-15px'});
+		$('#tabs .zxbottommenu_center img').height($('#tabs .zxbottommenu_center').width());
+		$('#showview').css('margin-bottom',$('#tabs').height()+20);
+		$('#tabs .zxbottommenu_item:eq('+_checked+')').click();
+	}
+	//初始化子页面page
+	function initviewpage(){
+		for(var i=0;i<viewpage.length;i++){
+			var view = viewpage[i];
+			$('#showview').append('<div class="viewinfo" id="'+view.id+'"></div>');
+		}
+		$('#showview').append('<div class="viewinfo" id="other"></div>');
+	}
+	//切换个显示视图
+	var showViewPageFlag = '';
+	//UC浏览器特殊处理标记
+	var isLoadPage = false;
+	var isShowNewViewFlag = false;
+	function showViewInfo(id){
+// 		alert('showVIewInfo')
+		var args = arguments;
+		var view = getView(id);
+		if(view == null){
+			isShowNewViewFlag = false;
+			return;
+		}
+		$('#showview').css('margin-bottom',$('#tabs').height()+20);
+		$('.viewinfo').hide();
+		$('#tabs').show();
+		$('#'+id).show();
+		showViewPageFlag = view.id;
+		if(view.bottom != null){
+			showbottomitem(view.bottom)
+		}
+		//根据view类型处理显示个页面
+		if(view.type == 1){
+			if('' == $('#'+id).html() || (isShowNewViewFlag && view.reloadData == null)){
+				$('#'+id).html('');
+				isLoadPage = true;
+				$('#'+view.id).load(view.url,null,function(){
+					isLoadPage = false;
+					if(view.fun != null){
+						try {
+							eval(view.fun+'('+getParamStr(args)+')');
+						} catch (e) {}
+					}
+				});
+			}else if(isShowNewViewFlag && view.reloadData != null){
+				try {
+					eval(view.reloadData+'('+true+')');
+				} catch (e) {
+					$('#'+id).html('');
+					isLoadPage = true;
+					$('#'+view.id).load(view.url,null,function(){
+						isLoadPage = false;
+						if(view.fun != null){
+							try {
+								eval(view.fun+'('+getParamStr(args)+')');
+							} catch (e) {}
+						}
+					});
+				}
+			}
+		}else if(view.type == 2){
+			if('' == $('#'+id).html()){
+				secondMenu($('#'+view.id),view.title+'管理',view.menu);
+			}
+		}else if(view.type == 3){
+			var _other_ids = view.other_ids;
+			if(_other_ids != null && _other_ids != ''){
+				var _other_idArray =_other_ids.split(',');
+				for(var i=0;i<_other_idArray.length;i++){
+					var _other_id = _other_idArray[i];
+					$('#'+_other_id).html('');
+				}
+			}
+			$('#'+id).html('');
+			isLoadPage = true;
+			$('#'+view.id).load(view.url,null,function(){
+				isLoadPage = false;
+				if(view.fun != null){
+					eval(view.fun+'('+getParamStr(args)+')');
+				}
+			});
+			$('#tabs').hide();
+			$('#showview').css('margin-bottom',0);
+		}else if(view.type == 4){
+			isLoadPage = true;
+			$('#'+view.id).html('');
+			$('#'+view.id).load(view.url,null,function(){
+				isLoadPage = false;
+				if(view.fun != null){
+					try {
+						eval(view.fun+'('+getParamStr(args)+')');
+					} catch (e) {}
+				}
+			});
+		}else{
+			$('#other').load('error.html');
+		}
+		isShowNewViewFlag = false;
+	}
+	//根据view id 获取视图信息
+	function getView(id){
+		for(var i=0;i<viewpage.length;i++){
+			if(viewpage[i].id == id){
+				return viewpage[i];
+			}
+		}
+		return null;
+	}
+	function getParamStr(args,flag){
+		var result = "";
+		if(args != null){
+			flag = flag||1;
+			for(var i = flag;i<args.length;i++){
+				if(i != flag){
+					result += ','
+				}
+				result += '"'+args[i]+'"';
+			}
+		}
+		return result;
+	}
+	//二级菜单
+	function secondMenu(obj,title,datas){
+		obj.html('<nav class="navbar navbar-static-top bg-inverse second_title">'+
+				title+'</nav><div class="select"></div>');
+		obj.find('.select').datashow({
+			colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+			adapter:function(data){
+				return '<div class="select_item"><div class="select_img"><img width="28px" height="28px" src="'+bi+'/bottom_menu/'+data.img+'"/></div><div class="select_title">'+
+							data.text+'</div><div class="select_ico"><img src="'+bi+'/bottom_menu/menu-right-arrow.png"/></div></div>';
+			},
+			onitemclick:function(data,index,list){
+// 				$('#other').html('');
+// 				$('#'+data.id).html('');
+				isShowNewViewFlag = true;
+				showViewInfo(data.view);
+// 				$('#other').load(data.url,null,function(){
+// 				});
+			}
+		});
+		obj.find('.select').datashow('adds',datas);
+	}
+	//处理底部导航按钮被点击效果
+	function showbottomitem(index){
+		$('.zxbottommenu_item img').each(function(i){
+			var src = $(this).attr('src');
+			src = src.replace('-check','');
+			$(this).attr('src',src);
+			if(index == i){
+				src = src.substring(0,src.lastIndexOf('.'))+'-check.png';
+				$(this).attr('src',src);
+			}
+		});
+		$('#tabs .zxbottommenu_item').css('color','black');
+		$('#tabs .zxbottommenu_item:eq('+index+')').css('color','#0084E8');
+	}
+	//快捷菜单
+	function dialog(){
+		if($('.dialog_back:visible').length == 1){
+			dialog_hide();
+			return;
+		}
+		$('.dialog_back').show();
+// 		$('.dialog_back2').show();
+		$('#tabs').find('.zxbottommenu_center span img').attr('src',bbi+'center-check.png');
+		$('.dialog,.dialog_back').off('click');
+		$('.dialog_back').click(function(){
+			dialog_hide();
+		});
+		$('.dialog').click(function(){
+			event.stopPropagation();
+		});
+		$('.dialog_panel').css('bottom',$('#tabs').height()+40);
+		$('.dialog span').css('left',$('.dialog_panel').width()/2-20);
+	}
+	//快捷菜单影藏
+	function dialog_hide(){
+		$('.dialog_back').hide();
+		$('.dialog_back2').hide();
+		$('#tabs').find('.zxbottommenu_center span img').attr('src',bbi+'center.png');
+	}
+	//初始化快捷菜单
+	function initfastmenu(){
+		$('#fastmenu').datashow({
+			colsize:{'col-xs-':3,'col-sm-':3,'col-md-':3,'col-lg-':3,'col-xl-':3},
+			adapter:function(data){
+				return '<div class="mainmenu_item"><div class="mainmenu_item_img"><img src="'+_base_param.context_name+'/resources/images/bottom_menu/'+data.img+'"/></div><div class="mainmenu_item_text">'+data.text+'</div></div>'
+			},
+			onitemclick:function(data,index,list){
+// 				$.message(data.body,'danger');
+// 				window.location.href = window.location.href.substring(0,window.location.href.lastIndexOf("/")+1)+'index.html';
+			}
+		});
+		$('#fastmenu').datashow('adds',fastmenus);
+	}
+	//。。。。。没用
+	function showFullImg(url){
+		$('#fullimg').html('<img class="fullimg_info" src="">');
+		$('#fullimg img.fullimg_info').attr('src','/FLSJIM/getimg.do?url='+
+				encodeURIComponent(url));
+		$('#fullimg').show()
+		$('#fullimg').off('click');
+		$('#fullimg').click(function(){
+			$('#fullimg').hide();
+		});
+	}
+	function winBack(){
+		//UC浏览器特殊处理标记
+		var winBackFlag = true;
+		if (window.history && window.history.pushState) {
+			$(window).on('popstate', function (event) {
+				if(showViewPageFlag == '' || winBackFlag || isLoadPage){
+					return;
+				}
+				var view = getView(showViewPageFlag);
+				if(view.back == null || view.back == ''){
+// 					window.history.back();
+					return;
+				}
+				window.history.pushState('forward', null, '#');
+				window.history.forward(1);
+				showViewInfo(view.back);
+			});
+		}
+		window.history.pushState('forward', null, '#'); 
+		window.history.forward(1);
+		winBackFlag = false;
+	}
+
+
+</script>
+</head>
+<body style="overflow-x: hidden;">
+	<div id="showview">
+		<!-- <div class="viewinfo" id="home"></div>
+		<div class="viewinfo" id="office"></div>
+		<div class="viewinfo" id="business"></div>
+		<div class="viewinfo" id="me"></div>
+		<div class="viewinfo" id="other"></div>
+		<div class="viewinfo" id="full"></div> -->
+	</div>
+	<div id="tabs"></div>
+	<div class="dialog_back">
+	<!-- 	<div class="dialog_panel">
+			<div class="dialog" id="dialog">
+			    <span class="bot"></span>
+			    <span class="top"></span>
+			    <div class="info">
+			    	<div class="dialog_title">
+				    	<div class="dialog_title_date">
+				    		<div class="dialog_ym_week">
+				    			<div class="dialog_ym">2016-02</div>
+				    			<div class="dialog_week">星期三</div>
+				    		</div>
+				    		<div class="dialog_day">17</div>
+				    	</div>
+				    	<div class="dialog_title_msg">为了梦想，努力工作!</div>
+			    	</div>
+			    	<div class="fastmenu" id="fastmenu"></div>
+			    </div>
+			</div>
+		</div> -->
+	</div>
+	<div class="dialog_back2"></div>
+	<div class="fullimg" id="fullimg"><img src="" alt="图片加载中"/></div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+package com.zx.moa.ioa.address.web;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.zx.moa.ioa.address.service.IAddressService;
+import com.zx.moa.util.ResultHelper;
+import com.zx.moa.util.bean.ResultBean;
+
+/**
+ * 版权所有：版权所有(C) 2016，卓信金控
+ * 系统名称：
+ * @ClassName: addressController
+ * 模块名称：
+ * @Description: 内容摘要：
+ * @author zhaowei
+ * @date 2017年7月26日
+ * @version V1.0
+ * history:
+ * 1、2017年7月26日 zhaowei 创建文件
+ */
+
+@Controller
+public class AddressController
+{
+
+    @Autowired
+    IAddressService iAddressService;
+
+    @RequestMapping(value = "ioa/telList/getContactsAndHotLines.do", method = { RequestMethod.GET, RequestMethod.POST })
+    @ResponseBody
+    public ResultBean<Map<String, List<Map<String, Object>>>> getAttendance(HttpServletRequest request)
+    {
+        return ResultHelper.getSuccess(iAddressService.getContactsAndHotLines(request));
+    }
+    
+    /**
+     * 
+     * @Title: getContactDetail
+     * @Description: 获取人员详细信息
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 下午3:55:37
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+     */
+    @RequestMapping(value = "ioa/telList/getContactDetail.do", method = { RequestMethod.GET, RequestMethod.POST })
+    @ResponseBody
+    public ResultBean<Map<String, Object>> getContactDetail(HttpServletRequest request)
+    {
+        String personnel_id = request.getParameter("personnel_id");
+        if (personnel_id == null || "".equals(personnel_id))
+        {
+            return ResultHelper.getError("人员id为空。", null);
+        }
+        return ResultHelper.getSuccess(iAddressService.getContactDetail(request));
+    }
+
+    /**
+     * 
+     * @Title: getDeptsContact
+     * @Description: 获取部门联系人热线及子部门
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月27日 下午2:41:09
+     * history:
+     * 1、2017年7月27日 Libo 创建方法
+     */
+    @RequestMapping(value = "ioa/telList/getDeptsContact.do", method = { RequestMethod.GET, RequestMethod.POST })
+    @ResponseBody
+    public ResultBean<Map<String, List<Map<String, Object>>>> getDeptsContact(HttpServletRequest request)
+    {
+        String search_deptId = request.getParameter("dept_id");
+        if (search_deptId == null || "".equals(search_deptId))
+        {
+            return ResultHelper.getError("部门id为空。", null);
+        }
+        return ResultHelper.getSuccess(iAddressService.getDeptsContact(request));
+    }
+
+    /**
+     * 
+     * @Title: uploadTopContacts
+     * @Description: 保存常用联系人
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 下午2:58:04
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+     */
+    @RequestMapping(value = "ioa/telList/uploadTopContacts.do", method = { RequestMethod.GET, RequestMethod.POST })
+    @ResponseBody
+    public ResultBean<List<Map<String, Object>>> uploadTopContacts(HttpServletRequest request)
+    {
+        String person_list = request.getParameter("person_list");
+        if (person_list == null || "".equals(person_list))
+        {
+            return ResultHelper.getError("上传的常用联系人列表为空。", null);
+        }
+        return ResultHelper.getSuccess(iAddressService.uploadTopContacts(request));
+    }
+
+    /**
+     * 
+     * @Title: getHostLines
+     * @Description: 获取热线电话
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 下午3:01:34
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+     */
+    @RequestMapping(value = "ioa/telList/getHostLines.do", method = { RequestMethod.GET, RequestMethod.POST })
+    @ResponseBody
+    public ResultBean<List<Map<String, Object>>> getHostLines(HttpServletRequest request)
+    {
+
+        return ResultHelper.getSuccess(iAddressService.getHostLines(request));
+    }
+}

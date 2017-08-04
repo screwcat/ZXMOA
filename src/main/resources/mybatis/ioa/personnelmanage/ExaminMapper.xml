@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.Examination.persist.ExaminationDao">
+	
+	<!-- v1.1.3及前期版本，只能查到现有申请类型的单据（申请类型id写死了），后期增加普通或特殊的单据都查询不到 -->
+	<select id="getApproveListByQuery" parameterType="map"  resultType="map" >
+		 select
+	    	'IOA' as sys_name,
+	    	o.apply_type_name,
+	    	o.original_apply_personnel_name,
+	    	o.original_apply_personnel_no,
+	    	o.content,
+	    	date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+	    	r.order_relation_id,
+	    	o.order_id,
+	        o.apply_type_id
+	    	
+	    from
+	    	office_apply_order o
+	    right join
+	    	office_apply_order_relation r	
+	    on    
+	    	r.apply_order_id = o.order_id
+   	
+	    where
+	    	(o.order_state in (1,6) AND o.current_level = r.level_index AND approve_personnel_id = #{personnel_id} and r.approve_state = 0)
+	    	<if test="search != null and search != ''">
+	    	    and
+	    	    	concat(o.original_apply_personnel_name,o.original_apply_personnel_no) like "%"#{search}"%"
+	    	</if>
+	    	<if test="drop != null">
+	    	    <choose>
+	    	        <when test="drop == 1">
+	    	            and o.apply_type_id in(5,7,40,41,42,43,44)
+	    	        </when>
+	    	        <when test="drop == 2">
+	    	            and o.apply_type_id in(12,18,20)
+	    	        </when>
+	    	        <when test="drop == 3">
+	    	            and o.apply_type_id in(6,8,9,10,11)
+	    	        </when>
+	    	        <when test="drop == 4">
+	    	            and o.apply_type_id in(23,24,25)
+	    	        </when>
+	    	        <when test="drop == 5">
+	    	            and o.apply_type_id in(26,27,28,29,30,31,32,33,34,35,36,37,38,39,54,55)
+	    	        </when>
+	    	        <otherwise> 
+	    	           and o.apply_type_id in (5,7,40,41,42,43,44,12,18,20,6,8,9,10,11,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,54,55)  
+            		</otherwise> 
+	    	    </choose>
+	    	</if>
+	   		order by o.create_timestamp desc
+	    <if test="page !=null and size != null">
+	        limit ${(page-1)*size},${size}
+	    </if>
+			
+	</select>
+	   
+	<!-- v1.1.3及前期版本，只能查到现有申请类型的单据（申请类型id写死了），后期增加普通或特殊的单据都查询不到 -->
+	<select id="getApproveListByDaiQuery" parameterType="map"  resultType="map" >
+		     select
+	    	'IOA' as sys_name,
+	    	apply_type_name,
+	    	original_apply_personnel_name,
+	    	original_apply_personnel_no,
+	    	content,
+	    	create_timestamp,
+	    	order_id,
+	    	order_relationship,
+	    	order_state,
+	    	apply_type_id
+	    from
+	    	(<!-- 通知人 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						1 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id
+						from  office_apply_order
+						where  
+						order_state in (2,4,5)
+						and FIND_IN_SET(#{personnel_id},notice_personnel_id)
+				)
+				UNION (select <!-- 审批人 -->
+						order_id,
+						apply_type_name,
+						order_state,
+						2 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id
+						from office_apply_order_relation r
+						left join office_apply_order o
+						on r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and (r.approve_state = 1 or r.approve_state = 2 or r.approve_state = 0)
+						and o.order_state != 7
+				)
+				UNION <!-- 签收人 -->
+				(
+					select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						3 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id
+						from office_apply_order_relation r
+						left join office_apply_order o
+						on 
+						r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and o.order_state=4
+					<!-- 	and FIND_IN_SET(#{personnel_id},o.receiving_personnel_id) -->
+						and r.approve_state = 11 
+				)
+				UNION <!-- 申请 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						4 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id
+						from  office_apply_order
+						where  
+						original_apply_personnel_id = #{personnel_id}
+						or apply_personnel_no =#{personnel_shortcode} 
+					    
+				)) as newTable
+				
+	        where 
+	        apply_type_id in (5,7,40,41,42,43,44,12,18,20,6,8,9,10,11,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,54,55)  
+	        <if test="!isApp">
+	        	and create_timestamp >= DATE_SUB( CURRENT_DATE() , INTERVAL 3 MONTH )
+	        </if>
+	        <if test="search != null and search != ''">
+	    	    and
+	    	    	concat(apply_type_name,original_apply_personnel_name,original_apply_personnel_no) like "%"#{search}"%"
+	    	</if>
+	    	<if test="drop != null">
+	    	    <choose>
+	    	        <when test="drop==0">
+	    	            and order_relationship = 1
+	    	        </when>
+	    	        <when test="drop==5">
+	    	            and (order_state = 2 or order_state = 5) 
+	    	        </when>
+	    	        <otherwise>
+	    	            and order_state = #{drop}
+	    	        </otherwise>
+	    	    </choose>
+	    	</if>
+			GROUP BY  order_id
+			ORDER BY  order_id desc
+			
+	    <if test="page !=null and size != null">
+	       limit ${(page-1)*size},${size}
+	   
+	    </if>
+			
+	</select>
+	   
+	
+	<!-- v1.1.4版本，后期增加普通的单据能查询到（单据类型得在前5个分类里），增加特殊单据查询不到（因为app端无相应页面） -->
+	<select id="getApproveListByQueryV114" parameterType="map"  resultType="map" >
+		 select
+	    	'IOA' as sys_name,
+	    	o.apply_type_name,
+	    	o.original_apply_personnel_name,
+	    	o.original_apply_personnel_no,
+	    	o.content,
+	    	date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+	    	r.order_relation_id,
+	    	o.order_id,
+	        o.apply_type_id
+	    	
+	    from
+	    	office_apply_order o
+	    right join
+	    	office_apply_order_relation r	
+	    on    
+	    	r.apply_order_id = o.order_id
+   	
+	    where
+	    	(o.order_state in (1,6) AND o.current_level = r.level_index AND approve_personnel_id = #{personnel_id} and r.approve_state = 0)
+	    	<if test="search != null and search != ''">
+	    	    and
+	    	    (o.original_apply_personnel_name like "%"#{search}"%" or o.original_apply_personnel_no like "%"#{search}"%")	
+	    	</if>
+	    	<if test="drop != null">
+	    	    <choose>
+	    	        <when test="drop == 1">
+	    	            and FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(5))>0
+	    	        </when>
+	    	        <when test="drop == 2">
+	    	            and FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(12))>0
+	    	        </when>
+	    	        <when test="drop == 3">
+	    	            and FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(6))>0
+	    	        </when>
+	    	        <when test="drop == 4">
+	    	            and FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(23))>0
+	    	        </when>
+	    	        <when test="drop == 5">
+	    	            and FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(26))>0
+	    	        </when>
+	    	        <when test="drop == 6">
+	    	            and o.apply_type_id = 60
+	    	        </when>
+	    	        <otherwise> 
+	    	           and (FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(5))>0 or FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(12))>0 or FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(6))>0 or FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(23))>0 or FIND_IN_SET(o.apply_type_id,queryChildrenApplyTypeInfo(26))>0 or o.apply_type_id = 60)  
+            		</otherwise> 
+	    	    </choose>
+	    	</if>
+	   		order by o.create_timestamp desc
+	    <if test="page !=null and size != null">
+	        limit ${(page-1)*size},${size}
+	    </if>
+			
+	</select>
+	
+	
+	<!-- v1.1.4版本，后期增加普通的单据能查询到（单据类型得在前5个分类里），增加特殊单据查询不到（因为app端无相应页面） -->
+	<select id="getApproveListByDaiQueryV114" parameterType="map"  resultType="map" >
+		     select
+	    	'IOA' as sys_name,
+	    	apply_type_name,
+	    	original_apply_personnel_name,
+	    	original_apply_personnel_no,
+	    	content,
+	    	create_timestamp,
+	    	order_id,
+	    	order_relationship,
+	    	order_state,
+	    	apply_type_id
+	    from
+	    	(<!-- 通知人 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						1 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id
+						from  office_apply_order
+						where  
+						order_state in (2,4,5)
+						and FIND_IN_SET(#{personnel_id},notice_personnel_id)
+				)
+				UNION (select <!-- 审批人 -->
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						2 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id
+						from office_apply_order_relation r
+						left join office_apply_order o
+						on r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and ((o.order_state != 7 and r.approve_state in (0,1,2)) or (o.order_state = 7 and r.approve_state in (1,2)))
+				)
+				UNION (select <!-- 与我相关,未到审批节点 -->
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						5 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id
+						from office_apply_order_relation r
+						left join office_apply_order o
+						on r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and r.approve_state = 9
+						and o.order_state != 7 and o.order_state != 3
+				)
+				UNION <!-- 签收人 -->
+				(
+					select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						3 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id
+						from office_apply_order_relation r
+						left join office_apply_order o
+						on 
+						r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and o.order_state in (4,7)
+					<!-- 	and FIND_IN_SET(#{personnel_id},o.receiving_personnel_id) -->
+						and r.approve_state = 11 
+				)
+				UNION <!-- 申请 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						4 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id
+						from  office_apply_order
+						where  
+						original_apply_personnel_id = #{personnel_id}
+					    
+				)
+				<!-- 项目酬勤参与人，与我相关 -->
+				UNION
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						5 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id
+						from  office_apply_order  o inner join time_payoff p on o.order_id=p.payoff_deptId
+						where p.enable_flag=1
+						and original_apply_personnel_id != #{personnel_id}
+						and FIND_IN_SET(#{personnel_id},p.payoff_personnel_id) 
+				)
+				
+				) as newTable
+				
+	        where 
+	        (FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(5))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(12))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(6))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(23))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(26))>0 or apply_type_id = 60)
+	        <if test="!isApp">
+	        	and create_timestamp >= DATE_SUB( CURRENT_DATE() , INTERVAL 3 MONTH )
+	        </if>
+	        <if test="search != null and search != ''">
+	    	    and
+	    	    (apply_type_name like "%"#{search}"%" or original_apply_personnel_name like "%"#{search}"%" or original_apply_personnel_no like "%"#{search}"%")
+	    	</if>
+	    	<if test="drop != null">
+	    	    <choose>
+	    	        <when test="drop==0">
+	    	            and order_relationship = 1
+	    	        </when>
+	    	        <when test="drop==5">
+	    	            and (order_state = 2 or order_state = 5) 
+	    	        </when>
+	    	        <when test="drop==2">
+	    	            and order_relationship = 5
+	    	        </when>
+	    	        <otherwise>
+	    	            and order_state = #{drop}
+	    	        </otherwise>
+	    	    </choose>
+	    	</if>
+			GROUP BY  order_id
+			ORDER BY  order_id desc
+			
+	    <if test="page !=null and size != null">
+	       limit ${(page-1)*size},${size}
+	   
+	    </if>
+			
+	</select>
+	
+	
+	<!-- v1.1.7版本 -->
+	<select id="getApproveListByLoginUserNew" parameterType="map"  resultType="map" >
+		 select
+	    	'IOA' as sys_name,
+	    	o.apply_type_name,
+	    	o.original_apply_personnel_name,
+	    	o.original_apply_personnel_no,
+	    	o.content,
+	    	date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+	    	r.order_relation_id,
+	    	o.order_id,
+	        o.apply_type_id
+	    	
+	    from
+	    	office_apply_order o
+	    right join
+	    	office_apply_order_relation r	
+	    on    
+	    	r.apply_order_id = o.order_id
+   	
+	    where
+	    	(o.order_state in (1,6) AND o.current_level = r.level_index AND approve_personnel_id = #{personnel_id} and r.approve_state = 0)
+	   		order by o.create_timestamp desc
+	    <if test="page !=null and size != null">
+	        limit ${(page-1)*size},${size}
+	    </if>
+	</select>
+
+	<!-- v1.1.7版本 -->
+	<select id="getApproveListByLoginUserCount" parameterType="map"  resultType="int" >
+		select
+	    	count(*)
+	    from
+	    	office_apply_order o
+	    right join
+	    	office_apply_order_relation r	
+	    on    
+	    	r.apply_order_id = o.order_id
+   	
+	    where
+	    	(o.order_state in (1,6) AND o.current_level = r.level_index AND approve_personnel_id = #{personnel_id} and r.approve_state = 0)
+	   		order by o.create_timestamp desc
+	</select>
+	
+	<!-- v1.1.9版本 -->
+	<select id="getApproveListByLoginUserV119" parameterType="map"  resultType="map" >
+		 select
+	    	'IOA' as sys_name,
+	    	o.apply_type_name,
+	    	o.original_apply_personnel_name,
+	    	o.original_apply_personnel_no,
+	    	o.content,
+	    	date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+	    	r.order_relation_id,
+	    	o.order_id,
+	        o.apply_type_id,
+	    	1 as operable,
+	    	CAST(o.order_state as SIGNED) order_state,
+	    	0 as order_relationship,
+	    	'' as business_type,
+	    	'' as business_type_name
+	    from
+	    	office_apply_order o
+	    inner join
+	    	office_apply_order_relation r	
+	    on    
+	    	r.apply_order_id = o.order_id
+	    where
+	    	o.order_state in (1,6) AND o.current_level = r.level_index AND approve_personnel_id = #{personnel_id} and r.approve_state = 0
+	   		ORDER BY  o.order_id desc
+	</select>
+	
+	<!-- v1.1.9版本 -->
+	<select id="getOtherListByLoginUserV119" parameterType="map"  resultType="map" >
+		     select
+	    	'IOA' as sys_name,
+	    	apply_type_name,
+	    	original_apply_personnel_name,
+	    	original_apply_personnel_no,
+	    	content,
+	    	create_timestamp,
+	    	order_id,
+	    	order_relation_id,
+	    	order_relationship,
+	    	order_state,
+	    	apply_type_id,
+	    	2 as operable,
+	    	'' as business_type,
+	    	'' as business_type_name
+	    from
+	    	(<!-- 通知人 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						1 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id,
+						0 as order_relation_id
+						from  office_apply_order
+						where  
+						order_state in (2,4,5)
+						and FIND_IN_SET(#{personnel_id},notice_personnel_id)
+				)
+				UNION (select <!-- 审批人 -->
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						2 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id,
+						r.order_relation_id
+						from office_apply_order_relation r
+						inner join office_apply_order o
+						on r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and (r.approve_state = 1 or r.approve_state = 2)
+						<!-- and o.order_state != 7 -->
+				)
+				UNION (select <!-- 与我相关，未到审批节点 -->
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						5 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id,
+						r.order_relation_id
+						from office_apply_order_relation r
+						inner join office_apply_order o
+						on r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and r.approve_state = 9
+						and o.order_state != 7 and o.order_state != 3
+				)
+				UNION <!-- 签收人 -->
+				(
+					select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						3 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						o.content,
+						apply_type_id,
+						r.order_relation_id
+						from office_apply_order_relation r
+						inner join office_apply_order o
+						on 
+						r.apply_order_id=o.order_id
+						where approve_personnel_id = #{personnel_id}
+						and o.order_state in (4,7)
+					<!-- 	and FIND_IN_SET(#{personnel_id},o.receiving_personnel_id) -->
+						and r.approve_state = 11 
+				)
+				UNION <!-- 申请 -->
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						4 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id,
+						0 as order_relation_id
+						from  office_apply_order
+						where  
+						original_apply_personnel_id = #{personnel_id}
+				)
+				<!-- 项目酬勤参与人，与我相关 -->
+				UNION
+				(
+				select
+						distinct
+						order_id,
+						apply_type_name,
+						order_state,
+						5 as order_relationship,
+						original_apply_personnel_name,
+						original_apply_personnel_no,
+						date_format(o.create_timestamp,'%Y-%m-%d') as create_timestamp,
+						content,
+						apply_type_id,
+						0 as order_relation_id
+						from  office_apply_order  o inner join time_payoff p on o.order_id=p.payoff_deptId
+						where p.enable_flag=1
+						and original_apply_personnel_id != #{personnel_id}
+						and FIND_IN_SET(#{personnel_id},p.payoff_personnel_id) 
+				)
+				
+				) as newTable
+				
+	        where 
+	        (FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(5))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(12))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(6))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(23))>0 or FIND_IN_SET(apply_type_id,queryChildrenApplyTypeInfo(26))>0 or apply_type_id = 60)
+	      	GROUP BY  order_id
+			ORDER BY  order_id desc
+	    <if test="size != null">
+	       limit ${size}
+	    </if>
+	
+	</select>
+	
+</mapper>

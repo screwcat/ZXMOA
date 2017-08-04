@@ -1,0 +1,1 @@
+package com.zx.moa.wms.loan.service;import java.util.Map;import java.util.List;import com.zx.moa.util.gen.entity.wms.WmsCreCreditRefuse;/* * WmsCreCreditRefuseService */public interface IWmsCreCreditRefuseService {               }

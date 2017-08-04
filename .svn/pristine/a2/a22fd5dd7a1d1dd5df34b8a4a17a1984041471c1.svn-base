@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.task.persist.TaskMessageDao">
+    <select id="unFeedback" resultType="map">
+		SELECT 
+			t.task_id,
+			t.accept_feedback_id,
+			t.accept_feedback_name,
+			t.accept_feedback_code,
+			fm.feedback_user_id,
+			fm.feedback_user_name,
+			fm.feedback_user_code,
+			t.feedback_cycle,
+			pm.personnel_deptId
+		FROM
+			sys_task t
+		LEFT JOIN(
+			SELECT 
+				f.task_id,f.feedback_user_id,f.feedback_user_name,f.feedback_user_code,
+				MAX(m.create_datetime) AS message_time
+			FROM 
+				sys_task_feedback_user f 
+			LEFT JOIN 
+				(select task_id,create_id,create_datetime from sys_task_message where enable_flag = 1 and message_type=1) m 
+			ON 
+				f.task_id = m.task_id and f.feedback_user_id = m.create_id 
+			WHERE 
+				f.enable_flag = 1 
+			GROUP BY f.task_id,f.feedback_user_id,f.feedback_user_name,f.feedback_user_code	
+		) AS fm
+		ON 
+			t.task_id = fm.task_id
+		INNER JOIN pm_personnel pm ON fm.feedback_user_id=pm.personnel_id
+		WHERE pm.enable_flag = 1
+		and
+			t.enable_flag = 1
+		AND
+			t.task_status = 1
+		AND
+			t.feedback_cycle != 0
+		AND
+			DATE_FORMAT(ADDDATE(ifnull(message_time,ADDDATE(t.create_datetime,-1)),ABS(t.feedback_cycle)),'%Y-%m-%d')&lt;=CURDATE();
+    </select>
+    
+    <select id="getAppUserRecord" resultType="map">
+        select
+		  app_name,
+		  user_code,
+		  alias,
+		  tags,
+		  registrationID,
+		  mobile
+        from
+        	sys_app_user_record
+        where
+        	1 =1
+        <if test="app_name != null and app_name != ''">
+            and app_name = #{app_name}
+        </if>
+    </select>
+	<select id="getAllUnfinishedTask" resultType="map">
+	    SELECT 
+			t.task_id,
+			t.task_num,
+			DATE_FORMAT(t.finish_time,'%Y-%m-%d %T') as finish_time,
+			t.accept_feedback_id,
+			t.accept_feedback_code,
+			t.accept_feedback_name,
+			t.remind_time,
+			f.feedback_user_id,
+			f.feedback_user_code,
+			f.feedback_user_name
+		FROM
+			sys_task t
+		LEFT JOIN
+			sys_task_feedback_user f
+		ON
+			t.task_id = f.task_id
+		WHERE 
+			t.enable_flag = 1 
+		AND 
+			f.enable_flag = 1
+		AND
+			t.task_status = 1
+		AND
+			t.remind_time != '-1'
+		AND 	
+		    DATE_ADD(finish_time, INTERVAL remind_time*-60 MINUTE)>=NOW()	
+	</select>
+	<select id="findUnFinshedTaskByID" resultType="map">
+	    SELECT 
+			t.task_id,
+			t.task_num,
+			DATE_FORMAT(t.finish_time,'%Y-%m-%d %T') as finish_time,
+			t.accept_feedback_id,
+			t.accept_feedback_code,
+			t.accept_feedback_name,
+			t.remind_time,
+			f.feedback_user_id,
+			f.feedback_user_code,
+			f.feedback_user_name
+		FROM
+			sys_task t
+		LEFT JOIN
+			sys_task_feedback_user f
+		ON
+			t.task_id = f.task_id
+		WHERE 
+			t.enable_flag = 1 
+		AND 
+			f.enable_flag = 1
+		AND
+			t.task_status = 1
+		AND
+			t.task_id = #{task_id}
+	</select>
+	<select id="findAliasByCode" parameterType="map" resultType="String">
+	    select
+		  alias
+        from
+        	sys_app_user_record
+        where
+        	app_name = #{app_name}
+        and
+        	user_code = #{user_code}
+	</select>
+	<select id="getPublishTaskList" resultType="int">
+	    select
+	    	t.task_id
+	    from
+	    	sys_task t
+	    where
+	    	t.enable_flag = 1
+	    and
+	    	t.accept_feedback_id = #{personnel_id}
+	    and
+	    	t.task_status in (1,2)
+	    limit 0,2
+	</select>
+	<select id="getFeedbackTaskList" resultType="int">
+	    select
+	    	t.task_id
+	    from
+	    	sys_task t
+	    left join
+	    	sys_task_feedback_user f
+	    on
+	    	t.task_id = f.task_id
+	    where
+	    	t.enable_flag = 1
+	    and
+	    	f.enable_flag = 1
+	    and
+	    	f.feedback_user_id = #{personnel_id}
+	    and
+	    	t.task_status in (1,2)
+	    limit 0,2
+	</select>
+	
+	<select id="getBasicByPerDeptIdAndYear" parameterType="map" resultType="Integer"> 
+		SELECT findVolumnByDeptId(#{personnel_deptId},#{year}) as id;
+	</select>
+	
+	<select id="getVolumeById" parameterType="map" resultType="Integer"> 
+		SELECT basic_id from time_volume where id= #{id};
+	</select>
+	
+	<select id="getMonthBybasicId" parameterType="map" resultType="String"> 
+		SELECT ${mon} from time_day_month where basic_id = #{basic} and day_type = 0 and enable_flag=1;
+	</select>
+	
+	<select id="selPostIdById" parameterType="int" resultType="Integer"> 
+		SELECT personnel_id FROM view_personnel_dept_post WHERE personnel_postId IN 
+		(SELECT post_id FROM sys_post WHERE enable_flag=0 AND post_number REGEXP 'PZXJKXXXXXX|PZXZXZCXXXX|PZXGJFZCXXX|PPHZXZJLXXX|PCFZXZJLXXX|PZNZXZJLXXX|PZNZXFZJLXX|PCFZXFZJLXX|PPHZXFZJLXX|PZNZJXXXXXX|PZNFZJXXXXX|PHLSXXXGXXX')
+		AND personnel_id=#{id}
+	</select>
+	
+	<!-- 初始化新闻公告，会议纪要类任务 -->
+	<select id="getAllUnfinishedTaskOver" resultType="map">
+	    SELECT 
+			t.task_id,
+			DATE_FORMAT(t.finish_time,'%Y-%m-%d %T') as finish_time
+		FROM
+			sys_task t
+		WHERE 
+			t.enable_flag = 1 
+		AND
+			t.task_status in (1,2)
+		AND
+			t.task_type_id in (2,3)
+	</select>
+	
+	<select id="findUnFinshedTaskOverByID" resultType="map">
+	    SELECT 
+			t.task_id,
+			DATE_FORMAT(t.finish_time,'%Y-%m-%d %T') as finish_time,
+			user.feedback_user_id as feedback_user_id,
+			t.task_status as task_status,
+			t.is_feedback as is_feedback,
+			t.accept_feedback_id as accept_feedback_id, 
+			t.accept_feedback_name as accept_feedback_name,
+			t.accept_feedback_code as accept_feedback_code
+		FROM
+			sys_task t inner join sys_task_feedback_user user
+			on t.task_id = user.task_id
+		WHERE 
+			t.enable_flag = 1 and user.enable_flag = 1
+		AND
+			t.task_status in (1,2)
+		AND
+			t.task_type_id in (2,3)	
+		AND
+			t.task_id = #{task_id}
+	</select>
+	
+	<select id="countFeedBackNumForAutoCheck" parameterType="map" resultType="int">
+	    select 
+	    	count(*)	
+	    	
+	    from 
+	    	sys_task_message 
+		WHERE	
+			enable_flag = 1
+			and message_type = 1
+			and create_id = #{feedback_user_id}
+			and task_id = #{task_id}
+			and message_info_type not in (11)
+	</select>
+</mapper>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style type="text/css">
+    .mainmenu_item{text-align: center;}
+    .mainmenu_item_text{overflow: hidden;word-break:keep-all;white-space:nowrap;}
+    .menu_item_img{width:75px;height:75px;}
+    .datas_item{text-align: left;font-weight: bold;margin:0px;}
+    .datas_item_left{width:60%;display: inline-block;padding-left: 15px;margin:0px;}
+    .datas_item_right{width:40%;display: inline-block;padding-left: 15px;margin:0px;}
+    .datas_item_sys{color: #33CCFF; display: inline-block;}
+    .datas_item_title{display: inline-block;}
+    .datas_item_info{white-space: nowrap;  overflow: hidden;   text-overflow: ellipsis;  }
+    .datas_item_do{display: none;background-color: #ccc;text-align: right;}
+    .datas_item_do button{margin: 10px;}
+    .pull_down,.pull_up{display: none;text-align: center;}
+	
+	.bb{float:left;padding-top: 4px;font-weight:bold;color:#1E90FF;}
+	.tt{background-color:#66B3FF; height: 24px;width:120px;margin-right:25px;}
+	#t{background-color:#1E90FF;}
+	.form-control{width:100%;padding:.375rem .75rem;font-size:1rem;line-height:1.5;color:#55595c;background-color:#fff;background-image:none;}
+	.form-control::-webkit-input-placeholder{color:#FFFFFF;font-weight:bold;}
+	.dropdown-menu{opacity:0.5;z-index: 1000;text-align:center;position:absolute;background-color:#ACD6FF;}
+	ul.dropdown-menu{opacity:0.9;z-index: 1000;background-color:#ACD6FF;}
+	 
+	#house_loan_datas_wapper{position: absolute;top: 82px;bottom:58px;width: 100%;z-index: 1;}
+</style>
+</head>
+<body>
+    <div style="width:100%;">
+	    <nav id="t" class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+		    <div style="height:25px;">
+		        <span id="pp1" class="bb">
+		            <img alt="图片加载中..." src="/MOA/resources/images/iconfont-ordinaryjiantou1zuo.png" onclick="history.back(-1);">
+		        </span>
+		        <div class="nav_title" style="font-size: 20px;">贷款单据列表</div>
+		    </div>
+		    <form class="bs-example bs-example-form" role="form" style="width:100%;">
+		        <div class="row"  style="height:35px;text-align: center;">
+		            <div class="col-lg-6 col-lg-offset-3" style="width: 100%;margin: 0px auto;padding: 0">
+		                <div class="input-group" style="margin-top: 10px; margin-left: 20px">
+		                    <div class="input-group-btn dropdown">
+		                        <button id="customer_serach_dropdown" type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#ACD6FF;text-align:center;height:25px;width:80px; font-size:10px;padding-left: 2px;border-top-left-radius:0; border-bottom-left-radius:0;"> 
+			                        <div style="margin-top:-3px;padding-left:-10px">
+			                            <span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;" id="sort_show">排序</span>
+				                        <span style="margin-top:10px;">
+				                            <img alt="图片加载中..." src="/MOA/resources/images/iconfont-jianjiaojiantouxia.png">
+				                        </span>
+			                        </div>
+			                        <span class="caret"></span>
+		                        </button>
+				                <ul class="dropdown-menu" aria-labelledby="customer_serach_dropdown">
+				                    <li><a style="color: #FFF" href="#" data-toggle="tab" onclick="javascrpit:changeSortName('create_timestamp', this)">提交时间</a></li>
+                                    <li><a style="color: #FFF" href="#" data-toggle="tab" onclick="javascrpit:changeSortName('bill_code', this)">单据编号</a></li>
+				                </ul>
+		                    </div>
+			                <input type="text" id="many_column_like_loan_list" name="many_column_like" class="form-control" placeholder="客户姓名" style="width:140px;height:25px;background-color:#ACD6FF;font-size:10px;">
+			                <span id="search" onclick="loadHomeData(true)" style="background-color:#ACD6FF;line-height:25px;width:35px;float:left;">
+			                    <img src="../images/iconfont-search2.png">
+			                </span>
+			                <div class="input-group-btn dropdown" style="float: left;">
+                                <button id="customer_serach_dropdown" type="button" class="btn btn-default" data-toggle="dropdown" 
+                                    style="background-color:#ACD6FF;text-align:center;height:25px;font-size:10px;
+                                    padding-left: 0; padding-right: 3px; min-width: 80px; border-left: 1px solid #CCCCCC"> 
+                                    <div style="margin-top:-3px;padding-left:-10px">
+                                        <span style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;" id="status_show">全部</span>
+                                        <span style="margin-top:10px;">
+                                            <img alt="图片加载中..." src="/MOA/resources/images/iconfont-jianjiaojiantouxia.png">
+                                        </span>
+                                    </div>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="drop3" style="right: -77px; left: auto; height: 365px">
+                                    <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('', this)">全部</a></li>
+                                    <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('A', this)">草稿</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('B', this)">待复核</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('C', this)">待贷前审核</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('D', this)">待终审</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('E', this)">待放款准备</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('F', this)">待放款审核</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('I', this)">复核退回</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('G', this)">待放款</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('J', this)">补件中</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('K', this)">待审批</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('H', this)">已完成</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeBillStatus('Z', this)">终止</a></li>
+					                <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeLimitTime('1', this)">近一个月单据</a></li>
+                                    <li><a style="color: #FFF" data-toggle="tab" href="#" onclick="javascrpit:changeLimitTime('3', this)">近三个月单据</a></li>
+                                </ul>
+                            </div>
+		                </div>
+		            </div>
+		            <br />
+		        </div>
+		    </form>
+		</nav>
+    </div>
+    <div id="house_loan_datas_wapper" style="margin-top: 20px; overflow: auto;">
+        <div id="house_loan_datas"></div>
+    </div>
+<script type="text/javascript">
+
+var whc_home_page = 1;
+var whc_home_size = 5;
+
+var sortname = "bill_code";
+var bill_status = "";
+var period = "";
+
+//初始化数据
+function initHouseLoanSearch(){
+    //初始化结构
+    $('#house_loan_datas').datashow({
+        //不同分别率下显示个数
+        colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+        //是否使用上拉刷新和下拉加载
+        isScroll:true,
+        datas_wapper:'house_loan_datas_wapper',
+        //每个数据结构显示视图
+        adapter:function(data){
+        	var returnHTML = 
+                    '<div class="datas_item" pk="' + data.wms_cre_credit_head_id + '">' +
+                        '<div class="datas_item_left">' +
+                            '<div class="datas_item_sys">' + '订单编号' + data.bill_code + '</div>' +
+                        '</div>' +
+                        '<div class="datas_item_right">' +
+                            '<div>' + data.bill_status_name + '</div>' +
+                        '</div>' +
+                        '<hr style="height:1px;border-top:1px dashed #0066CC;" />' +
+                        '<div class="datas_item_left">' + '申请时间:' + data.create_timestamp + '</div>' +
+                        '<div class="datas_item_left">' + '提交人:' + data.create_user_name + '</div>' +
+                        '<div class="datas_item_left">' + '贷款人:' + data.customer_name + '</div>';
+                //下面这些状态可以补件
+                if(data.bill_status == 'A' || 
+                		data.bill_status == 'B' ||
+                		data.bill_status == 'C' ||
+                		data.bill_status == 'D' ||
+                		data.bill_status == 'L' || 
+                		data.bill_status == 'J' ||
+                		data.bill_status == 'I') {
+	                returnHTML += '<div class="datas_item_right"><button id="' + data.wms_cre_credit_head_id + '" onclick="addHouseLoanCertificate(' + data.wms_cre_credit_head_id +')" class="btn btn-default">补录</button></div>';
+                }        
+                        
+                returnHTML += '<hr style="height:1px;border-top:1px solid #6B6B6B;" />' +
+                          '</div>';
+        	return returnHTML;
+                    
+        },
+        //点击每个数据视图时候的回调方法  data 单元数据 index 索引 list 所有数据
+        onitemclick: function(data, index, list){
+        	showViewInfo('house_loan_Info', data.wms_cre_credit_head_id);
+        },
+        //向上滑动时回调函数
+        onup:function(){
+            whc_home_page++;
+            loadHomeData(false);
+        },
+        //向下滑动时回调函数
+        ondown:function(){
+            loadHomeData(true);
+        }
+    });
+    loadHomeData(true);
+}
+
+//请求数据flag为刷新标识
+function loadHomeData(flag) {
+    if(flag) {
+        whc_home_page = 1;
+    } 
+    $.ajax({
+        url: _base_param.context_name + '/loan/searchHouseLoanList.do?sortname=' + sortname + '&sortorder=desc',
+        type: 'POST',
+        data: {page: whc_home_page, pagesize: whc_home_size, bill_status: bill_status, many_column_like: $('#many_column_like_loan_list').val(), period : period},
+        async: false,
+        success: function(data) {
+            if(data.ret_code == '000'){
+                if(flag){
+                    $('#house_loan_datas').datashow('clearView');
+                }
+                $('#house_loan_datas').datashow('adds',data.ret_data);
+                if(data.ret_data.length == 0){
+                    $.message('没有更多数据了哦！');
+                    whc_home_page--;
+                }
+            }else if(data.ret_code != null){
+                $.message(data.ret_msg);
+            }else{
+                $('#house_loan_datas').html(data);
+            }
+            $('#house_loan_datas').datashow('clearPull');
+        }
+    });
+    
+}
+
+function changeSortName(sortnamem, obj) {
+	sortname = sortname;
+	$('#sort_show').html($(obj).text());
+	loadHomeData(true);
+}
+
+function changeBillStatus(status, obj) {
+	bill_status = status;
+	period = "";//重置时间段限制条件
+	$('#status_show').html($(obj).text());
+	loadHomeData(true);
+}
+
+function changeLimitTime(_period, obj) {
+	period = _period;//重置单据状态限制条件
+	bill_status = "";
+	$('#status_show').html($(obj).text());
+	loadHomeData(true);
+}
+
+function sbform() {
+	loadHomeData(true);
+}
+
+//补件
+function addHouseLoanCertificate(wms_cre_credit_head_id, e) {
+	e = e || window.event;  
+    if(e.stopPropagation) { //W3C阻止冒泡方法  
+        e.stopPropagation();  
+    } else {  
+        e.cancelBubble = true; //IE阻止冒泡方法  
+    }  
+	showViewInfo('add_house_loan_list', wms_cre_credit_head_id, 843, 3, '贷款补件', 'house_loan_list');
+}
+
+// document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+</script>    
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style type="text/css">
+    .bb{float:left;padding-top: 4px;font-weight:bold;color:#1E90FF;}
+    .tt{background-color:#66B3FF; height: 24px;width:120px;margin-right:25px;}
+    #t{background-color:#1E90FF;}
+    
+    .uploadimg{width: 60px; height: 60px;margin-left: 20px;width: 60px;height: 60px; cursor: pointer;}
+    #house_loan_upload_wapper{position: absolute;top: 82px;bottom:58px;width: 100%;z-index: 1;}
+    
+    .delete{width: 20px; height: 20px; vertical-align: top;}
+</style>
+</head>
+<body>
+    <nav id="t" class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+	    <div style="height:25px;">
+	        <span id="pp1" class="bb">
+	            <img alt="图片加载中..." src="/MOA/resources/images/iconfont-ordinaryjiantou1zuo.png" onclick="history.back(-1);">
+	        </span>
+	        <div class="nav_title" id="upload_title"></div>
+	    </div>
+    </nav>
+    <div id="house_loan_upload_wapper">
+	    <form action="/MOA/loan/houseLoanUpload.do" id="upload_datas" target="hideIframeForForm"
+	       enctype="multipart/form-data" method="post" style="overflow: auto;">
+	    </form>
+    </div>
+    <iframe name="hideIframeForForm" style="display: none;"></iframe>
+<script type="text/javascript">
+
+var params = {};
+
+var save_type = 1;
+
+var returnPageName = ""; //返回页面名称
+
+var sbFlag = true; //点击有效标识
+
+//初始化数据
+function initHouseLoanUpload(wms_cre_credit_head_id, p_wms_sys_dict_data_id, save_type, upload_title, _returnPageName){
+	$('#upload_title').html(upload_title);
+	returnPageName = _returnPageName;
+	if(typeof(p_wms_sys_dict_data_id) == "undefined" || p_wms_sys_dict_data_id == 0) {//首页直接进来的(无参数:贷款申请)
+		p_wms_sys_dict_data_id = 843;
+	    save_type = 1;
+	    $('#upload_title').html('贷款申请');
+	    wms_cre_credit_head_id = 0;//无房贷主表ID,给设置成0(不能为null)
+	    returnPageName = 'business';
+	}
+	
+	$('#upload_datas').append('<input type="hidden" name="wms_cre_credit_head_id" value="' + wms_cre_credit_head_id + '" />');
+	$('#upload_datas').append('<input type="hidden" name="save_type" value="' + save_type + '" />');
+
+	$.ajax({
+        url: _base_param.context_name + '/loan/wmssysdictdatawithoutpaginglist.do?sortname=sort_order&sortorder=asc',
+        type: 'POST',
+        data: {p_wms_sys_dict_data_id: p_wms_sys_dict_data_id},
+        async: false,
+        success: function(data) {
+        	$(data.Rows).each(function(i, o){
+        	    $('#upload_datas').append(
+                        '<div class="datas_item_left">' + o.value_meaning + '</div>' +
+                        '<div class="row img">' +
+                            '<input type="hidden" name="wms_sys_dict_data_ids" value="' + o.wms_sys_dict_data_id + '" />' +   
+                            '<input type="hidden" name="p_wms_sys_dict_data_ids" value="' + o.p_wms_sys_dict_data_id + '" />' +  
+                            '<div class="col-xs-4" style="margin-bottom: 2%;padding-left: 0;padding-right: 0;">' +
+                                '<img src="/MOA/resources/images/fileupload.png" class="uploadimg" onclick="changeImg(this)" />' +
+                                '<input runat="server" type="file" accept="image/*" capture="camera" style="display: none;" name="imgFile" onchange="showImg(this)" />' +
+                            '</div>' +
+                        '</div>');
+        	    if(i < data.Rows.length - 1) {
+        	    	$('#upload_datas').append('<hr style="height:1px;border-top:1px dashed #6B6B6B;" />');
+        	    }
+       	    });
+        	$('#upload_datas').append(
+	            '<button type="button" onclick="sbForm(this)" class="btn btn-primary" style="margin-top:2%; display: table; width: auto; margin-left: auto; margin-right: auto">' +
+	                '确认提交' +
+	            '</button>');
+        }
+    });
+}
+
+function sbForm(obj) {
+	$.zx.confirm('提示','请确认是否要提交该单据?', function(r) {
+        if(r) {
+        	var imgCount = 0;
+        	
+        	//验证是否连续点击
+        	if(!sbFlag) {
+        		$.zx.confirm('提示','请不要连续点击！');
+        		return false;
+        	}
+        	sbFlag = false;
+        	
+            $('.img').each(function(){
+                imgCount = (($(this).find('.uploadimg').length - 1) > 0) ? ($(this).find('.uploadimg').length - 1) : 0;
+                $(this).find('input[name=imgFile]:last').remove();
+                if(imgCount == 0) {
+                    $(this).find('input[name=wms_sys_dict_data_ids]').remove();
+                    $(this).find('input[name=p_wms_sys_dict_data_ids]').remove();
+                }else {
+                    $('#upload_datas').append('<input type="hidden" name="imgCounts" value="' + imgCount + '" />');
+                }
+                
+            });
+            $('#upload_datas').append('<input type="hidden" name="host" value="' + window.location.host + '" />');
+            $('#upload_datas').append('<input type="hidden" name="port" value="' + window.location.port + '" />');
+        	$('#upload_datas').submit();
+        }
+    });
+}
+
+function changeImg(obj) {
+	$(obj).next().click();
+}
+
+function showImg(obj) {
+    var tempObj = obj;
+    
+    $(tempObj).before('<img src="/MOA/resources/images/delete.png" class="delete" onclick="deleteImg(this)" />');
+    
+    var file = tempObj.files[0];
+    if(file) {
+        var reader = new FileReader();
+        reader.onload = function (event) { 
+            $(tempObj).prev().prev().attr('src', event.target.result);
+        };
+    }
+    reader.readAsDataURL(file);
+
+    //最后一个才新增
+    if(($(tempObj).parent().index() - 1) == $(tempObj).parent().parent().find('input[name=imgFile]').length) {
+        $(tempObj).parent().parent().append(
+            '<div class="col-xs-4" style="margin-bottom: 2%;padding-left: 0;padding-right: 0;">' +
+                '<img src="/MOA/resources/images/fileupload.png" class="uploadimg" onclick="changeImg(this)" />' +
+                '<input runat="server" type="file" accept="image/*" capture="camera" style="display: none;" name="imgFile" onchange="showImg(this)" />' +
+            '</div>'
+        );
+    }
+}
+
+function deleteImg(obj) {
+	var tempObj = obj;
+    $.zx.confirm('提示','请确认是否要删除该图片?', function(r) {
+        if(r) {
+            $(tempObj).parent().remove();
+        }
+    });
+}
+
+function goBack(message) {
+	showViewInfo(returnPageName);
+}
+
+</script>    
+</body>
+</html>

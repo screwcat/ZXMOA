@@ -1,0 +1,318 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="shortcut icon" href="resources/images/logo_16.ico" type="image/x-icon" />
+<script type="text/javascript" src="resources/js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="resources/js/ajaxfileupload.js"></script>
+<title>MOA接口测试</title>
+<script type="text/javascript">
+function validation(){
+	var username = $('#username').val();
+	var password = $('#password').val();
+	if(username == ''){
+		alert('登录帐号不能为空!');
+		return false;
+	}
+	if(isNaN(username)){
+		alert('登录帐号为员工短工号!');
+		return false;
+	}
+	if(password == ''){
+		alert('登录密码不能为空!');
+		return false;
+	}
+	return true;
+}
+
+function jsonStringify(data,space){
+    var seen=[];
+    return JSON.stringify(data,function(key,val){
+        if(!val||typeof val !=='object'){
+            return val;
+        }
+        if(seen.indexOf(val)!==-1){
+            return '[Circular]';
+        }
+        seen.push(val);
+        return val;
+    },space);
+}
+
+function login(){
+	if(validation()){
+		var username = $('#username').val();
+		var password = $('#password').val();
+		var SSO_MODULE = $('#SSO_MODULE').val();
+		$.ajax({
+			url:'/MOA/login.do',
+			async:true,
+			cache:false,
+			data:{username:username,password:password},
+			dataType:'json',
+			type:'post',
+			 headers: {
+		            "SSO_MODULE":SSO_MODULE
+		        },
+			success:function(data){
+				console.log(jsonStringify(data ,4));
+				if(data.ret_code == '000' ){
+					$('#SSO_MODULE1').text(SSO_MODULE);
+					$('#username1').text(username);
+					$('#alias').text(data.ret_data.alias);
+				}
+				var json = JSON.stringify(data);
+				$('#login_info').html(json);
+			},
+			error:function(){
+				alert('登录错误!');
+				}
+		});
+	}
+}
+function loginout(){
+	if(window.confirm('确定要注销登录吗?')){
+		//注销用户session
+    	$.ajax({
+            type: 'get',
+            url: '/MOA/logout.do',
+            async: false,
+            success: function(json) {
+            	$('#SSO_MODULE1').text('');
+				$('#username1').text('');
+				$('#alias').text('');	
+            }
+        });	
+	};
+}
+function loginAuto(fn){
+	if(validation()){
+		var username = $('#username1').text();
+		var SSO_MODULE = $('#SSO_MODULE1').text();
+		var alias = $('#alias').text();
+		$.ajax({
+			url:'/MOA/autoLogin.do',
+			async:true,
+			cache:false,
+			data:{username:username,alias:alias},
+			dataType:'json',
+			type:'post',
+			 headers: {
+		            "SSO_MODULE":SSO_MODULE
+		        },
+			success:function(data){
+				console.log(jsonStringify(data ,4));
+				var json = JSON.stringify(data);
+				$('#loginauto_info').html(json);
+				if(data.ret_code == '000' && typeof(fn)=='function'){
+					fn();
+				}
+			},
+			error:function(){
+				alert('自动登录错误!');
+				}
+		});
+	}
+}
+
+function goTest(){
+	
+	var url = $('#url').val();
+	if(url == ''){
+		alert('URL不能为空!');
+		return false;
+	}
+	
+	var index = url.indexOf('/');
+	if(index!=0){
+		url = "/"+url;
+	}
+	
+	index = url.indexOf('/MOA');
+	if(index!=0){
+		url = "/MOA"+url;
+	}
+	
+	var SSO_MODULE = $('#SSO_MODULE1').text();
+	
+	var param = {};
+	var para,val;
+	for(var i=1;i<=20;i++){
+		para = $('#para'+i).val();
+		val = $('#val'+i).val();
+		if($.trim(para)!=''){
+			param[para] = val;
+		}
+	}
+	
+	$('#sub_val').html(jsonStringify(param ,4));
+	var method = $('input.method:checked').val();
+	$.ajax({
+		url:url,
+		async:true,
+		cache:false,
+		data:param,
+		dataType:'json',
+		type:method,
+		 headers: {
+			 	"SSO_MODULE":SSO_MODULE
+	        },
+		success:function(data){
+			console.log(jsonStringify(data ,4));
+			$('#ret_val').html(jsonStringify(data ,4));
+			
+			if(data.ret_code == '999' ){
+				loginAuto(goTest);
+			}else{
+				document.getElementById('锚点1').scrollIntoView();
+			}
+		},
+		error:function(XMLHttpRequest, textStatus, errorThrown){
+			$('#ret_val').html('');
+			alert('请求错误!');
+			}
+	});
+	
+}
+
+function upload(){
+	if($('#imgFile').val() == ''){
+		alert('文件不能为空!');
+		return false;
+	}
+	
+	 var elementIds=[];//数组
+	 $.ajaxFileUpload({
+         url: '/MOA/moa/uploadFile.do', 
+         type: 'post',
+         secureuri: false, //一般设置为false
+         fileElementId: 'imgFile', // 上传文件的id、name属性名
+         dataType: 'json', //返回值类型，一般设置为json、application/json
+         elementIds: elementIds, //传递参数到服务器
+         success: function(data, status){
+        	console.log(jsonStringify(data ,4));
+			var json = JSON.stringify(data);
+			$('#file_info').html(json);
+         },
+         error: function(data, status, e){ 
+        	 console.log(jsonStringify(data ,4));
+             alert(e);
+         }
+     });
+	
+}
+
+function goClear(){
+	for(var i=1;i<=20;i++){
+	    $('#para'+i).val('');
+		$('#val'+i).val('');
+	}
+}
+
+</script>
+</head>
+<body>
+<div>
+<label for="SSO_MODULE">APP应用：</label>
+<select name="SSO_MODULE" id="SSO_MODULE">
+  <option value ="MOA">MOA</option>
+  <option value ="MIF">MIF</option>
+  <option value ="MIS">MIS</option>
+  <option value ="MWF">MWF</option>
+</select>&nbsp;&nbsp;
+<label for="username">帐号：</label><input type="text" id="username" name="username" size="10" onkeypress="if(event.keyCode==13) $('#password').focus();"/>&nbsp;&nbsp;
+<label for="password">密码：</label><input type="text" id="password" name="password" size="10" onkeypress="if(event.keyCode==13){login();}"/>&nbsp;&nbsp;
+<input type="button" value="登录" onClick="javascript:login();"/>&nbsp;<input type="button" value="注销" onClick="javascript:loginout();"/>
+</div>
+<br/>
+<div id="login_info"></div>
+<br/>
+
+<div>
+<label>APP应用：</label><label id="SSO_MODULE1"></label>&nbsp;&nbsp;
+<label>帐号：</label><label id="username1"></label>&nbsp;&nbsp;
+<label>动态码：</label><label id="alias"></label>&nbsp;&nbsp;
+<input type="button" value="自动登录" onClick="javascript:loginAuto();"/>
+</div>
+<br/>
+<div id="loginauto_info"></div>
+<br/>
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+<br/>
+<input type="file" name="imgFile" id="imgFile"/>&nbsp;&nbsp;
+<input type="button" value="上传" onClick="javascript:upload();"/>
+<br/>
+<div id="file_info"></div>
+<br/>
+<div id="锚点1">
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+</div>
+<br/>
+
+<div>
+<label for="url">URL：</label><input type="text" id="url" name="url" size="50" maxlength="100"/>&nbsp;&nbsp;<input type="button" value="提交" onClick="javascript:goTest();"/>&nbsp;&nbsp;<input type="button" value="清空参数" onClick="javascript:goClear();"/>
+</div>
+<div>请求方式：
+	<label for="method_post">POST</label><input class="method" type="radio" id="method_post" name="method" checked="checked" value="post"/>
+	<label for="method_post">Get</label><input class="method" type="radio" id="method_get" name="method" value="get"/>
+</div>
+<br/>
+
+<div style="width:1200px;">
+<div style="width:60%; float:left">
+<label>参数：</label><input type="text" id="para1" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val1"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para2" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val2"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para3" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val3"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para4" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val4"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para5" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val5"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para6" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val6"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para7" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val7"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para8" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val8"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para9" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val9"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para10" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val10"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para11" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val11"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para12" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val12"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para13" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val13"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para14" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val14"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para15" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val15"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para16" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val16"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para17" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val17"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para18" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val18"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para19" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val19"></textarea>
+<br/>
+<label>参数：</label><input type="text" id="para20" size="20"/><label>值：</label><textarea rows="5" cols="60" id="val20"></textarea>
+<br/>
+</div>
+<div style="width:40%; float:left">
+<label>提交值：</label>
+<br/>
+<div style="width:550px;height:300px;border:1px solid #F00;overflow:auto;"><pre id="sub_val"></pre></div>
+<br/>
+<br/>
+<label>返回值：</label>
+<br/>
+<div style="width:550px;height:500px;border:1px solid #F00;overflow:auto;"><pre id="ret_val"></pre></div>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,474 @@
+package com.zx.moa.wms.request.loan.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.zx.moa.util.gen.entity.ioa.PmPersonnel;
+import com.zx.moa.wms.loan.vo.WmsCreCreditHeadFourSearchBeanVO;
+import com.zx.moa.wms.loan.vo.WmsCreCreditHeadSearchBeanVO;
+import com.zx.moa.wms.loan.vo.WmsCreCreditNotaryWarnSearchBeanVO;
+import com.zx.moa.wms.loan.vo.WmsCreCustomerChangeLineContactBeanVo;
+import com.zx.moa.wms.request.loan.vo.BizTeamRankingBeanVO;
+import com.zx.moa.wms.request.loan.vo.SysNoticeHeadSearchBeanVO;
+
+
+public interface HouseLoanServiceFour {
+
+
+	/**
+	 * 
+	 * @Title: getMessage
+	 * @Description: TODO(3.2.2        新通知标识)
+	 * @param userId
+	 * @return 
+	 * @author: 焦德龙
+	 * @param appName 
+	 * @time:2017年3月17日 上午9:36:14
+	 * history:
+	 * 1、2017年3月17日 焦德龙 创建方法
+	 */
+	public Integer getMessageForFour(Integer userId, String appName);
+
+    /**
+     * @Title: getWmsMessageList
+     * @Description: TODO(3.2.3     通知中心列表)
+     * @param personnel_id
+     * @return 
+     * @author: 焦德龙
+     * @param appName 
+     * @time:2017年3月17日 上午10:04:54
+     * history:
+     * 1、2017年3月17日 焦德龙 创建方法
+     */
+    public List<Map<String, Object>> getWmsMessageListForFour(Integer personnel_id, String appName);
+
+    /**
+     * @Title: getBizContactInformation
+     * @Description: TODO(3.2.17        获取联系人信息初始化)
+     * @param userId
+     * @param wms_cre_credit_head_id
+     * @return 
+     * @author: jiaodelong
+     * @time:2017年3月17日 上午11:08:49
+     * history:
+     * 1、2017年3月17日 jiaodelong 创建方法
+     */
+    public List<Map<String, Object>> getBizContactInformation(WmsCreCustomerChangeLineContactBeanVo vo);
+
+    /**
+     * @Title: getBizSignedCustomer
+     * @Description: TODO(获取签单客户信息)
+     * @return 
+     * @author: jiaodelong
+     * @param is_need_paging 
+     * @param size 
+     * @param page 
+     * @param customer_name 
+     * @param bill_type_code 
+     * @param sort_code 
+     * @time:2017年3月20日 上午11:04:50
+     * history:
+     * 1、2017年3月20日 jiaodelong 创建方法
+     */
+    public java.util.Map<String, Object> getBizSignedCustomer(WmsCreCreditHeadFourSearchBeanVO vo, PmPersonnel personnel);
+
+    /**
+     * @Title: getBizProgressDocuments
+     * @Description: TODO(3.2.6     首页进展中单据)
+     * @param user_id
+     * @param page
+     * @param pagesize
+     * @param page2
+     * @return 
+     * @author: jiaodelong
+     * @time:2017年3月20日 下午2:28:35
+     * history:
+     * 1、2017年3月20日 jiaodelong 创建方法
+     */
+    public List<Map<String, Object>> getBizProgressDocuments(WmsCreCreditHeadFourSearchBeanVO vo);
+
+
+    /**
+     * Description :获取系统权限
+     * @url /wms/getBizAuthorityUp.do
+     * @param queryInfo
+     * @return Map
+     * @author  baisong
+     * @date 2016-6-6
+     */
+    Map<String, Object> getBizAuthorityUp(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    /**
+     * Description :获取系统权限
+     * @url /wms/getBizAuthorityUp.do
+     * @param queryInfo
+     * @return Map
+     * @author  baisong
+     * @date 2016-6-6
+     */
+    Map<String, Object> getBizSortingState(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    /**
+     * @Title: getBizTimeScreening
+     * @Description: 3.2.23 WMS_OUT_023 初始化时间筛选条件
+     * @param queryInfo
+     * @param personnel
+     * @return 
+     * @author: baisong
+     * @time:2017年3月21日 上午11:57:36
+     * history:
+     * 1、2017年3月21日 baisong 创建方法
+     */
+    public Map<String, Object> getBizTimeScreening(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    /**
+     * @Title: getContactHeadInfo
+     * @Description: TODO(这里用一句话描述这个方法的作用)
+     * @param userId
+     * @param wms_cre_credit_head_id 
+     * @author: jiaodelong
+     * @return 
+     * @time:2017年3月21日 下午5:00:41
+     * history:
+     * 1、2017年3月21日 jiaodelong 创建方法
+     */
+    public Map<String, Object> getContactHeadInfo(WmsCreCustomerChangeLineContactBeanVo vo);
+
+    /**
+     * @Title: getRelationList
+     * @Description: TODO(获取字典表)
+     * @param i
+     * @return 
+     * @author: jiaodelong
+     * @time:2017年3月22日 上午9:15:54
+     * history:
+     * 1、2017年3月22日 jiaodelong 创建方法
+     */
+    public List<java.util.Map<String, Object>> getRelationList(@Param("wms_sys_dict_id")Integer wms_sys_dict_id);
+
+    /**
+     * @Title: getBizProgressNumber
+     * @Description: TODO(3.2.5     进度查询提示数据)
+     * @param user_id
+     * @return 
+     * @author: jiaodleong
+     * @time:2017年3月22日 上午9:55:08
+     * history:
+     * 1、2017年3月22日 jiaodleong 创建方法
+     */
+    public Integer getBizProgressNumber(Integer user_id);
+
+    /**
+     * 
+     * @Title: getBizMyResults
+     * @Description: TODO(获取我的业绩统计信息)
+     * @param personnel
+     * @return 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:46:49
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizMyResults(PmPersonnel personnel);
+    
+    /**
+     * 
+     * @Title: getBizBillDetailed
+     * @Description: TODO(获取客户业绩详单信息)
+     * @param personnel
+     * @param vo
+     * @return 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:47:20
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizBillDetailed(PmPersonnel personnel,WmsCreCreditNotaryWarnSearchBeanVO vo);
+    
+    /**
+     * 
+     * @Title: getBizTeamRanking
+     * @Description: TODO(获取成员排名信息)
+     * @param personnel
+     * @param vo
+     * @return
+     * @throws Exception 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:47:45
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizTeamRanking(PmPersonnel personnel,BizTeamRankingBeanVO vo) throws Exception;
+    
+    /**
+     * 
+     * @Title: getBizProgressStatistical
+     * @Description: TODO(获取团队、门店、公司单据统计信息)
+     * @param personnel
+     * @param date_info
+     * @param dept_info
+     * @param is_type
+     * @return
+     * @throws Exception 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:48:18
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizProgressStatistical(PmPersonnel personnel, String date_info, String dept_info, String is_type) throws Exception;
+
+    /**
+     * 
+     * @Title: getBizBillDetails
+     * @Description: TODO(获取成员单据详细信息)
+     * @param personnel
+     * @param vo
+     * @return
+     * @throws Exception 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:48:47
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizBillDetails(PmPersonnel personnel, WmsCreCreditHeadFourSearchBeanVO vo) throws Exception;
+    
+    /**
+     * 
+     * @Title: getBizStoreRanking
+     * @Description: TODO(获取团队、门店排名信息)
+     * @param personnel
+     * @param vo
+     * @return
+     * @throws Exception 
+     * @author: handongchun
+     * @time:2017年3月22日 下午5:49:11
+     * history:
+     * 1、2017年3月22日 handongchun 创建方法
+     */
+    Map<String, Object> getBizStoreRanking(PmPersonnel personnel, WmsCreCreditNotaryWarnSearchBeanVO vo) throws Exception;
+    /**
+     * 
+     * @Title: getBizDepartmentScreening
+     * @Description: 3.2.24 WMS_OUT_024 初始化单位筛选条件
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: baisong
+     * @time:2017年3月21日 上午11:56:57
+     * history:
+     * 1、2017年3月21日baisong 创建方法
+     */
+    public Map<String, Object> getBizDepartmentScreening(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    /**
+     * @Title: getBizApplyInitialize
+     * @Description: TODO(这里用一句话描述这个方法的作用)
+     * @param queryInfo
+     * @param personnel
+     * @return 
+     * @author: baisong
+     * @time:2017年3月22日 下午3:01:11
+     * history:
+     * 1、2017年3月22日 baisong 创建方法
+     */
+    public Map<String, Object> getBizApplyInitialize(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    /**
+     * 
+     * @Title: getBizUploadCustomerInfo
+     * @Description: 3.2.16 WMS_OUT_016 贷款申请草稿、补录初始化
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: baisong
+     * @time:2017年3月22日 下午2:40:36
+     * history:
+     * 1、2017年3月22日 baisong 创建方法
+     */
+    public Map<String, Object> getBizUploadCustomerInfo(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+
+        /**
+     * 
+     * @Title: getBizDataAuthority
+     * @Description: 获取数据权限
+     * @param queryInfo
+     * @param personnel
+     * @return 
+     * @author: baisong
+     * @time:2017年3月22日 下午4:13:27
+     * history:
+     * 1、2017年3月22日 baisong 创建方法
+     */
+    public Map<String, Object> getBizDataAuthority(WmsCreCreditHeadFourSearchBeanVO queryInfo, PmPersonnel personnel);
+
+    
+    /**
+     * 接口编号: WMS_OUT_007
+     * @Title: getBizHomePagePerformance
+     * @Description: 首页、个人、团队等业绩统计
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizHomePagePerformance(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_019
+     * @Title: getBizPerformanceRanking
+     * @Description: 获取我的业绩排名信息
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizPerformanceRanking(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_022
+     * @Title: getBizResultsStatistical
+     * @Description: 获取月份业绩统计信息（我的业绩、团队、门店、公司）
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizResultsStatistical(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_026
+     * @Title: getBizMonthMembers
+     * @Description: 获取团队X月成员业绩统计信息
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizMonthMembers(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_028
+     * @Title: getBizMembersProgressStatistical
+     * @Description: 获取成员单据统计信息
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizMembersProgressStatistical(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_031
+     * @Title: getBizStoreResultsStatistics
+     * @Description: 获取团队、门店X月业绩统计信息
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizStoreResultsStatistics(WmsCreCreditHeadSearchBeanVO queryInfo);
+    
+    /**
+     * 接口编号: WMS_OUT_032
+     * @Title: getBizCompanyProgressStatistical
+     * @Description: 获取单据统计信息
+     * @param queryInfo
+     * @param request
+     * @return 
+     * @author: 王毅晗
+     * @time:2017年3月20日 上午11:23:00
+     * history:
+     * 1、2017年3月20日 wangyihan 创建方法
+     */
+    public WmsCreCreditHeadSearchBeanVO getBizCompanyProgressStatistical(WmsCreCreditHeadSearchBeanVO queryInfo);
+    /**
+    *
+    * @Title: getBizHouseLoanListUp
+    * @Description: TODO(3.2.14   WMS_OUT_014 获取进度/历史查询单据信息)
+    * @param vo
+    * @return 
+    * @author: 张明建
+    * @time:2017年3月23日 上午11:51:57
+    * history:
+    * 1、2017年3月23日 张明建 创建方法
+    */
+    public List<java.util.Map<String, Object>> getBizHouseLoanListUp(WmsCreCreditHeadFourSearchBeanVO vo, PmPersonnel personnel);
+
+    /**
+     * @Title: getBizDetailsDocuments
+     * @Description: 3.2.15   WMS_OUT_015 获取单据详细信息)
+     * @param bean
+     * @return 
+     * @author: baisong
+     * @time:2017年3月23日 下午4:36:22
+     * history:
+     * 1、2017年3月23日 baisong 创建方法
+     */
+    public Map<String, Object> getBizDetailsDocuments(WmsCreCreditHeadFourSearchBeanVO bean, PmPersonnel personnel);
+    
+    /**
+     * 
+     * @Title: getHomePageNotice
+     * @Description: (获取首页公告)
+     * @param request
+     * @param bean
+     * @return 
+     * @author: baisong
+     * @time:2017年3月28日 下午3:06:28
+     * history:
+     * 1、2017年3月28日 baisong 创建方法
+     */
+    Map<String, Object> getHomePageNotice(SysNoticeHeadSearchBeanVO bean, PmPersonnel personnel);
+    
+    /**
+     * 
+     * @Title: statusStatisticsReportUp
+     * @Description: 单据统计（年、状态节点统计）
+     * @param request
+     * @param bean
+     * @return 
+     * @author: wangyihan
+     * @time:2017年7月24日 下午3:06:28
+     * history:
+     * 1、2017年7月24日 wangyihan 创建方法
+     */
+    WmsCreCreditHeadSearchBeanVO statusStatisticsReportUp(WmsCreCreditHeadSearchBeanVO bean);
+    
+    /**
+     * 
+     * @Title: detailedStatisticsUp
+     * @Description: 状态报表状态节点统计（月、日）
+     * @param request
+     * @param bean
+     * @return 
+     * @author: wangyihan
+     * @time:2017年7月24日 下午3:06:28
+     * history:
+     * 1、2017年7月24日 wangyihan 创建方法
+     */
+    WmsCreCreditHeadSearchBeanVO detailedStatisticsUp(WmsCreCreditHeadSearchBeanVO bean);
+    
+    
+    
+}

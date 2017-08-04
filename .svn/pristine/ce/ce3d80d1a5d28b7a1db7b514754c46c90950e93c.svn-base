@@ -1,0 +1,39 @@
+package com.zx.moa.ioa.timeAttendance.web;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.zx.moa.ioa.timeAttendance.service.IAttendanceService;
+import com.zx.moa.util.ResultHelper;
+import com.zx.moa.util.bean.ResultBean;
+
+@Controller
+public class attendanceController {
+	
+	@Autowired IAttendanceService iAttendanceService;
+	
+	/**
+	 * 我的考勤记录
+	 * @param request
+	 * @param month_add (当月0(默认)，上月-1)
+	 * @return
+	 */
+	@RequestMapping(value="ioa/getMyAttendancelList.do", method={RequestMethod.GET,RequestMethod.POST})
+	@ResponseBody
+	public ResultBean<List<Map<String, Object>>> getAttendance(HttpServletRequest request,int month_add){
+		if(month_add == 0 || month_add == -1){
+	        return ResultHelper.getSuccess(iAttendanceService.getAttendanceList(request, month_add));
+		}else{
+			return ResultHelper.getError("请传入正确参数", null);
+		}
+	}
+	
+}

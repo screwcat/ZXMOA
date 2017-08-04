@@ -1,0 +1,112 @@
+package com.zx.moa.ioa.documentsmanage.persist;
+
+import java.util.List;
+import java.util.Map;
+
+import com.zx.moa.util.mybatis.MyBatisRepository;
+
+/**
+ * 获取IOA单据数据层接口
+ * @author 李晓龙
+ *
+ */
+@MyBatisRepository
+public interface DocumentsDao {
+	
+	public Map<String, Object> getDocInfoById(Map<String, Object> map);
+	
+	public List<Map<String, Object>> getApproveInfoById(Map<String, Object> map);
+	
+	public String getOrder_no(Map<String, Object> map);
+	
+	public List<Map<String, Object>> findTimeVacateByOrderId(Map<String, Object> map);
+	
+	public List<Map<String, Object>> findDaysOffByOrderId(Map<String, Object> map);
+	
+	public List<Map<String, Object>> findFillCheckByOrderId(Map<String, Object> map);
+	
+	public List<Map<String, Object>> findPayOffByOrderId(Map<String, Object> map);
+	
+	public List<Map<String, Object>> findEvectionByOrderId(Map<String, Object> map);
+	
+	public Map<String, Object> getLeaveInfoByOrderId(Map<String, Object> map);
+	
+	public List<Map<String, Object>> getLeaveHistory(Map<String, Object> map);
+	
+	public List<Map<String, Object>> getNoApproveInfoById(Map<String, Object> map);
+	
+	public List<Map<String, Object>> getApproveShouInfoById(Map<String, Object> map);
+	
+    /**
+     * @Title: getApproveInfoById117
+     * @Description: 待我审批和我的单据流程显示历史节点
+     * @param map
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月9日 下午2:43:39
+     * history:
+     * 1、2016年12月9日 zhaowei 创建方法
+     */
+    public List<Map<String, Object>> getApproveInfoById117(Map<String, Object> map);
+
+    /**
+     * @Title: getApproveShouInfoById117
+     * @Description: 待我审批和我的单据流程显示签收节点
+     * @param map
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月9日 下午3:03:39
+     * history:
+     * 1、2016年12月9日 zhaowei 创建方法
+     */
+    public List<Map<String, Object>> getApproveShouInfoById117(Map<String, Object> map);
+
+    /**
+     * @Title: getLeaveHistory117
+     * @Description: 离职审批节点
+     * @param map
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月10日 下午1:23:30
+     * history:
+     * 1、2016年12月10日 zhaowei 创建方法
+     */
+    public List<Map<String, Object>> getLeaveHistory117(Map<String, Object> map);
+    
+    
+    /**
+     * @Title: getApproveShouInfoById117
+     * @Description: 待我审批和我的单据流程显示待签收节点
+     * @param map
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月9日 下午3:03:39
+     * history:
+     * 1、2016年12月9日 zhaowei 创建方法
+     */
+    public List<Map<String, Object>> getApproveUnShouInfoById117(Map<String, Object> map);
+
+    /**
+     * @Title: getOrderState
+     * @Description: 获取单据状态
+     * @param order_id
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月20日 下午5:22:33
+     * history:
+     * 1、2016年12月20日 zhaowei 创建方法
+     */
+    public int getOrderState(Map<String, Object> map);
+
+    /**
+     * @Title: selSubmitter
+     * @Description: 提单人list
+     * @param map
+     * @return 
+     * @author: zhaowei
+     * @time:2016年12月21日 上午9:20:55
+     * history:
+     * 1、2016年12月21日 zhaowei 创建方法
+     */
+    public List<Map<String, Object>> selSubmitter(Map<String, Object> map);
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.timeAttendance.persist.AttendanceDao">
+    <select id="getAttendanceList" parameterType="map" resultType="map">
+    	select
+			date_format(a.attendance_date,'%Y-%m-%d') as attendance_date,
+			a.attendance_workStart,
+			a.attendance_workEnd,
+			a.attentdance_status
+		from
+			time_attendance as a INNER JOIN pm_personnel as b on a.attendance_code = b.personnel_shortCode INNER JOIN sys_dept as c on b.personnel_deptId = c.dept_id
+		where
+			a.enable_flag = '1'
+			and IF(left(c.dept_code,3)='DHl' , a.attendance_type in (0,1,2), a.attendance_type=0 )
+		<if test="date_start != null">
+			and a.attendance_date &gt;= #{date_start}
+		</if>
+		<if test="date_end != null">
+			and a.attendance_date &lt;= #{date_end}
+		</if>
+		<if test="attendance_code != null">
+			and a.attendance_code = #{attendance_code}
+		</if>
+		order by a.attendance_date desc
+    </select>
+</mapper>

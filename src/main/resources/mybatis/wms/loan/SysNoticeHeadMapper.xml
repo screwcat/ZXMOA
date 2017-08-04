@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.SysNoticeHeadDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="SysNoticeHead">
+		select
+        				notice_id,
+        				notice_title,
+						date_format(notice_date,'%Y-%m-%d %H:%i:%s') as notice_date_str,
+        				notice_date,
+        				notice_url,
+        				notice_url_type,
+        				notice_type,
+        				notice_app_type,
+        				notice_publisher,
+        				enable_flag
+        	from
+        		sys_notice_head
+        	where
+        				notice_id = #{notice_id}
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count(notice_id) as count
+		from sys_notice_head
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select 
+				notice_id,
+				notice_title,
+				date_format(notice_date,'%Y-%m-%d %H:%i:%s') as notice_date_str,
+				notice_date,
+				notice_url,
+				notice_url_type,
+				notice_type,
+				notice_app_type,
+				notice_publisher,
+				enable_flag
+		from sys_notice_head
+		<where>
+			<if test="notice_app_type != null">
+				 and notice_app_type = #{notice_app_type}
+			</if>
+			<if test="enable_flag != null">
+				 and enable_flag = #{enable_flag}
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !='' and sortname != null and sortorder !=null">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="SysNoticeHead" useGeneratedKeys="true" keyProperty="notice_id">
+		INSERT INTO sys_notice_head
+		(
+				notice_id,
+
+				notice_title,
+
+				notice_date,
+
+				notice_url,
+
+				notice_url_type,
+
+				notice_type,
+
+				notice_app_type,
+
+				notice_publisher,
+
+				enable_flag
+		)
+		VALUES
+		(
+				#{notice_id},
+				#{notice_title},
+				#{notice_date},
+				#{notice_url},
+				#{notice_url_type},
+				#{notice_type},
+				#{notice_app_type},
+				#{notice_publisher},
+				#{enable_flag}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="SysNoticeHead">
+		update sys_notice_head
+		<set>
+					<if test="notice_id != null">
+						 notice_id = #{notice_id},
+					</if>
+					<if test="notice_title != null">
+						 notice_title = #{notice_title},
+					</if>
+					<if test="notice_date != null">
+						 notice_date = #{notice_date},
+					</if>
+					<if test="notice_url != null">
+						 notice_url = #{notice_url},
+					</if>
+					<if test="notice_url_type != null">
+						 notice_url_type = #{notice_url_type},
+					</if>
+					<if test="notice_type != null">
+						 notice_type = #{notice_type},
+					</if>
+					<if test="notice_app_type != null">
+						 notice_app_type = #{notice_app_type},
+					</if>
+					<if test="notice_publisher != null">
+						 notice_publisher = #{notice_publisher},
+					</if>
+					<if test="enable_flag != null">
+						 enable_flag = #{enable_flag},
+					</if>
+	   </set>
+		 where 
+    				notice_id = #{notice_id}
+	</update>
+	<select id="getListByEntity" parameterType="SysNoticeHead" resultType="SysNoticeHead">
+		select 
+				notice_id,
+				notice_title,
+				date_format(notice_date,'%Y-%m-%d %H:%i:%s') as notice_date_str,
+				notice_date,
+				notice_url,
+				notice_url_type,
+				notice_type,
+				notice_app_type,
+				notice_publisher,
+				enable_flag
+		from
+		sys_notice_head
+		<where>
+					<if test="notice_id != null">
+						and notice_id = #{notice_id}
+					</if>
+					<if test="notice_title != null">
+						and notice_title = #{notice_title}
+					</if>
+					<if test="notice_date != null">
+						and notice_date = #{notice_date}
+					</if>
+					<if test="notice_url != null">
+						and notice_url = #{notice_url}
+					</if>
+					<if test="notice_url_type != null">
+						and notice_url_type = #{notice_url_type}
+					</if>
+					<if test="notice_type != null">
+						and notice_type = #{notice_type}
+					</if>
+					<if test="notice_app_type != null">
+						and notice_app_type = #{notice_app_type}
+					</if>
+					<if test="notice_publisher != null">
+						and notice_publisher = #{notice_publisher}
+					</if>
+					<if test="enable_flag != null">
+						and enable_flag = #{enable_flag}
+					</if>
+				 	<if test="isExcludePKFlag != null and isExcludePKFlag == true">
+		        				and notice_id != #{notice_id}
+					</if>
+		</where>
+	</select>
+</mapper> 

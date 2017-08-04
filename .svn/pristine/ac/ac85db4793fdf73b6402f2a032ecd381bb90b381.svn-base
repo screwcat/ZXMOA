@@ -1,0 +1,434 @@
+package com.zx.moa.ioa.util;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.common.ClientConfig;
+import cn.jpush.api.common.resp.APIConnectionException;
+import cn.jpush.api.common.resp.APIRequestException;
+import cn.jpush.api.push.PushResult;
+
+import com.zx.moa.ioa.task.service.ITaskMessageService;
+import com.zx.moa.util.DateUtil;
+import com.zx.moa.util.SysUtil;
+import com.zx.platform.syscontext.PlatformGlobalVar;
+import com.zx.platform.syscontext.util.StringUtil;
+
+import freemarker.template.Template;
+
+/**
+ * 推送消息工具类
+ * 
+ * @author MATF
+ */
+public class PushManage
+{
+
+    protected static final Logger LOG = LoggerFactory.getLogger(PushManage.class);
+
+    public final static String DEF_APP_NAME = "MOA";
+
+    public final static String DEF_APP_NAME_MIF = "MIF";
+
+    private static Map<String, JPushClient> jpushMap = new HashMap<String, JPushClient>();
+
+    // 可缓存线程池(可以复用、没有上限)
+    private static ExecutorService pool = Executors.newCachedThreadPool();
+
+    private static ITaskMessageService taskMessageService;
+
+    /**
+     * 获取极光推送客户端
+     * 
+     * @param app_name 要推送的APP名称
+     * @return
+     */
+    public synchronized static JPushClient getClient(String app_name)
+    {
+        JPushClient jPushClient = jpushMap.get(app_name);
+        if (jPushClient == null)
+        {
+            String appKey = PlatformGlobalVar.SYS_PROPERTIES.get(app_name.toLowerCase() + ".appKey");
+            String masterSecret = PlatformGlobalVar.SYS_PROPERTIES.get(app_name.toLowerCase() + ".masterSecret");
+
+            ClientConfig config = ClientConfig.getInstance();
+            config.setMaxRetryTimes(3);
+
+            jPushClient = new JPushClient(masterSecret, appKey, null, config);
+            jpushMap.put(app_name, jPushClient);
+        }
+        return jPushClient;
+    }
+
+    /**
+     * 获取极光推送客户端(MOA)
+     * 
+     * @return
+     */
+    public synchronized static JPushClient getClient()
+    {
+        return getClient(DEF_APP_NAME);
+    }
+
+    public static void test()
+    {
+        PushMessage message = new PushMessage();
+        message.setAudienceAlias("4e56cb80_33d7_4c61_aa97_3cdfd5f34b32");
+        message.setMessage("測試的" + DateUtil.getStrDateTime(), "标题1");
+        pushMessage(message, DEF_APP_NAME);
+    }
+
+    /**
+     * 消息推送
+     * 
+     * @param message 自定义消息类
+     * @param app_name 推送APP名称
+     */
+    public static void pushMessage(final PushMessage message, final String app_name)
+    {
+        if (!PushConstant.ISPUSH)
+        {
+            return;
+        }
+        pool.execute(new Thread(new Runnable()
+        {
+
+            @Override
+            public void run()
+            {
+                JPushClient jpushClient = getClient(app_name);
+                PushResult result;
+                String apns_production = PlatformGlobalVar.SYS_PROPERTIES.get(app_name.toLowerCase() + ".apns_production");
+                LOG.info("app_name: " + app_name.toLowerCase());
+
+                if (StringUtil.isNotBlank(apns_production))
+                    message.options.apns_production = Boolean.parseBoolean(apns_production);
+
+                // 发自定义消息
+                try
+                {
+                    result = jpushClient.sendPush(message.buildMessage());
+                    LOG.info("Got result - " + result);
+                    LOG.info("Got result - " + message.buildMessage());
+
+                }
+                catch (APIConnectionException e)
+                {
+                    // Connection error, should retry later
+                    LOG.error("Connection error, should retry later", e);
+                }
+                catch (APIRequestException e)
+                {
+                    // Should review the error, and fix the request
+                    LOG.error("Should review the error, and fix the request", e);
+                    LOG.info("HTTP Status: " + e.getStatus());
+                    LOG.info("Error Code: " + e.getErrorCode());
+                    LOG.info("Error Message: " + e.getErrorMessage());
+                }
+
+                // IOS发通知
+                try
+                {
+                    result = jpushClient.sendPush(message.buildIOSNotification());
+                    LOG.info("Got result - " + result);
+                }
+                catch (APIConnectionException e)
+                {
+                    // Connection error, should retry later
+                    LOG.error("Connection error, should retry later", e);
+                }
+                catch (APIRequestException e)
+                {
+                    // Should review the error, and fix the request
+                    LOG.error("Should review the error, and fix the request", e);
+                    LOG.info("HTTP Status: " + e.getStatus());
+                    LOG.info("Error Code: " + e.getErrorCode());
+                    LOG.info("Error Message: " + e.getErrorMessage());
+                }
+            }
+        }));
+    }
+
+    /**
+     * 获取模版消息
+     * 
+     * @param msg_code 消息编号：长度大于等于5的数字编号
+     * @param map 参数信息、用于从模版替换变量
+     * @return 消息信息
+     */
+    public static String getContMsg(String msg_code, Map<String, Object> map)
+    {
+        if (StringUtil.isBlank(msg_code))
+        {
+            throw new RuntimeException("推送编号不能为空!");
+        }
+        if (msg_code.length() < 5)
+        {
+            throw new RuntimeException("推送编号不正确!");
+        }
+        String type = msg_code.substring(0, msg_code.length() - 4);
+        String user = msg_code.substring(msg_code.length() - 4, msg_code.length() - 2);
+        String num = msg_code.substring(msg_code.length() - 2);
+        if (map == null)
+        {
+            map = new HashMap<String, Object>();
+        }
+        map.put("user", user);
+        map.put("num", num);
+        // FreeMarkerConfigurer freeMarkerConfigurer = (FreeMarkerConfigurer)
+        // ContextLoader.getCurrentWebApplicationContext().getBean("freeMarkerConfigurer");
+        FreeMarkerConfigurer freeMarkerConfigurer = (FreeMarkerConfigurer) InitUnfinishedRemind.ac.getBean("freeMarkerConfigurer");
+        try
+        {
+            Template tpl = freeMarkerConfigurer.getConfiguration().getTemplate(PushConstant.FREEMAKERTEMPLATE[Integer.parseInt(type) - 1]);
+            return FreeMarkerTemplateUtils.processTemplateIntoString(tpl, map).trim();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 推送消息
+     * 
+     * @param app_name app名称
+     * @param msgContext 消息内容可以通过getContMsg方法获取
+     * @param alias 推送别名
+     * @param msg_code 推送消息类型编号
+     * @param extras 附加信息
+     */
+    public static void pushMessageByMsgContext(String app_name, String msgContext, String alias, String msg_code, Map<String, Object> extras)
+    {
+        PushMessage message = new PushMessage();
+        message.setAudienceAlias(alias);
+        if (extras == null)
+        {
+            extras = new HashMap<String, Object>();
+        }
+
+        Map<String, Object> temp = new HashMap<String, Object>(extras);
+
+        if (temp.get("message_type") == null)
+            temp.put("message_type", 2);
+        if (temp.get("message_info_type") == null)
+            temp.put("message_info_type", 1);
+        if (temp.get("create_datetime") == null)
+            temp.put("create_datetime", DateUtil.getStrDateTime());
+        if (temp.get("message_info") == null)
+            temp.put("message_info", msgContext);
+        if (temp.get("message_date") == null)
+            temp.put("message_date", "");
+        if (temp.get("task_message_id") == null)
+            temp.put("task_message_id", 0);
+        if (temp.get("create_id") == null)
+            temp.put("create_id", 0);
+        if (temp.get("create_user_name") == null)
+            temp.put("create_user_name", "");
+        if (temp.get("is_read") == null)
+            temp.put("is_read", 0);
+
+        if (temp.get("reminder") == null)
+            temp.put("reminder", msgContext);
+
+        if (StringUtil.isNotBlank(msg_code))
+        {
+            temp.put("msg_code", msg_code);
+        }
+        message.setExtras(temp);
+        message.setAudienceAlias(alias);
+        message.setMessage(msgContext);
+        pushMessage(message, app_name);
+    }
+
+    /**
+     * 推送消息
+     * 
+     * @param app_name app名称
+     * @param msgContext 消息内容可以通过getContMsg方法获取
+     * @param alias 推送别名
+     * @param msg_code 推送消息类型编号
+     * @param extras 附加信息
+     */
+    public static void pushMessageByMsgContextWMS(String app_name, String msgContext, String alias, String msg_code, Map<String, Object> extras)
+    {
+        PushMessage message = new PushMessage();
+        message.setAudienceAlias(alias);
+        if (extras == null)
+        {
+            extras = new HashMap<String, Object>();
+        }
+
+        Map<String, Object> temp = new HashMap<String, Object>(extras);
+
+        if (temp.get("create_datetime") == null)
+            temp.put("create_datetime", DateUtil.getStrDateTime());
+
+        if (StringUtil.isNotBlank(msg_code))
+        {
+            temp.put("msg_code", msg_code);
+        }
+        message.setExtras(temp);
+        message.setAudienceAlias(alias);
+        message.setMessage(msgContext);
+        pushMessage(message, app_name);
+    }
+
+    /**
+     * 推送消息(MOA)
+     * 
+     * @param msgContext 消息内容可以通过getContMsg方法获取
+     * @param alias 推送别名
+     * @param msg_code 推送消息类型编号
+     * @param extras 附加信息
+     */
+    public static void pushMessageByMsgContext(String msgContext, String alias, String msg_code, Map<String, Object> extras)
+    {
+        pushMessageByMsgContext(DEF_APP_NAME, msgContext, alias, msg_code, extras);
+    }
+
+    /**
+     * 推送消息
+     * 
+     * @param app_name app名称
+     * @param alias 推送人别名
+     * @param msg_code 消息编码
+     * @param map 推送消息参数（模版生成消息时的参数）
+     * @param extras 消息附加数据
+     */
+    public static void pushMessage(String app_name, String alias, String msg_code, Map<String, Object> map, Map<String, Object> extras)
+    {
+        String msgContext = getContMsg(msg_code, map).trim();
+        pushMessageByMsgContext(app_name, msgContext, alias, msg_code, extras);
+    }
+
+    /**
+     * 推送消息--WMS
+     * 
+     * @param app_name app名称
+     * @param alias 推送人别名
+     * @param msg_code 消息编码
+     * @param map 推送消息参数（模版生成消息时的参数）
+     * @param extras 消息附加数据
+     */
+    public static void pushMessageWMS(String app_name, String alias, String msg_code, Map<String, String> map, Map<String, Object> extras)
+    {
+        // String msgContext = getContMsg(msg_code, map).trim();
+        String msgContext = SysUtil.replaceParamValueByMap(PlatformGlobalVar.SYS_PROPERTIES.get(msg_code), map);
+        pushMessageByMsgContextWMS(app_name, msgContext, alias, msg_code, extras);
+    }
+
+    /**
+     * 推送消息(MOA)
+     * 
+     * @param alias 推送人别名
+     * @param msg_code 消息编码
+     * @param map 推送消息参数（模版生成消息时的参数）
+     * @param extras 消息附加数据
+     */
+    public static void pushMessage(String alias, String msg_code, Map<String, Object> map, Map<String, Object> extras)
+    {
+        pushMessage(DEF_APP_NAME, alias, msg_code, map, extras);
+    }
+
+    /**
+     * 推送消息(MOA)
+     * 
+     * @param user_code 人员短工号
+     * @param msg_code 消息编码
+     * @param map 推送消息参数（模版生成消息时的参数）
+     * @param extras 消息附加数据
+     */
+    public static void pushMessageByCode(String user_code, String msg_code, Map<String, Object> map, Map<String, Object> extras)
+    {
+        ITaskMessageService taskMessageService = (ITaskMessageService) InitUnfinishedRemind.ac.getBean("taskMessageService");
+        String alias = taskMessageService.findAliasByCode(DEF_APP_NAME, user_code);
+        if (StringUtil.isNotBlank(alias))
+        {
+            if (extras.get("accept_code") == null)
+                extras.put("accept_code", user_code);
+            pushMessage(DEF_APP_NAME, alias, msg_code, map, extras);
+        }
+        else
+        {
+            LOG.debug("用户：" + user_code + "没有进行登录，系统没有记录APP别名信息!");
+        }
+    }
+
+    /**
+     * 发送任务模块消息
+     * 
+     * @param task_id 消息ID
+     * @param user_code 推送人
+     * @param msg_code 消息编号
+     * @param msg_context 消息内容
+     */
+    public static void pushTaskMessage(Integer task_id, String user_code, String msg_code, String msg_context)
+    {
+        if (taskMessageService == null)
+        {
+            taskMessageService = (ITaskMessageService) InitUnfinishedRemind.ac.getBean("taskMessageService");
+        }
+        String alias = taskMessageService.findAliasByCode(PushConstant.TASK_APP_NAME, user_code);
+        if (StringUtil.isNotBlank(alias))
+        {
+            Map<String, Object> extras = new HashMap<String, Object>();
+            extras.put("msg_code", msg_code);
+            extras.put("task_id", task_id);
+            extras.put("accept_code", user_code);
+            pushMessageByMsgContext(msg_context, alias, msg_code, extras);
+        }
+    }
+
+    /**
+     * 推送消息(MOA)
+     * 
+     * @param user_code 人员短工号
+     * @param msg_code 消息编码
+     * @param map 推送消息参数（模版生成消息时的参数）
+     * @param extras 消息附加数据
+     */
+    public static void pushMessageByCodeForWMS(String user_code, String msg_code, Map<String, String> map, Map<String, Object> extras, String... appName)
+    {
+        ITaskMessageService taskMessageService = (ITaskMessageService) InitUnfinishedRemind.ac.getBean("taskMessageService");
+        String alias = "";
+
+        if (appName == null || appName[0] == null)
+        {
+            alias = taskMessageService.findAliasByCode(DEF_APP_NAME_MIF, user_code);
+        }
+        else
+        {
+            alias = taskMessageService.findAliasByCode(appName[0], user_code);
+        }
+
+        if (StringUtil.isNotBlank(alias))
+        {
+            if (extras.get("accept_code") == null)
+                extras.put("accept_code", user_code);
+
+            if (appName == null || appName[0] == null)
+            {
+                pushMessageWMS(DEF_APP_NAME_MIF, alias, msg_code, map, extras);
+            }
+            else
+            {
+                pushMessageWMS(appName[0], alias, msg_code, map, extras);
+            }
+
+        }
+        else
+        {
+            LOG.debug("用户：" + user_code + "没有进行登录，系统没有记录APP别名信息!");
+        }
+    }
+}

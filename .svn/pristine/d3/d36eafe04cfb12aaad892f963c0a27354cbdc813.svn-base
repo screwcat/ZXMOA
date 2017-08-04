@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>我的单据</title>
+<style type="text/css">
+ .bill_bb{float:left;padding-top: 4px;} 
+.cc{margin-left:10px;width:100%;height:41px;}
+.dd{float:right;width:100%;}
+.tt{background-color:#66B3FF; height: 24px;width:120px;margin-right:25px;}
+.b{font-weight:bold;}
+/* .bb{font-weight:bold;color:#1E90FF;} */
+/*  #t{background-color:#59AEEF;}  */
+.t1{background-color: #33ccFF;}
+.t{float:left;margin-top:-1px;display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.form-control{width:100%;padding:.375rem .75rem;font-size:1rem;line-height:1.5;color:#55595c;background-color:#fff;background-image:none;}
+/* .form-control::-webkit-input-placeholder{color:#FFFFFF;font-weight:bold;} */
+.bb1{feft:10px;font-weight:bold;color:#1E90FF;}
+.bb2{font-weight:bold;float:left;margin-left:2%;margin-top:-7px;}
+.i{text-align:left; display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;padding-felt:-30px;}
+.dropdown-menu{opacity:0.5;z-index: 1000;text-align:center;position:absolute;background-color:#66CCFF;}
+/* .customer_drop_menu_ico{display: inline-block;width: 16px;margin: 1px 6px;color: #FFF;} */
+ul.dropdown-menu{opacity:0.9;z-index: 1000;background-color:#66CCFF;height:200px;min-width: 87px;}
+.tyt{color: #FFF;font-size: 13px;float:left;margin-left: 18px;font-weight:bold;}
+ .ev1{position:absolute; right:23px;top:-5px;opacity:0.6;z-index: 1000;}
+ 
+#ioa_aboutmelist_datas_wapper{position: absolute;top: 90px;bottom: 58px;width: 100%;z-index: 1;}
+ 
+</style>
+</head>
+<script type="text/javascript">
+
+
+ function initBillPage(){
+	 initApproveListDatas(); 
+	 $('#ioaSearch').on('click',function(){
+		 ioaSearch_search();
+	 });
+	 $('#pp1').on('click',function(){
+		 window.history.back();
+	 });
+	  initIoaAboutMeDrop();
+ }
+ var bill_page = 1;
+ var bill_size = 1000; 
+	
+	//初始化首页待审批数据
+	function initApproveListDatas(){
+		//初始化结构
+		$('#ioa_aboutmelist').datashow({
+			//不同分别率下显示个数
+			colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+			//是否使用上拉刷新和下拉加载
+			isScroll:true,
+			isup:false,
+			datas_wapper:'ioa_aboutmelist_datas_wapper',
+			//每个数据结构显示视图
+			adapter:function(data){
+				return '<div class="row ioa_aboutme_item" style="border-bottom:1px solid #d0d0d0;" data-state="'+data.order_state+
+						'" data-relationship="'+data.order_relationship+'">'+
+				    	'<div class="col-xs-6 col-sm-4" style="width:100%;padding-top: 10px;height: 60px;">'+
+				    	'<span class="bb1" style="float:left;margin-top:-7px;">&nbsp;&nbsp;&nbsp;'+data.sys_name+'</span>'+		
+
+				    	'<span   class="bb2" >['+data.apply_type_name+'申请]</span></br><span class="t">&nbsp;&nbsp;&nbsp;'+
+				    	data.original_apply_personnel_name+data.original_apply_personnel_no+
+				    	'&nbsp;'+':'+'&nbsp;</span>'+
+				    	'<span 	class="Otime"	style="float:right;padding-top: -20px;margin-top:-17px; margin-right:10px;" >'+data.create_timestamp+' </span>'+
+				    	
+				    	'<span>'+'<span class="ev1">'+'<img src="../images/order_state_'+(data.order_relationship==1?0:data.order_state)+'.png" />'+'</span>'+'</span>'+
+				    	
+				    	'<span  class="i">'+data.content+'</span>'+
+				    	'</div></div>';
+			},
+			//点击每个数据视图时候的回调方法  data 单元数据 index 索引 list 所有数据
+			onitemclick:function(data,index,list){
+				showViewInfo("ioa_order_info",data.order_id,2);
+			},
+			//上拉时候回调函数
+			onup:function(){
+				bill_page++;
+				loadAboutMeListData(false)
+			},
+			//下拉时候回调函数
+			ondown:function(){
+				loadAboutMeListData(true)
+			}
+		});
+		loadAboutMeListData(true);
+	}
+	//请求数据 flag  是否是刷新
+	function loadAboutMeListData(flag){
+		 if(flag){
+			bill_page = 1;
+			bill_size = 1000;
+		} 
+		$.ajax({
+			url:_base_param.context_name+'/ioa/getOrderList.do',
+			type:'GET',
+			 data:{page:bill_page,size:bill_size}, 
+			success:function(result){
+				if(result.ret_code == '000'){
+					if(flag){
+						$('#ioa_aboutmelist').datashow('clearView');
+					}
+					$('#ioa_aboutmelist').datashow('adds',result.ret_data);
+					if(result.ret_data.length == 0){
+						$.message('没有更多数据了哦！');
+						 bill_page--; 
+					}
+				}else if(result.ret_code != null){
+					$.message(result.ret_msg);
+				}else{
+					$('#ioa_aboutmelist').html(result)
+				}
+				
+				ioaSearch_search();
+				
+			$('#ioa_aboutmelist').datashow('clearPull');
+			}
+		});
+	}
+	/* document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false); */
+	//条件查询
+	
+	function ioaSearch_search(){ 
+
+// 		var _dropText1 = $('#ioa_aboutme_dropdown').find('button span.drop_selected').text();
+// 		$('#ioa_aboutme_dropdown').find('ul li a').each(function(){
+// 			if($(this).text() == _dropText1){
+// 				$(this).click();
+// 				return false;
+// 			}
+		
+// 		});
+// // 		$('#ioa_aboutmelist').find('.datashow_item ').show();
+// 		original_apply_personnel_name = $('#original_apply_personnel_name1').val();
+// 		if(original_apply_personnel_name != ''){
+// // 			$('#ioa_aboutmelist').find('.datashow_item ').hide();
+// 			 cl1 = $('#ioa_aboutmelist').find('.datashow_item:visible'); 
+// 			cl1.each(function(index){
+// 				if(original_apply_personnel_name != null){
+// 					var name1 = $(this).find('.t').text();
+// 					var time1 = $(this).find('.Otime').text();
+// 					var content1 = $(this).find('.i').text();
+// 					var apply_type_name1 = $(this).find('.bb2').text();
+// 					var sys_name1 = $(this).find('.bb1').text();
+// 					if((name1+time1+content1+apply_type_name1+sys_name1).indexOf(original_apply_personnel_name)>=0){
+// 						$(this).show();
+// 					}else{
+// 						$(this).hide();
+// 					}
+// 				}
+
+// 			});
+// 		}
+// 		$('#ioa_aboutmelist').datashow('refreshScroll');
+		doBillSearch();
+	}
+	
+	function initIoaAboutMeDrop(){
+		$('#ioa_aboutme_dropdown').find('ul li a').off('click');
+		$('#ioa_aboutme_dropdown').find('ul li a').click(function(){
+// 			var value = $(this).data('value')+'';
+			var text = $(this).text();
+			$('#ioa_aboutme_dropdown').find('button span.drop_selected').text(text.trim());
+// 			$('#ioa_aboutmelist').find('.datashow_item ').hide();
+// 			if(value.indexOf('-1')>=0){
+// 				$('#ioa_aboutmelist').find('.datashow_item').show();
+// 			}else{
+// 				$('#ioa_aboutmelist').find('.datashow_item ').each(function(){
+// 					var state = $(this).find('.ioa_aboutme_item').data('state');
+// 					var relationship = $(this).find('.ioa_aboutme_item').data('relationship');
+// 					if(value == '-2'){
+// 						if(relationship == '1'){
+// 							$(this).show();
+// 						}
+// 					}else{
+// 						if(value.indexOf(state)>=0){
+// 							$(this).show();
+// 						}
+// 					}
+// 				});
+// 			}
+// 			$('#ioa_aboutmelist')atashow('refreshScroll');
+			billDeopValue = $(this).data('value')+'';
+			doBillSearch();
+		});
+	}
+	//页面下拉列表数据
+	var billDeopValue = '';
+	//页面搜索框数据
+	var billSearchValue = '';
+	//处理页面查询
+	function doBillSearch(){
+		$('#ioa_aboutmelist').find('.datashow_item ').hide();
+		// 处理过滤下拉列表数据
+		//全部时全部显示
+		if(billDeopValue == '' || billDeopValue == '-1'){
+			$('#ioa_aboutmelist').find('.datashow_item').show();
+		}else{
+			//根据选取类型处理是否显示
+			$('#ioa_aboutmelist').find('.datashow_item ').each(function(){
+				var state = $(this).find('.ioa_aboutme_item').data('state');
+				var relationship = $(this).find('.ioa_aboutme_item').data('relationship');
+				if(billDeopValue == '-2'){
+					if(relationship == '1'){
+						$(this).show();
+					}
+				}else{
+					if(billDeopValue.indexOf(state)>=0){
+						$(this).show();
+					}
+				}
+			});
+		}
+		//处理搜索框数据
+		billSearchValue = $('#original_apply_personnel_name1').val();
+		if(billSearchValue != ''){
+			 $('#ioa_aboutmelist').find('.datashow_item:visible').each(function(index){
+				 //判断显示数据 是否符合搜索条件
+				var name1 = $(this).find('.t').text();
+				var time1 = $(this).find('.Otime').text();
+				var content1 = $(this).find('.i').text();
+				var apply_type_name1 = $(this).find('.bb2').text();
+				var sys_name1 = $(this).find('.bb1').text();
+				if((name1+time1+content1+apply_type_name1+sys_name1).indexOf(billSearchValue)>=0){
+					$(this).show();
+				}else{
+					$(this).hide();
+				}
+
+			});
+		}
+		//刷新滚动条控件
+		$('#ioa_aboutmelist').datashow('refreshScroll');
+	}
+
+</script>
+
+
+<body>
+<div style="width:100%;">
+
+
+  <nav  id="t" class="navbar navbar-dark navbar-fixed-top bg-inverse zxnav">
+   <div style="height:25px;">
+	  <span id="pp1" class="bill_bb"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1zuo.png">
+	  </span>
+	  <div class="nav_title" style="font-size: 20px;">我的单据</div>
+	  </div>
+	  
+	 <form class="bs-example bs-example-form" role="form" style="width:100%;">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 100%;float:left;margin-left: 2%;">
+            <div class="input-group" style="margin-top: 10px;">
+                <div class="input-group-btn dropdown" id="ioa_aboutme_dropdown">
+             
+                  <button  type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#66CCFF;height:25px;font-size:10px;width:100%"> 
+                     	<div style="margin-top:-3px;padding-left:-10px"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">全部</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul  class="dropdown-menu">
+                                                                                                                                   
+                        <li><a style="color: #FFF;font-weight:bold;" data-value="-1" >                                                                                                                          
+                    <span style="font-size: 13px;float:left;margin-left: 18px;" data-value="-1" >全部</span></a></li>
+                                                             
+                     <li><a  class="tyt" data-value="1">待审批</a></li>
+                     <li><a  class="tyt" data-value="6">审批中</a></li>
+                     <li><a  class="tyt" data-value="3">已驳回</a></li>
+                     <li><a  class="tyt" data-value="2,5">待签收</a></li>
+                     <li><a  class="tyt" data-value="4">已签收</a></li>
+                     <li><a  class="tyt" data-value="7">已撤销</a></li>
+                     <li><a  class="tyt" data-value="-2">通知</a></li>                       
+                  </ul>
+				
+               </div>
+               <input type="text" id="original_apply_personnel_name1" name="original_apply_personnel_name1" class="form-control" placeholder="请输入查询内容" style="width:90%;height:25px;background-color:#66CCFF;font-size:13px;">
+               <span  id="ioaSearch" style="background-color:#66CCFF;line-height:25px;width:10%;float:left;">
+        
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form>
+	   
+	  
+  <!--  <form class="bs-example bs-example-form" role="form" style="width:100%;">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 300px;margin: 0px auto;">
+            <div class="input-group" style="margin-top: 10px;">
+               <div class="input-group-btn dropdown" id="ioa_aboutme_dropdown">
+             
+                  <button  type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#66CCFF;text-align:center;height:25px;width:85px; font-size:10px;"> 
+                     	<div style="margin-top:-3px;padding-left:-10px"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">全部</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" >
+                    <li><a style="color: #FFF;font-weight:bold;" data-value="-1"><span style="margin-top:10px;margin-left:-44px;"><img alt="图片加载中..." src="../images/iconfont-lanmudaohang.png"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                                                                                                                            
+                                                             全部 </a></li>
+                     <li><a  style="color: #FFF;" data-value="1">待审批</a></li>
+                     <li><a  style="color: #FFF;" data-value="6">审批中</a></li>
+                     <li><a  style="color: #FFF;" data-value="3">已驳回</a></li>
+                     <li><a  style="color: #FFF;" data-value="2,5">待签收</a></li>
+                     <li><a  style="color: #FFF;" data-value="4">已签收</a></li>
+                     <li><a  style="color: #FFF;" data-value="7">已撤销</a></li>
+                     <li><a  style="color: #FFF;" data-value="-2">通知</a></li>
+                     
+                  </ul>
+				
+               </div>
+               <input type="text" id="original_apply_personnel_name" name="original_apply_personnel_name" class="form-control" placeholder="请输入关键字" style="width:160px;height:25px;background-color:#66CCFF;font-size:10px;">
+               <span  id="ioaSearch" style="background-color:#66CCFF;line-height:25px;width:25px;float:left;">
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form> -->
+  </nav>
+  <div id="ioa_aboutmelist_datas_wapper">
+  	<div id="ioa_aboutmelist"></div>
+  </div>
+
+  </div>
+</body>
+</html>

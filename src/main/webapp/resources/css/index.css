@@ -1,0 +1,53 @@
+
+/* body{margin: 0px;padding: 0px;background-color: #EFEEF5;}	 */
+body{margin: 0px;padding: 0px;background-color: white;}	
+/*底部导航菜单*/
+.zxbottommenu_center span{z-index: 1061;}
+.zxbottommenu_center img{max-width: 88px;max-height: 88px;}
+.zxbottommenu{bottom: -15px;}
+
+/* 	底部导航菜单弹出效果  */
+.dialog_back{display: none;width: 100%;height: 100%;z-index: 1051;position: fixed;top: 0px;left: 0px;}
+.dialog_back2{display: none;width: 100%;height: 100%;z-index: 1050;position: fixed;top: 0px;left: 0px;background-color: #ccc;opacity:0.6;}
+.dialog_panel{width:100%;position:absolute;bottom:50px;z-index: 1052;}
+.dialog{width:80%;max-width:500px; padding:30px 20px; border:5px solid white;background-color: white;opacity:1;margin: 0px auto;border-radius:10px;}
+.dialog span{width:0; height:0; font-size:0; overflow:hidden; position:absolute;}
+
+/* 向下尖叫 */
+.dialog span.bot{
+    border-width:20px; 
+    border-style:solid dashed dashed; 
+	    border-color:white transparent transparent;
+    left:80px; 
+    bottom:-40px;
+}
+.dialog span.top{
+    border-width:20px; 
+    border-style:solid dashed dashed; 
+    border-color:white transparent transparent; 
+    left:80px; 
+    bottom:-33px;
+}  
+/* 弹出内容 */
+.dialog_title_date,.dialog_ym_week,.dialog_day,.dialog_title_msg{display: inline-block;}
+.dialog_ym_week{text-align: right;color: #9DA0A2;font-weight: bold;}
+.dialog_day{font-size: 50px;font-weight: bolder;line-height: 50px;color: #2C95ED;}
+.dialog_title_msg{color:#9DA0A2;margin-bottom: -20px;position: relative;bottom: 10px;padding-left: 0px;}
+.dialog_title{border-bottom: 1px solid #ccc;padding-bottom: 5px;}
+.fastmenu{margin-top: 20px;}
+
+.viewinfo{display: none;}
+
+.fullimg{display: none;width: 100%;height: 100%;z-index: 1080;position: fixed;top: 0px;left: 0px;background-color: white;overflow: scroll;}
+/* .fullimg_info{width: 100%;height: 100%;} */
+
+.select_item{padding: 5px 10px;background-color: white;margin-top: 0px;border-bottom: 1px solid #7AB0E1;text-align: left;}
+.select_title{display: inline-block;padding-left: 10px;}
+.select_img{display: inline-block;}
+.select_ico{display: inline-block;text-align:right;font-weight: bolder;width: 19%;float: right;}
+
+.second_title{background-color: #1E90FF;text-align: center;font-weight: bolder;font-size: 20px;}
+
+.select .datashow_item{margin-bottom: 0px;}
+
+nav.zxnav{background-color:#1E90FF;}

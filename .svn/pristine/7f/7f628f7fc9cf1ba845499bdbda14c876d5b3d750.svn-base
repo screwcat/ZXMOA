@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.timeAttendance.persist.AttendanceDao">
+    <select id="getAttendanceList" parameterType="map" resultType="map">
+    	select
+			date_format(a.attendance_date,'%Y-%m-%d') as attendance_date,
+			a.attendance_workStart,
+			a.attendance_workEnd,
+			a.attentdance_status
+		from
+			time_attendance as a INNER JOIN pm_personnel as b on a.attendance_code = b.personnel_shortCode INNER JOIN sys_dept as c on b.personnel_deptId = c.dept_id
+		where
+			a.enable_flag = '1'
+			and IF(left(c.dept_code,3)='DHl' , a.attendance_type in (0,1,2), a.attendance_type=0 )
+		<if test="date_start != null">
+			and a.attendance_date &gt;= #{date_start}
+		</if>
+		<if test="date_end != null">
+			and a.attendance_date &lt;= #{date_end}
+		</if>
+		<if test="attendance_code != null">
+			and a.attendance_code = #{attendance_code}
+		</if>
+		order by a.attendance_date desc
+    </select>
+    
+    <select id="getWarnAttendancePersonnelList" resultType="map">
+		SELECT DISTINCT p.personnel_shortCode as accept_code,r.alias FROM time_attendance t INNER JOIN pm_personnel p ON t.attendance_code=p.personnel_attendanceCode INNER JOIN sys_app_user_record r ON p.personnel_shortCode=r.user_code
+		WHERE t.enable_flag=1 AND attendance_type=0 AND attentdance_status NOT IN ('-1','-2') AND attentdance_status REGEXP '1|2|8|9|10|11|12|13|14|15' AND DATE_FORMAT(attendance_date,'%Y-%m-%d')=ADDDATE(CURDATE(),-1) AND r.app_name='MOA'
+		AND p.personnel_postId NOT IN 
+				(SELECT post_id FROM sys_post WHERE enable_flag=0 AND post_number REGEXP 'PZXJKXXXXXX|PZXZXZCXXXX|PZXGJFZCXXX|PHLSXXXGXXX|PPHZXZJLXXX|PPHZXFZJLXX|PPHCPGLBZJL|PPHCPGLBFZJ|PPHZXFZJLXX|PPHFXKZBZJL|PPHFXKZBFZJ|PCFZXZJLXXX|PCFZXFZJLXX|PCFJXZXFZJL|PZNZXZJLXXX|PZNZXFZJLXX|PZNZJXXXXXX|PZNFZJXXXXX|PZNZXFZJLXX|PZNZJXXXXXX|PZNFZJXXXXX|PZNZXFZJLXX|PZNZXFZJLXX|PZNZXFZJLXX|PZNZJXXXXXX|PZNFZJXXXXX')
+	</select>
+    
+    <select id="findAllVacateSetting" resultType="map">
+	    select 
+			id,
+			holi_no,
+			holi_type,
+			holi_day,
+			holi_repair,
+			allow_holiday,
+			general_holiday,
+			legal_holiday,
+			flow1,
+			holi_name,
+			holi_cate,
+			organization_id,
+			seniority,
+			holi_count
+		from
+			time_holi
+		where
+			enable_flag = '1'
+			and holi_no like #{type}
+	</select>
+	
+	<select id="findAllDept" resultType="map">
+		select
+		dept_id,
+		dept_code,
+		dept_name,
+		dept_personid,
+		dept_level,
+		dept_pid
+		from
+		sys_dept
+		where
+		enable_flag = 1
+	</select>
+	
+	<select id="findTimeVacateHistory" resultType="Integer" parameterType="map">
+		SELECT 
+			SUM(v.vacate_time )
+		FROM 
+			time_vacate v
+		LEFT JOIN
+			office_apply_order o
+		ON
+			v.vacate_oid = o.order_id
+		WHERE
+			o.order_state IN ('1','2','4','5','6')
+		AND 
+			o.original_apply_personnel_id = #{personnel_id}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &gt;= #{vacateS}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &lt;= #{vacateE}
+		and v.vacate_type = #{hoil_type}
+	</select>
+	<select id="findCountVacateHistory" resultType="Integer" parameterType="map">
+		SELECT 
+			count(order_id)
+		FROM 
+			time_vacate v
+		LEFT JOIN
+			office_apply_order o
+		ON
+			v.vacate_oid = o.order_id
+		WHERE
+			o.order_state IN ('1','2','4','5','6')
+		AND 
+			o.original_apply_personnel_id = #{personnel_id}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &gt;= #{vacateS}
+		and
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d') &lt;= #{vacateE}
+		and v.vacate_type = #{hoil_type}
+	</select>
+	
+	<select id="getVolumeInfo" parameterType="map" resultType="map">
+		select 
+			a.day_type as day_type,
+			b.work_time as start1, 
+			b.delay_time as start2,
+			b.off_work_time as off1,
+			b.start_work_time as off2,
+			b.start_absenteeism_time as rest1,
+			b.end_absenteeism_time as rest2,
+			b.day_type as over,
+			a.info_data
+		from 
+			time_volume_info a INNER JOIN time_shift b on a.shift_id = b.id 
+		where
+			a.personnel_id = #{personnel_id} 
+		and 
+			DATE_FORMAT(a.info_data,'%Y-%m-%d') &gt;= #{date_start}
+		and
+			DATE_FORMAT(a.info_data,'%Y-%m-%d') &lt;= #{date_end}
+		and 
+			a.enable_flag = 1
+		and 
+			b.enable_flag = 1
+		order by a.info_data asc
+	</select>
+		
+	<!-- 查询当月这个时间段调休的次数 -->
+	<select id="findDaysoffCount" resultType="int" parameterType="map">
+		select count(t.daysoff_id) 
+		from 
+			time_daysoff t LEFT JOIN office_apply_order o ON t.order_id = o.order_id
+		where o.order_state IN (1,2,4,5,6)
+		and 
+			o.original_apply_personnel_id = #{personnel_id}
+		and 
+			t.daysoff_begintime &gt;= #{daysoff_begintime}
+		and 
+			t.daysoff_endtime &lt;= #{daysoff_endtime}
+	</select>
+	
+	<!-- 查询当月这个时间段补卡的次数 -->
+	<select id="findFillcheckCount" resultType="int" parameterType="map">
+		select count(t.fillcheck_id) 
+		from 
+			time_fillcheck t LEFT JOIN office_apply_order o ON t.fillcheck_oid = o.order_id
+		where o.order_state IN (1,2,4,5,6)
+		and 
+			o.original_apply_personnel_id = #{personnel_id}
+		and 
+			(t.fillcheck_nocardTime &gt;= #{daysoff_begintime}
+		or 
+			t.fillcheck_endTime &lt;= #{daysoff_endtime})
+	</select>
+	<select id="getDept_code" parameterType="Integer" resultType="String">
+		select dept_code from sys_dept where dept_id=#{dept_id}
+    </select>
+    <select id="getRule" parameterType="map" resultType="map">
+    select holi_day,general_holiday,legal_holiday,holi_repair,allow_holiday,holi_count,flow1 from time_holi where holi_type=#{apply_type_id} and organization_id=#{secondDeptId} and enable_flag=1
+    </select>
+    
+    <select id="findPayoff" resultType="map">
+		select
+			check_weekday_use,
+			check_weekend_use,
+			check_holiday_use,
+			check_weekendPO_use,
+			check_nightTime_use,
+			check_holidayPO_use,
+			check_attendance,
+			check_year_month,
+			check_holiday_total,
+			check_weekend_total,
+			check_weekday_total,
+			check_weekendPO_total,
+			check_nightTime_total,
+			check_holidayPO_total
+		from
+			time_check
+		where
+			enable_flag = '1'
+		<if test="datas != null">
+			and check_year_month in
+			<foreach collection="datas" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="datas == null">
+			and 1 = 0
+		</if>
+		<if test="code != null">
+			and check_attendance = #{code}
+		</if>
+		order by check_year_month asc
+	</select>
+	
+	<select id="findDaysoffHistory" resultType="map">
+		select
+			daysoff_begintime,
+			daysoff_endtime,
+			daysoff_hour,
+			d.order_id,
+			order_state
+		from
+			time_daysoff d
+		left join
+			office_apply_order o
+		on
+			d.order_id = o.order_id
+		where
+			order_state in ('1','2','4','5','6')
+		and
+			original_apply_personnel_no = #{code}
+		and
+			DATE_FORMAT(daysoff_begintime,'%Y-%m') = #{date}
+	</select>
+		
+</mapper>

@@ -1,0 +1,1 @@
+ALTER TABLE sys_app_version ADD app_num INT DEFAULT NULL COMMENT 'APP版本号';

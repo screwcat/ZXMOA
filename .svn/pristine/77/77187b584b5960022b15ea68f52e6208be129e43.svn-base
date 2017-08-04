@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.documentsmanage.persist.DocumentsDao">
+
+	<select id="getDocInfoById" parameterType="map" resultType="map">
+		select
+			original_apply_personnel_name,
+			original_apply_personnel_no,
+			order_no,
+			content,
+			img_path,
+			apply_type_name,
+			attendance_info
+		from
+			office_apply_order 
+		where
+		1=1
+		<if test="order_id">
+			and	order_id = #{order_id}
+		</if>
+	</select>
+	
+	<select id="getApproveInfoById" parameterType="map" resultType="map">
+	select
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d ') as approve_timestamp,
+			approve_state
+			
+		from
+			office_apply_order_relation relation inner join  office_apply_order app
+		on	
+			relation.apply_order_id = app.order_id
+		where
+		1=1
+			and approve_state in (1,2)
+		<if test="order_id">
+			and	order_id = #{order_id}
+		</if>	
+	</select>
+	
+	<select id="getOrder_no" parameterType="map" resultType="String">
+		select 
+			order_no
+		from
+			office_apply_order
+		where
+			order_id = #{order_id}
+	</select>
+	
+	<select id="findTimeVacateByOrderId" parameterType="map" resultType="map">
+		select
+			DATE_FORMAT(vacate_startTime,'%Y-%m-%d %T') as vacate_startTime,
+			DATE_FORMAT(vacate_endTime,'%Y-%m-%d %T') as vacate_endTime
+		from
+			time_vacate
+		where
+			vacate_oid = #{order_id}
+		and
+			enable_flag = '1'
+	</select>
+	
+	<select id="findDaysOffByOrderId" parameterType="map" resultType="map">
+		select
+		DATE_FORMAT(daysoff_begintime,'%Y-%m-%d %T') as daysoff_begintime,
+		DATE_FORMAT(daysoff_endtime,'%Y-%m-%d %T') as daysoff_endtime
+		from
+			time_daysoff
+		where
+			order_id = #{order_id}
+		and 
+			enable_flag = '1'
+	</select>
+	
+	<select id="findFillCheckByOrderId" parameterType="map" resultType="map">
+		select
+			DATE_FORMAT(fillcheck_nocardTime,'%Y-%m-%d %T') as fillcheck_nocardTime,
+			DATE_FORMAT(fillcheck_endTime,'%Y-%m-%d %T') as fillcheck_endTime
+		from
+			time_fillcheck
+		where
+			fillcheck_oid = #{order_id}
+		and
+			enable_flag = '1'
+	</select>
+	
+	<select id="findPayOffByOrderId" parameterType="map" resultType="map" >
+		select
+			DATE_FORMAT(payoff_startTime,'%Y-%m-%d %T') as payoff_startTime,
+			DATE_FORMAT(payoff_endTime,'%Y-%m-%d %T') as payoff_endTime
+		from
+			time_payoff
+		where
+			payoff_deptId = #{order_id}
+		and
+			enable_flag = '1'
+	</select>
+	
+	<select id="findEvectionByOrderId" parameterType="map" resultType="map">
+		select
+			DATE_FORMAT(evection_begintime,'%Y-%m-%d %T') as evection_begintime,
+			DATE_FORMAT(evection_endtime,'%Y-%m-%d %T') as evection_endtime
+		from
+			time_evection
+		where
+			order_id = #{order_id}
+		and
+			enable_flag = '1'
+	</select>
+	
+	<select id="getLeaveInfoByOrderId" parameterType="map" resultType="map">
+	    select 
+			o.original_apply_personnel_name as original_apply_personnel_name,
+			o.original_apply_personnel_no as original_apply_personnel_no,
+			o.order_no as order_no,
+			o.attendance_info as attendance_info,
+			o.content as content,
+			o.apply_type_name as apply_type_name,
+			o.apply_personnel_no as apply_personnel_no,
+			o.apply_personnel_name as apply_personnel_name,
+			IFNULL( (select 
+							q.quitOrPart as quitOrPart
+						from
+							office_apply_order_relation_quit q ,
+							(SELECT * from office_apply_order_relation r where r.apply_order_id = #{order_id}) a
+						where 
+							q.order_relation_id  = a.order_relation_id
+							and 
+							q.enable_flag =1
+							ORDER BY a.approve_timestamp DESC LIMIT 1 ) ,q.quitOrPart) as quitOrPart,
+			DATE_FORMAT(q.quit_preAppTime,'%Y-%m-%d') as quit_preAppTime,
+			IFNULL((select 
+							date_format(quit_agreeTime,'%Y-%m-%d ') as quit_agreeTime
+						from
+							office_apply_order_relation_quit q ,
+							(SELECT * from office_apply_order_relation r where r.apply_order_id = #{order_id}) a
+						where 
+							q.order_relation_id  = a.order_relation_id
+							and 
+							q.enable_flag =1
+							ORDER BY a.approve_timestamp DESC LIMIT 1 )  , DATE_FORMAT(q.quit_preAppTime,'%Y-%m-%d')) quit_agreeTime,
+			o.apply_type_id as apply_type_id,
+			o.img_path as img_path,
+			q.personnel_type as personnel_type
+		FROM
+			office_apply_order o
+			INNER JOIN office_apply_order_quit q
+			ON q.order_id = o.order_id
+		WHERE
+			 q.enable_flag = 1
+			<if test="order_id!=null">
+			    and o.order_id = #{order_id}
+			</if>
+
+	</select>
+	
+	<select id="getLeaveHistory" parameterType="map" resultType="map">
+	    select 
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d') as approve_timestamp,
+			approve_state
+		FROM
+			office_apply_order_relation relation  inner join  office_apply_order app
+		on	
+			relation.apply_order_id = app.order_id
+		WHERE
+			 approve_state in (1,2)
+			<if test="order_id!=null">
+			    and apply_order_id = #{order_id}
+			</if>
+			
+	</select>
+	
+	<select id="getNoApproveInfoById" parameterType="map" resultType="map">
+		select
+			relation.approve_personnel_name,
+			relation.approve_personnel_no,
+			relation.level_index,
+			relation.level_flag
+		from
+			office_apply_order_relation relation inner join  office_apply_order app
+		on	
+			relation.apply_order_id = app.order_id
+		where
+			relation.approve_state in (0,9)
+		<if test="order_id">
+			and	app.order_id = #{order_id}
+		</if>	
+	</select>
+	
+	<select id="getApproveShouInfoById" parameterType="map" resultType="map">
+		select
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d') as approve_timestamp
+		from
+			office_apply_order_relation 
+		where
+			approve_state = 11
+			and level_index = 0
+			and approve_content is not null
+		<if test="order_id">
+			and	apply_order_id = #{order_id}
+		</if>	
+	</select>
+	
+	<!-- 待我审批和我的单据流程显示审批节点 -->
+	<select id="getApproveInfoById117" parameterType="map" resultType="map">
+		select
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d %H:%i:%s') as approve_timestamp,
+			approve_state
+			
+		from
+			office_apply_order_relation relation inner join  office_apply_order app
+		on	
+			relation.apply_order_id = app.order_id
+		where
+		1=1
+			and approve_state in (1,2)
+		<if test="order_id">
+			and	order_id = #{order_id}
+		</if>	
+		order by approve_timestamp
+	</select>
+	
+	<!-- 待我审批和我的单据流程显示审批节点和签收节点 -->
+	<select id="getApproveShouInfoById117" parameterType="map" resultType="map">
+		select
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d %H:%i:%s') as approve_timestamp
+		from
+			office_apply_order_relation 
+		where
+			approve_state = 11
+			and level_index = 0
+			and approve_content is not null
+		<if test="order_id">
+			and	apply_order_id = #{order_id}
+		</if>
+		order by approve_timestamp asc	
+	</select>
+	
+	<!-- 待我审批和我的单据流程显示审批节点和待签收节点 -->
+	<select id="getApproveUnShouInfoById117" parameterType="map" resultType="map">
+		select
+			approve_personnel_name,
+			approve_personnel_no
+		from
+			office_apply_order_relation 
+		where
+			approve_state != 11
+			and level_index = 0
+		<if test="order_id">
+			and	apply_order_id = #{order_id}
+		</if>
+		order by approve_timestamp asc		
+	</select>
+	
+	<!-- 离职审批节点 -->
+	<select id="getLeaveHistory117" parameterType="map" resultType="map">
+	    select 
+			approve_personnel_name,
+			approve_personnel_no,
+			approve_personnel_dept_name,
+			approve_personnel_post_name,
+			approve_content,
+			DATE_FORMAT(approve_timestamp,'%Y-%m-%d %H:%i:%s') as approve_timestamp,
+			approve_state
+		FROM
+			office_apply_order_relation relation  inner join  office_apply_order app
+		on	
+			relation.apply_order_id = app.order_id
+		WHERE
+			 approve_state in (1,2)
+			<if test="order_id!=null">
+			    and apply_order_id = #{order_id}
+			</if>
+		order by approve_timestamp asc	
+	</select>
+	
+	<select id="getOrderState" parameterType="map" resultType="int">
+		select
+			order_state
+		from
+			office_apply_order 
+		where
+		1=1
+		<if test="order_id">
+			and	order_id = #{order_id}
+		</if>
+	</select>
+	
+	<select id="selSubmitter" parameterType="map" resultType="map">
+		select
+			apply_personnel_no,
+			apply_personnel_name,
+			apply_personnel_dept_name,
+			apply_personnel_post_name,
+			DATE_FORMAT(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp
+		from
+			office_apply_order 
+		where
+		1=1
+		<if test="order_id">
+			and	order_id = #{order_id}
+		</if>
+	</select>
+	
+</mapper>

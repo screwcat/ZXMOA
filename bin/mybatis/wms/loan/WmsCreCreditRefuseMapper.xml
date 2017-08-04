@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsCreCreditRefuseDao">
+    <!-- get entity by pk -->
+    <select id="get" parameterType="int" resultType="WmsCreCreditRefuse">
+        select wms_cre_credit_refuse_id,
+               salesman_name,
+               customer_name,
+               community_name,
+               house_address_more,
+               house_building_area,
+               credit_limit,
+               cre_type,
+               vehicle_evaluation_price,
+               house_price,
+               city,
+               house_unit_price,
+               appro_unit_limit,
+               refuse_remark,
+               enable_flag,
+               create_timestamp,
+               create_user_id,
+               create_user_name,
+               bill_date,
+               city_code,
+               id_card
+          from wms_cre_credit_refuse
+         where wms_cre_credit_refuse_id = #{wms_cre_credit_refuse_id}
+    </select>
+
+    <!-- count num -->
+    <select id="findCount" parameterType="map" resultType="int">
+        select count(wms_cre_credit_refuse_id) as count
+          from wms_cre_credit_refuse
+        <where>
+            <if test="paramname != null">
+                <!-- and columnName = #{columnName} -->
+            </if>
+        </where>
+    </select>
+
+    <!-- list -->
+    <select id="search" parameterType="map" resultType="java.util.HashMap">
+        select wms_cre_credit_refuse_id,
+               salesman_name,
+               customer_name,
+               community_name,
+               house_address_more,
+               house_building_area,
+               credit_limit,
+               cre_type,
+               vehicle_evaluation_price,
+               house_price,
+               city,
+               house_unit_price,
+               appro_unit_limit,
+               refuse_remark,
+               enable_flag,
+               create_timestamp,
+               create_user_id,
+               create_user_name,
+               bill_date,
+               city_code,
+               id_card
+          from wms_cre_credit_refuse
+        <where>
+            <if test="paramname != null">
+                <!-- and columnName = #{columnName} -->
+            </if>
+        </where>
+        <if test="sortname != null and sortorder != null">
+            order by ${sortname} ${sortorder}
+        </if>
+        <if test="offset != null and pagesize != null">
+            limit ${offset}, ${pagesize}
+        </if>
+    </select>
+
+    <!-- save -->
+    <insert id="save" parameterType="WmsCreCreditRefuse" useGeneratedKeys="true" keyProperty="wms_cre_credit_refuse_id">
+        insert into wms_cre_credit_refuse (
+            wms_cre_credit_refuse_id,
+            salesman_name,
+            customer_name,
+            community_name,
+            house_address_more,
+            house_building_area,
+            credit_limit,
+            cre_type,
+            vehicle_evaluation_price,
+            house_price,
+            city,
+            house_unit_price,
+            appro_unit_limit,
+            refuse_remark,
+            enable_flag,
+            create_timestamp,
+            create_user_id,
+            create_user_name,
+            bill_date,
+            city_code,
+            id_card
+        )
+        values(
+            #{wms_cre_credit_refuse_id},
+            #{salesman_name},
+            #{customer_name},
+            #{community_name},
+            #{house_address_more},
+            #{house_building_area},
+            #{credit_limit},
+            #{cre_type},
+            #{vehicle_evaluation_price},
+            #{house_price},
+            #{city},
+            #{house_unit_price},
+            #{appro_unit_limit},
+            #{refuse_remark},
+            #{enable_flag},
+            #{create_timestamp},
+            #{create_user_id},
+            #{create_user_name},
+            #{bill_date},
+            #{city_code},
+            #{id_card}
+        )
+    </insert>
+
+    <!-- update -->
+    <update id="update" parameterType="WmsCreCreditRefuse">
+        update wms_cre_credit_refuse
+        <set>
+            <if test="wms_cre_credit_refuse_id != null">
+                wms_cre_credit_refuse_id = #{wms_cre_credit_refuse_id},
+            </if>
+            <if test="salesman_name != null">
+                salesman_name = #{salesman_name},
+            </if>
+            <if test="customer_name != null">
+                customer_name = #{customer_name},
+            </if>
+            <if test="community_name != null">
+                community_name = #{community_name},
+            </if>
+            <if test="house_address_more != null">
+                house_address_more = #{house_address_more},
+            </if>
+            <if test="house_building_area != null">
+                house_building_area = #{house_building_area},
+            </if>
+            <if test="credit_limit != null">
+                credit_limit = #{credit_limit},
+            </if>
+            <if test="cre_type != null">
+                cre_type = #{cre_type},
+            </if>
+            <if test="vehicle_evaluation_price != null">
+                vehicle_evaluation_price = #{vehicle_evaluation_price},
+            </if>
+            <if test="house_price != null">
+                house_price = #{house_price},
+            </if>
+            <if test="city != null">
+                city = #{city},
+            </if>
+            <if test="house_unit_price != null">
+                house_unit_price = #{house_unit_price},
+            </if>
+            <if test="appro_unit_limit != null">
+                appro_unit_limit = #{appro_unit_limit},
+            </if>
+            <if test="refuse_remark != null">
+                refuse_remark = #{refuse_remark},
+            </if>
+            <if test="enable_flag != null">
+                enable_flag = #{enable_flag},
+            </if>
+            <if test="create_timestamp != null">
+                create_timestamp = #{create_timestamp},
+            </if>
+            <if test="create_user_id != null">
+                create_user_id = #{create_user_id},
+            </if>
+            <if test="create_user_name != null">
+                create_user_name = #{create_user_name},
+            </if>
+            <if test="bill_date != null">
+                bill_date = #{bill_date},
+            </if>
+            <if test="city_code != null">
+                city_code = #{city_code},
+            </if>
+            <if test="id_card != null">
+                id_card = #{id_card},
+            </if>
+        </set>
+        <where>
+            wms_cre_credit_refuse_id = #{wms_cre_credit_refuse_id}
+        </where>
+    </update>
+
+    <!-- getListByEntity -->
+    <select id="getListByEntity" parameterType="WmsCreCreditRefuse" resultType="WmsCreCreditRefuse">
+        select wms_cre_credit_refuse_id,
+               salesman_name,
+               customer_name,
+               community_name,
+               house_address_more,
+               house_building_area,
+               credit_limit,
+               cre_type,
+               vehicle_evaluation_price,
+               house_price,
+               city,
+               house_unit_price,
+               appro_unit_limit,
+               refuse_remark,
+               enable_flag,
+               create_timestamp,
+               create_user_id,
+               create_user_name,
+               bill_date,
+               city_code,
+               id_card
+          from wms_cre_credit_refuse
+        <where>
+            <if test="wms_cre_credit_refuse_id != null">
+                and wms_cre_credit_refuse_id = #{wms_cre_credit_refuse_id}
+            </if>
+            <if test="salesman_name != null">
+                and salesman_name = #{salesman_name}
+            </if>
+            <if test="customer_name != null">
+                and customer_name = #{customer_name}
+            </if>
+            <if test="community_name != null">
+                and community_name = #{community_name}
+            </if>
+            <if test="house_address_more != null">
+                and house_address_more = #{house_address_more}
+            </if>
+            <if test="house_building_area != null">
+                and house_building_area = #{house_building_area}
+            </if>
+            <if test="credit_limit != null">
+                and credit_limit = #{credit_limit}
+            </if>
+            <if test="cre_type != null">
+                and cre_type = #{cre_type}
+            </if>
+            <if test="vehicle_evaluation_price != null">
+                and vehicle_evaluation_price = #{vehicle_evaluation_price}
+            </if>
+            <if test="house_price != null">
+                and house_price = #{house_price}
+            </if>
+            <if test="city != null">
+                and city = #{city}
+            </if>
+            <if test="house_unit_price != null">
+                and house_unit_price = #{house_unit_price}
+            </if>
+            <if test="appro_unit_limit != null">
+                and appro_unit_limit = #{appro_unit_limit}
+            </if>
+            <if test="refuse_remark != null">
+                and refuse_remark = #{refuse_remark}
+            </if>
+            <if test="enable_flag != null">
+                and enable_flag = #{enable_flag}
+            </if>
+            <if test="create_timestamp != null">
+                and create_timestamp = #{create_timestamp}
+            </if>
+            <if test="create_user_id != null">
+                and create_user_id = #{create_user_id}
+            </if>
+            <if test="create_user_name != null">
+                and create_user_name = #{create_user_name}
+            </if>
+            <if test="bill_date != null">
+                and bill_date = #{bill_date}
+            </if>
+            <if test="city_code != null">
+                and city_code = #{city_code}
+            </if>
+            <if test="id_card != null">
+                and id_card = #{id_card}
+            </if>
+        </where>
+    </select>
+    
+    
+    <select id="getWmsCreCreditRefuseInfo" parameterType="map" resultType="int">
+        select 
+        	count(*)
+        from
+        	wms_cre_credit_refuse
+        <where>
+             <if test="id_card != null">
+                and id_card = #{id_card}
+                and cre_type = '1'
+            </if>
+            
+            <if test="customer_name != null and house_address_more != null">
+                and customer_name = #{customer_name}
+                and house_address_more = #{house_address_more}
+                and cre_type = '2'
+            </if>
+        </where>
+    </select>
+    
+
+</mapper>

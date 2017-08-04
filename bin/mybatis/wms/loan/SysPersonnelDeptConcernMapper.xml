@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.SysPersonnelDeptConcernDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="SysPersonnelDeptConcern">
+		select
+        				personnel_dept_concern_id,
+        				personnel_id,
+        				dept_id,
+        				dept_type,
+        				create_userid,
+						date_format(create_date,'%Y-%m-%d %H:%i:%s') as create_date_str,
+        				create_date,
+        				permissions_id
+        	from
+        		sys_personnel_dept_concern
+        	where
+        				personnel_dept_concern_id = #{personnel_dept_concern_id}
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count(personnel_dept_concern_id) as count
+		from sys_personnel_dept_concern
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select 
+				personnel_dept_concern_id,
+				personnel_id,
+				dept_id,
+				dept_type,
+				create_userid,
+				date_format(create_date,'%Y-%m-%d %H:%i:%s') as create_date_str,
+				create_date,
+				permissions_id
+		from sys_personnel_dept_concern
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="SysPersonnelDeptConcern" useGeneratedKeys="true" keyProperty="personnel_dept_concern_id">
+		INSERT INTO sys_personnel_dept_concern
+		(
+				personnel_dept_concern_id,
+
+				personnel_id,
+
+				dept_id,
+
+				dept_type,
+
+				create_userid,
+
+				create_date,
+				
+				permissions_id
+		)
+		VALUES
+		(
+				#{personnel_dept_concern_id},
+				#{personnel_id},
+				#{dept_id},
+				#{dept_type},
+				#{create_userid},
+				#{create_date},
+				#{permissions_id}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="SysPersonnelDeptConcern">
+		update sys_personnel_dept_concern
+		<set>
+					<if test="personnel_dept_concern_id != null">
+						 personnel_dept_concern_id = #{personnel_dept_concern_id},
+					</if>
+					<if test="personnel_id != null">
+						 personnel_id = #{personnel_id},
+					</if>
+					<if test="dept_id != null">
+						 dept_id = #{dept_id},
+					</if>
+					<if test="dept_type != null">
+						 dept_type = #{dept_type},
+					</if>
+					<if test="create_userid != null">
+						 create_userid = #{create_userid},
+					</if>
+					<if test="create_date != null">
+						 create_date = #{create_date},
+					</if>
+					<if test="permissions_id !=null">
+					   permissions_id = #{permissions_id},
+					</if>
+	   </set>
+		 where 
+    				personnel_dept_concern_id = #{personnel_dept_concern_id}
+	</update>
+	<select id="getListByEntity" parameterType="SysPersonnelDeptConcern" resultType="SysPersonnelDeptConcern">
+		select 
+				personnel_dept_concern_id,
+				personnel_id,
+				dept_id,
+				dept_type,
+				create_userid,
+				date_format(create_date,'%Y-%m-%d %H:%i:%s') as create_date_str,
+				create_date,
+				permissions_id
+		from
+		sys_personnel_dept_concern
+		<where>
+					<if test="personnel_dept_concern_id != null">
+						and personnel_dept_concern_id = #{personnel_dept_concern_id}
+					</if>
+					<if test="personnel_id != null">
+						and personnel_id = #{personnel_id}
+					</if>
+					<if test="dept_id != null">
+						and dept_id = #{dept_id}
+					</if>
+					<if test="dept_type != null">
+						and dept_type = #{dept_type}
+					</if>
+					<if test="create_userid != null">
+						and create_userid = #{create_userid}
+					</if>
+					<if test="create_date != null">
+						and create_date = #{create_date}
+					</if>
+					<if test="permissions_id !=null">
+					   and permissions_id =#{permissions_id}
+					</if>
+				 	<if test="isExcludePKFlag != null and isExcludePKFlag == true">
+		        		and personnel_dept_concern_id != #{personnel_dept_concern_id}
+					</if>
+		</where>
+	</select>
+	
+					
+	<!-- list -->
+	<select id="getDeptInfoList" parameterType="map" resultType="java.util.HashMap">
+			select 
+				c.personnel_id,
+				p.personnel_shortCode,
+				p.personnel_regionNumber,
+				c.dept_id,
+				d.dept_code,
+				d.dept_name,
+				d.dept_level,
+				d.dept_pid,
+				d.dept_personId,
+				c.permissions_id
+			from
+				sys_personnel_dept_concern c, pm_personnel p ,sys_dept d
+			where 
+					c.personnel_id=p.personnel_id
+				and c.dept_id=d.dept_id
+				and p.personnel_id=#{personnel_id}
+				and c.permissions_id=#{permissions_id}
+	</select>
+</mapper> 

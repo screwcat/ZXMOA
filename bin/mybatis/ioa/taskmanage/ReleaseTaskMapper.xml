@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.task.persist.ReleaseTaskDao">
+<!--     所属部门人员信息 -->
+	<select id="selectPersonnelInfoByDept" parameterType="map" resultType="map">
+	SELECT   
+	     pm.personnel_sex,
+	     pm.personnel_id, 
+	     pm.personnel_name, 
+	     pm.personnel_shortcode, 
+	     pm.personnel_deptname, 
+	     pm.personnel_postname,
+	     d.dept_name AS parent_deptname
+        FROM pm_personnel pm, 
+        (SELECT dept_name, e.personnel_deptId
+            FROM (SELECT personnel_deptId, dept_pid
+        FROM pm_personnel LEFT JOIN sys_dept ON personnel_deptId = dept_id
+        WHERE
+         personnel_id = #{personnel_id} and pm_personnel.enable_flag=1
+        ) e LEFT JOIN sys_dept ON dept_id = e.dept_pid
+          ) d
+        WHERE pm.personnel_deptId = d.personnel_deptId
+        and pm.enable_flag=1
+        and pm.personnel_id &lt;&gt; #{personnel_id}
+        order by pm.personnel_shortcode 
+        <if test="page !=null and pagesize !=null">
+            limit ${(page-1)*pagesize},${pagesize}
+        </if>
+	</select>
+<!-- 查询人员信息 -->
+<select id="selectPersonnelInfoByNameAndCode" parameterType="map" resultType="map">
+        SELECT   
+        
+         pm.personnel_id, 
+         pm.personnel_name, 
+         pm.personnel_shortcode, 
+         pm.personnel_deptname, 
+         c.parent_deptname ,
+         pm.personnel_sex,
+         personnel_postname
+        FROM pm_personnel pm,
+        (
+       select *,
+      (SELECT dept_name from sys_dept where dept_id = e.dept_pid ) as parent_deptname
+    from (
+        SELECT  personnel_id,personnel_deptId, dept_pid,personnel_name,personnel_shortcode
+        FROM pm_personnel LEFT JOIN sys_dept ON personnel_deptId = dept_id
+
+        WHERE  
+       pm_personnel.enable_flag =1 and 
+        concat(personnel_name,personnel_shortcode) like "%"#{search}"%"
+        ) as e
+        ) as c  where c.personnel_id = pm.personnel_id
+        order by pm.personnel_shortcode 
+        <if test="page !=null and pagesize !=null">
+            limit ${(page-1)*pagesize},${pagesize}
+        </if>
+
+    </select>
+
+<!-- 查询常用人 -->
+    <select id="selectDefaultReleasePersonnelById" parameterType="map" resultType="map">
+
+	select
+	statistic_id as personnel_id,
+	statistic_name as personnel_name,
+	statistic_code as personnel_shortcode,
+	statistic_dept as personnel_deptname,
+	statistic_parent_dept as parent_deptname,
+	statistic_post as personnel_postname ,
+	statistic_sex as personnel_sex
+	from sys_task_statistic
+	where 
+	personnel_id = #{personnel_id}  
+	and 
+	statistic_type =#{statistic_type}
+	order by statistic_count desc
+
+                
+    </select>
+<!-- 查询任务信息-->
+    <select id="selectTaskById" parameterType="map" resultType="map">
+    SELECT t.*, (
+        SELECT sdd.value_meaning
+        FROM sys_dict_data sdd LEFT JOIN sys_dict sd ON sd.sys_dict_id = sdd.sys_dict_id
+        WHERE sd.dict_code = 'DATA00025'
+            AND sdd.value_code = t.feedback_cycle
+        ) AS feedback_cycle_value, (
+        SELECT sdd.value_meaning
+        FROM sys_dict_data sdd LEFT JOIN sys_dict sd ON sd.sys_dict_id = sdd.sys_dict_id
+        WHERE sd.dict_code = 'DATA00026'
+            AND sdd.value_code = t.remind_time
+        ) AS remind_time_value
+FROM (SELECT t.task_title, t.task_num, t.publish_user_id, t.publish_user_name, t.publish_user_code
+        ,t.feedback_user_info, t.create_id, t.create_user_name
+        , t.create_user_code, t.finish_time, t.feedback_cycle, t.remind_time 
+    FROM sys_task t
+    WHERE task_id = #{task_id}
+    and enable_flag=1
+    ) t
+    
+    
+</select>
+
+        <select id="selectTaskByIdfor117" parameterType="map" resultType="map">
+		    SELECT t.*, (
+		        SELECT sdd.value_meaning
+		        FROM sys_dict_data sdd LEFT JOIN sys_dict sd ON sd.sys_dict_id = sdd.sys_dict_id
+		        WHERE sd.dict_code = 'DATA00025'
+		            AND sdd.value_code = t.feedback_cycle
+		        ) AS feedback_cycle_value, (
+		        SELECT sdd.value_meaning
+		        FROM sys_dict_data sdd LEFT JOIN sys_dict sd ON sd.sys_dict_id = sdd.sys_dict_id
+		        WHERE sd.dict_code = 'DATA00026'
+		            AND sdd.value_code = t.remind_time
+		        ) AS remind_time_value
+		FROM (SELECT t.task_title, t.task_num, t.publish_user_id, t.publish_user_name, t.publish_user_code
+		        ,t.feedback_user_info, t.create_id, t.create_user_name
+		        , t.create_user_code, t.finish_time, t.feedback_cycle, t.remind_time,task_type_id,task_type_name 
+		    FROM sys_task t
+		    WHERE task_id = #{task_id}
+		    and enable_flag=1
+		    ) t
+    
+    
+	</select>
+<!-- 查询任务详情信息 -->
+    <select id="selectTaskInfoById" parameterType="map" resultType="map">
+        select 
+        task_info,
+        info_type,
+        info_date,
+        task_info_mini
+        from 
+        sys_task_info
+        where 
+      task_num = #{task_num}
+      order by create_datetime desc
+    
+    </select>
+    
+ <select id="selectTaskByPid" parameterType="map" resultType="map" >
+    select * from sys_task where task_id = #{task_id} 
+ </select>   
+ 
+ 	
+ <select id="getGroupInfo" parameterType="map" resultType="map">
+     select 
+     	group_id,
+     	group_name,
+     	people_number
+     from
+     	sys_personnel_group
+     where
+     	create_user_id = #{personnel_id}
+     	and enable_flag = 1
+        <if test="page !=null and pagesize !=null">
+            limit ${(page-1)*pagesize},${pagesize}
+        </if>
+ </select>
+ 
+ 
+ <select id="getPersonnelInfoByGroup" parameterType="map" resultType="map">
+			SELECT	
+				pm.personnel_id as personnel_id,
+				pm.personnel_name as personnel_name,
+				pm.personnel_shortcode as personnel_shortcode,
+				pm.personnel_deptName as personnel_deptname,
+				pm.personnel_postName as personnel_postname,
+				pm.personnel_sex as personnel_sex,
+				dept.dept_pid as dept_pid
+			FROM	
+					sys_personnel_group g INNER JOIN sys_personnel_group_relation r
+			on g.group_id = r.group_id
+			INNER JOIN pm_personnel pm ON r.personnel_id = pm.personnel_id
+			inner join sys_dept dept
+				 on dept.dept_id = pm.personnel_deptId
+			WHERE
+				g.enable_flag = 1
+				and r.enable_flag = 1
+				and pm.enable_flag = 1
+			and g.group_id = #{group_id}
+ </select>
+    
+	<select id="getGroupname" parameterType="map" resultType="map">
+	    select
+	    	group_id,
+	    	group_name
+	    from
+	    	sys_personnel_group
+	    where
+	    	group_id = #{group_id}
+	</select>    
+	
+	<select id="getDeptnameforGroup" parameterType="map" resultType="map">
+		select
+			dept_name
+		from
+			sys_dept
+		where
+			dept_id = #{dept_id}
+	</select>
+</mapper>
+
+
+
+

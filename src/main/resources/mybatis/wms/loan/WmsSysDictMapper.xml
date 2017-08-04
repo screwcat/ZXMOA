@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsSysDictDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="WmsSysDict">
+		select
+        				wms_sys_dict_id,
+        				dict_type,
+        				dict_code,
+        				dict_name
+        	from
+        		wms_sys_dict
+        	where
+        				wms_sys_dict_id = #{wms_sys_dict_id}
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count(wms_sys_dict_id) as count
+		from wms_sys_dict
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select 
+				wms_sys_dict_id,
+				dict_type,
+				dict_code,
+				dict_name
+		from wms_sys_dict
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="WmsSysDict" useGeneratedKeys="true" keyProperty="wms_sys_dict_id">
+		INSERT INTO wms_sys_dict
+		(
+				wms_sys_dict_id,
+
+				dict_type,
+
+				dict_code,
+
+				dict_name
+		)
+		VALUES
+		(
+				#{wms_sys_dict_id},
+				#{dict_type},
+				#{dict_code},
+				#{dict_name}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="WmsSysDict">
+		update wms_sys_dict
+		<set>
+					<if test="wms_sys_dict_id != null">
+						 wms_sys_dict_id = #{wms_sys_dict_id},
+					</if>
+					<if test="dict_type != null">
+						 dict_type = #{dict_type},
+					</if>
+					<if test="dict_code != null">
+						 dict_code = #{dict_code},
+					</if>
+					<if test="dict_name != null">
+						 dict_name = #{dict_name},
+					</if>
+	   </set>
+		 where 
+    				wms_sys_dict_id = #{wms_sys_dict_id}
+	</update>
+	<select id="getListByEntity" parameterType="WmsSysDict" resultType="WmsSysDict">
+		select 
+				wms_sys_dict_id,
+				dict_type,
+				dict_code,
+				dict_name
+		from
+		wms_sys_dict
+		<where>
+					<if test="wms_sys_dict_id != null">
+						and wms_sys_dict_id = #{wms_sys_dict_id}
+					</if>
+					<if test="dict_type != null">
+						and dict_type = #{dict_type}
+					</if>
+					<if test="dict_code != null">
+						and dict_code = #{dict_code}
+					</if>
+					<if test="dict_name != null">
+						and dict_name = #{dict_name}
+					</if>
+				 	<if test="isExcludePKFlag != null and isExcludePKFlag == true">
+		        				and wms_sys_dict_id != #{wms_sys_dict_id}
+					</if>
+		</where>
+	</select>
+	<!-- 查询用户的理财查询权限 -->
+	<select id="getUserRoleNameList" parameterType="int" resultType="String">
+		select
+		role_name
+		from sys_role
+		<where>
+			id in (select role_id from sys_user_role where user_id = #{user_id})
+			and role_name in
+			('贷前办件复核员')
+			and is_workflow=0
+			and enable_flag = 1
+		</where>
+	</select>
+</mapper> 

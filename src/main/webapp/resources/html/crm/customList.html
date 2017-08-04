@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>客户管理</title>
+<script type="text/javascript">
+	function initcustomerpage(){
+		//跳转页面
+		$('#busInfo').on("click",function(){
+			window.history.back();
+		});
+		//显示数据
+		initCustomerListDatas();
+		$('#customerListSearch').on('click',function(){
+			search();
+		});
+		initCustomerAboutMeDrop();
+		$('.customer_right').off('click');
+		$('.customer_right').on('click',function(){
+			showViewInfo('crm_customer_info','',2,1);
+		});
+	}
+	
+	
+	var home_page = 1;
+	var home_size = 10;
+	//初始化数据
+	function initCustomerListDatas(){
+		//初始化结构
+		$('#cusIn').datashow({
+			//不同分别率下显示个数
+			colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+			//是否使用上拉刷新和下拉加载
+			isScroll:true,
+			datas_wapper:'customerlist_datas_wapper',
+			//每个数据结构显示视图
+			adapter:function(data){
+				return '<div class="row custom_aboutme_item" style="border-bottom:1px solid #d0d0d0;"'+
+						'data-state="'+data.sign_check+'">'+
+				    	'<div class="col-xs-6 col-sm-4" style="width:100%;">'+
+				    	'<span class="customerName" style="float:left;margin-left:5%;margin-top:-7px;">'+data.customer_name+'</span>'+
+				    	'<span style=" float:right;margin-right:15px;margin-top:1px;">'+
+				    		'<img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1you.png">'+
+				    	'</span>'+
+				    	'<span class="customerTime" style="float:left;margin-left:5%;margin-top:-7px;">'+data.create_timestamp+
+				    	'&nbsp;&nbsp;<img style="display:'+(data.sign_check=='2'?'inline':'none')+';" alt="图片加载中..." src="../images/iconfont-cuowu.png"></span>'+
+				    	'</div></div>';
+				    	
+			},
+			//点击每个数据视图时候的回调方法  data 单元数据 index 索引 list 所有数据
+			onitemclick:function(data,index,list){showViewInfo('crm_customer_info',data.costomer_id,0,data.sign_check)},
+			//上拉时候回调函数
+			onup:function(){
+				home_page++;
+				loadCusomterListData(false)
+			},
+			//下拉时候回调函数
+			ondown:function(){
+				loadCusomterListData(true)
+			}
+		});
+		loadCusomterListData(true);
+	}
+	var customer_info_search = '';
+	var customer_info_drop = '';
+	//请求数据 flag  是否是刷新
+	function loadCusomterListData(flag){
+		if(flag){
+			home_page = 1;
+		}
+		
+		$.ajax({
+			url:_base_param.context_name+'/crm/getCustomerList.do',
+			type:'get',
+			data:{page:home_page,size:home_size,search:customer_info_search,drop:customer_info_drop},
+			success:function(result){
+				if(result.ret_code == '000'){
+					if(flag){
+						$('#cusIn').datashow('clearView');
+					}
+					$('#cusIn').datashow('adds',result.ret_data);
+					if(result.ret_data.length == 0){
+						$.message('没有更多数据了哦！');
+						home_page--;
+					}
+				}else if(result.ret_code != null){
+					$.message(result.ret_msg);
+				}else{
+					$('#cusIn').html(result)
+				}
+				$('#cusIn').datashow('clearPull');
+			}
+		});
+	}
+	
+	//条件查询
+	var create_timestamp;
+	var customer_name;
+	function search(){
+		customer_info_search = $('#customer_name').val();
+		loadCusomterListData(true);
+	}
+	//已签单
+	function initCustomerAboutMeDrop(){
+		$('#customer_aboutme_dropdown').find('ul li a').off('click');
+		$('#customer_aboutme_dropdown').find('ul li a').click(function(){
+			var text = $(this).text();
+			$('#customer_aboutme_dropdown').find('button span.drop_selected').text(text.trim());
+			customer_info_drop = $(this).data('value')+'';
+			search();
+		});
+	}
+	
+	
+</script>
+<style type="text/css">
+.customer_title_icon{padding:0px 10px;}
+.customer_right{float:right;padding-top: 4px}
+.customer_left{float:left;padding-top: 4px;margin-left:5px;}
+#customerlist_datas_wapper{position: absolute;top: 90px;bottom: 58px;width: 100%;z-index: 1;}
+.customerName{overflow: hidden;word-break:keep-all;white-space:nowrap;width:80%;text-align:left;}
+.customer_drop_menu_ico{display: inline-block;width: 16px;margin: 1px 6px;}
+.custom_sign{ margin-left:-57%;top:7px;}
+.dropdown-menu{opacity:0.5;z-index: 1000;background-color:#66CCFF;min-width: 80px;}
+ul.dropdown-menu{opacity:0.9;z-index: 1000;background-color:#66CCFF;height:150px;}
+</style>
+</head>
+
+<body>
+<div style="width:100%;">
+   <nav class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+   <div style="height:25px;width: 100%;">
+	  <span class="customer_left customer_title_icon" id="busInfo"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1zuo.png">
+	  </span>
+	  <div class="nav_title" style="font-size: 20px;">客户管理</div>
+	  <span class="customer_right customer_title_icon"><img width="18px" height="18px" alt="图片加载中..." src="../images/customer_add.png"></span>
+	  </div>
+			<form class="bs-example bs-example-form" role="form">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 100%;float:left;margin-left: 2%;">
+            <div class="input-group" style="margin-top: 10px;">
+               <div class="input-group-btn dropdown" id="customer_aboutme_dropdown">
+             
+                  <button id="customer_serach_dropdown" type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#66CCFF;height:25px;font-size:10px;width:100%"> 
+                     	<div style="margin-top:-3px;padding-left:-10px;width: 60px;"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">全部</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul  class="dropdown-menu">
+                    <li><a style="color: #FFF;font-weight:bold;" data-value="" >                                                                                                                            
+                            <span style="font-size: 13px;float:left;margin-left: 18px;">全部</span></a></li>
+                     <li><a style="color: #FFF;font-size: 13px;float:left;margin-left: 18px;font-weight:bold;" data-value="1">已签单</a></li>
+                  </ul>
+               </div>
+               <input type="text" id="customer_name" name="customer_name" class="form-control" placeholder="请输入客户姓名" style="width:90%;height:25px;background-color:#66CCFF;font-size:13px;">
+               <span  id="customerListSearch" style="background-color:#66CCFF;line-height:25px;width:10%;float:left;">
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form>
+  </nav>
+  <div id="customerlist_datas_wapper">
+  <div id="cusIn" class="cusIn">
+  </div>
+  </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.task.persist.TaskV117MessageDao">
+<select id="selectGroupInfoList" parameterType="map" resultType="map">
+	select
+		spg.group_id,
+		spg.group_name,
+		count(spgr.personnel_id) as people_number
+	from 
+		sys_personnel_group spg
+	INNER JOIN sys_personnel_group_relation  spgr on spg.group_id=spgr.group_id
+	INNER JOIN pm_personnel pm on pm.personnel_id=spgr.personnel_id
+	where
+		spg.create_user_id=#{personnel_id}
+	and
+		spg.enable_flag=1 and spgr.enable_flag=1 and pm.enable_flag=1	
+	group by spg.group_id		
+</select>
+</mapper>

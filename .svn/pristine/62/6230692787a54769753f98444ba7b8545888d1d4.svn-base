@@ -1,0 +1,616 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+	content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="format-detection" content="email=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<script>
+	var info = "";
+	var customer_data = "";
+	var costomer_id = 0;
+	var cost = costomer_id;
+	var page_state = 0;
+	var dictname = [ "customer_level", "customer_state", "customer_sources" ];
+	var page_title_name = [ "客户信息", "更新客户信息", "新增客户" ]
+	var num = 0;
+	var dict = {
+		ename : "",
+		cname : "",
+		sys_dict_id : "",
+		sys_dict_data : ""
+	}
+	var dictdata = new Array();
+
+	var customer_level = "";
+	var customer_sources = "";
+	var customer_state = "";
+	var title = [ {
+		"0" : "客户等级"
+	}, {
+		"1" : "客户状态"
+	}, {
+		"2" : "客户来源"
+	} ];
+	var sys_dict_id = "DATA00035,DATA00032,DATA00005";
+	$(document).ready(function() {
+
+	});
+	function initCustomerInfoPage(_cid, _state, information) {
+		info = information
+		costomer_id = _cid;
+		page_state = _state;
+		//显示页面
+		init();
+		CSSstyle();
+// 	    alert(_cid+"_"+_state+"_"+information);
+	}
+	function init() {
+		//图片点击事件
+		click_img();
+		//加载数据字典
+		loaddict();
+
+		//显示页面
+		customer_page_state();
+		//加载客户id
+		$("#costomer_id").val(costomer_id);
+		//添加data_dict_id 数据字典数据编号
+		$.each(dictname, function(index, ele) {
+			$("#" + ele).attr("data_dict_id", "");
+		});
+		$(".warning").hide();
+		
+	}
+	function CSSstyle() {
+		$(".input").focus(function() {
+			$(this).css({
+				"outline" : "none",
+				"border" : "0"
+			});
+			var d = $(this).attr("id");
+			$("." + d + "_warning").hide();
+		});
+	$(".input").css({"width":"90%"});
+	$(".prompt_infomation").css({"text-align":"center"});
+	}
+
+	function click_img() {
+		$(".return-icon").on("click", function() {
+			if (page_state == 1) {
+				page_state = 0;
+				customer_page_state();
+			} else {
+				window.history.back();
+			}
+		});
+		$(".update-icon").on("click", function() {
+			page_state = 1;
+			customer_page_state();
+		});
+		$(".remark").on("click", function() {
+			$("#remark").focus();
+		});
+
+		$(".save-icon").on("click", function() {
+			customer_info_save();
+		});
+
+	}
+
+	//查看页面状态(0显示客户信息，1显示客户修改，2显示客户新增)
+	function customer_page_state() {
+		if (info == 2) {
+            $(".prompt_infomation").show();
+        }else{
+        	$(".prompt_infomation").hide();
+        }
+		$("#page_title_name").text(page_title_name[page_state]);
+		if (page_state == 0) {
+			
+			//         	costomer_id= cost; 
+			$(".customer_update").hide();
+			$(".customer_title_name").show();
+			$(".save-icon").hide();
+			$(".update-icon").show();
+			$(".input").prop("disabled", true);
+			$(".input:disabled").css({
+				"background-color" : "#ffffff"
+			});
+			//加载客户信息
+			load_customer_Info();
+		} else if (page_state == 1) {
+		
+			$(".customer_title_name").hide();
+			$(".customer_update").show();
+			$(".save-icon").show();
+			$(".update-icon").hide();
+			//绑定点击事件
+			$("#customer_level").on("click", function() {
+				$(".input").blur();
+				suspension_window(0);
+			});
+			$("#customer_state").on("click", function() {
+				$(".input").blur();
+				suspension_window(1);
+				
+			});
+			$("#customer_sources").on("click", function() {
+				$(".input").blur();
+				suspension_window(2);
+			});
+
+			$("#other_contact_way").val("");
+			$("#contact_number").val("");
+			//客户名称设置
+			$("#customer_name1").val($("#title_name").text());
+			$(".input").prop("disabled", false);
+			$(".input_dict").prop("readonly", true);
+		} else if (page_state == 2) {
+			
+			costomer_id = 0;
+			$(".customer_title_name").hide();
+			$(".customer_update").show();
+			$(".save-icon").show();
+			$(".update-icon").hide();
+			//绑定点击事件
+			$("#customer_level").on("click", function() {
+				$(".input").blur();
+				suspension_window(0);
+			});
+			$("#customer_state").on("click", function() {
+				$(".input").blur();
+				suspension_window(1);
+			});
+			$("#customer_sources").on("click", function() {
+				$(".input").blur();
+				suspension_window(2);
+			});
+			//客户名称设置
+			$(".input").val("");
+			$(".input").prop("disabled", false);
+			$(".input_text").attr("placeholder", "必填");
+			$(".input_dict").attr("placeholder", "点击选择");
+			$("#remark").attr("placeholder", "点击填写");
+			$(".input_dict").prop("readonly", true);
+			$(".prompt_infomation").hide();
+		}
+	}
+	//加载数据字典
+
+	function loaddict() {
+		$
+				.ajax({
+					type : "get",
+					data : {
+						dict_code : sys_dict_id
+					},
+					url : _base_param.context_name + "/crm/getDictDatas.do",
+					async : false,
+					success : function(json) {
+						if (json.ret_code = "000") {
+							if (json.ret_data != null) {
+								customer_data = json.ret_data;
+								for (var i = 0; i < json.ret_data.length; i++) {
+									dict = {};
+									dict.ename = dictname[i];
+									dict.cname = title[i]["" + i];
+									dict.sys_dict_id = json.ret_data[i].sys_dict_id;
+									dict.sys_dict_data = json.ret_data[i].sys_dict_data;
+									dictdata.push(dict);
+								}
+							}
+						}else if(json.ret_code != null){
+							$.message(json.ret_msg);
+						}else{
+							window.location.href = _base_param.context_name+'/login.html';
+						}
+					}
+				});
+	}
+	//加载客户信息
+	function load_customer_Info() {
+		$.ajax({
+			type : "get",
+			data : {
+				costomer_id : costomer_id
+			},
+			url : _base_param.context_name + "/crm/getCustomerInfo.do",
+			success : function(json) {
+				if (json.ret_code == "000") {
+					var cle, cst, cso;
+					cle = dict_data_show(0, json.ret_data.customer_level);
+					cst = dict_data_show(1, json.ret_data.customer_state);
+					cso = dict_data_show(2, json.ret_data.customer_sources);
+					$("#title_name").text(json.ret_data.customer_name)
+					$("#customer_level").val(cle);
+					$("#customer_state").val(cst);
+					$("#customer_sources").val(cso);
+
+					$("#customer_level").attr("data_dict_id",
+							json.ret_data.customer_level);
+					$("#customer_state").attr("data_dict_id",
+							json.ret_data.customer_state);
+					$("#customer_sources").attr("data_dict_id",
+							json.ret_data.customer_sources);
+
+					$("#remark").val(json.ret_data.remark);
+				}else if(json.ret_code != null){
+					$.message(json.ret_msg);
+				}else{
+					window.location.href = _base_param.context_name+'/login.html';
+				}
+			}
+		});
+
+	};
+	//处理字典数据
+	function dict_data_show(k, v) {
+		if (dictdata != null) {
+			for (var i = 0; i < dictdata[k].sys_dict_data.length; i++) {
+				if (v == dictdata[k].sys_dict_data[i].sys_dict_data_id) {
+					return dictdata[k].sys_dict_data[i].value_meaning;
+				}
+			}
+		}
+	}
+
+	//数据字典点击事件(客户等级，客户来源，客户状态)
+	function suspension_window(id) {
+		if (id == null) {
+			return false;
+		}
+		$(".input").blur();
+		num = id;
+		var html = '<div class="text-center customerinfo-title title" >'
+				+ '<img class="return-icon" src="../images/iconfont-ordinaryjiantou1zuo.png" >'
+				+ '<h5><b>' + title[num][num + ""] + '</b></h5></div>';
+		var h = "";
+		h = '<div class="panel"></div>'
+		$(".div-table").append(h);
+		$(".panel").html(html);
+		$(".title").append("<div class='dict_body' ></div>");
+		h = "";
+		for (var i = 0; i < dictdata[id].sys_dict_data.length; i++) {
+
+			var value = dictdata[id].sys_dict_data[i].value_meaning;
+
+			h = h + '<div class="level" onclick="data_dict(' + id + ',' + i
+					+ ')" >' + value + ' </div>';
+		}
+		$(".dict_body").html(h);
+
+		$(".return-icon").on("click", function() {
+			$(".panel").remove();
+		});
+	}
+	var v = "";
+	//选中的数据字典类型数据值返回到数据字典类型数据文本框中
+	function data_dict(id, i) {
+		if (id == null && i == null) {
+			return false;
+		}
+		$(".panel").remove();
+		$("#" + dictdata[id].ename).val(
+				dictdata[id].sys_dict_data[i].value_meaning)
+		$("#" + dictdata[id].ename).attr("data_dict_id",
+				dictdata[id].sys_dict_data[i].sys_dict_data_id);
+	
+	}
+
+	//保存方法(page_state==1为修改页面，2为增加页面)
+	function customer_info_save() {
+
+		if (page_state == 2) {
+			if (not_null_verify() && phone_verify()) {
+			} else {
+				return false;
+			}
+		}
+
+		if (page_state == 1) {
+			if (!phone_verify()) {
+				return false;
+			}
+		}
+
+		$.zx.confirm('提示', '是否要保存客户信息?', function(r) {
+			if (r) {
+				$
+						.ajax({
+							type : "post",
+							data : {
+								costomer_id : costomer_id,
+								customer_name : $("#customer_name1").val(),
+								contact_number : $("#contact_number").val(),
+								other_contact_way : $("#other_contact_way")
+										.val(),
+								customer_level : $("#customer_level").attr(
+										"data_dict_id"),
+								customer_state : $("#customer_state").attr(
+										"data_dict_id"),
+								customer_sources : $("#customer_sources").attr(
+										"data_dict_id"),
+								remark : $("#remark").val()
+							},
+							url : _base_param.context_name
+									+ "/crm/dealCustomerInfo.do",
+							success : function(json) {
+								if (json.ret_code == "000") {
+									if (page_state == 2) {
+										window.history.back();
+										//操作成功退到之前的页
+										isShowNewViewFlag = true;
+									} else if (page_state == 1) {
+										page_state = 0;
+										load_customer_Info();
+										customer_page_state();
+									}
+
+								}else if(json.ret_code != null){
+									$.zx.alert( json.ret_msg,"提示");
+								}else{
+									$('#cusIn').html(json);
+								}
+							}
+						});
+			} else {
+				return false;
+			}
+		});
+
+	}
+	//非空验证
+	function not_null_verify() {
+		var fl = 0;
+		$("td>.input").each(
+				function(index, ele) {
+					var vid = $(ele).attr("id");
+					var v = $(this).val();
+					if (v == null || v == "必填" || v == "点击填写" || v == "点击选择"
+							|| v == "") {
+
+						if (vid == "other_contact_way"
+								|| vid == "contact_number") {
+							var o = $("#other_contact_way").val();
+							var c = $("#contact_number").val();
+
+							if (o != null && o != "" || c != null && c != "") {
+								$("." + vid +"_warning")
+										.hide();
+								$("#"+vid).attr("placeholder", "");
+							} else {
+								fl = 1;
+								$("." + vid +"_warning")
+										.show();
+								$("#"+vid).attr("placeholder", "必填");
+							}
+						} else if (vid != "remark") {
+							fl = 1;
+							$("." + vid +"_warning").show();
+						}
+
+					} else {
+						$("." + vid +"_warning").hide();
+					}
+				});
+
+		if (fl == 1) {
+			return false;
+		} else {
+			return true;
+		}
+
+	}
+	
+	//手机号验证
+	function phone_verify() {
+		value = $("#contact_number").val();
+		if (value == null || value == "") {
+			return true;
+		}
+		var reg = /^1[3|4|5|6|7|8|9]\d{9}$/;
+		if (!reg.test(value)) {
+			$(".contact_number_warning").show();
+			$.zx.alert( "手机号码格式不正确");
+			return false;
+		}
+
+		other_value = $("#other_contact_way").val();
+		if (value == other_value) {
+			$(".contact_number_warning").show();
+			$(".other_contact_warning").show();
+			$.zx.alert("手机号码和固定电话重复");
+			return false
+		}
+		return true;
+	}
+	
+	
+</script>
+<style>
+.warning_img_div {
+	width: 30px;
+}
+.level {
+	color: black;
+	border-bottom: 1px solid #f2f2f2;
+	text-align: left;
+	font-size: 1.1rem;
+	padding: 20px 0px 0px 30px;
+	width: 100%;
+	background-size: cover;
+	font-weight: bold;
+}
+
+.div-table {
+	width: 90%;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+}
+
+.body {
+	text-align: center;
+	width: 100%;
+}
+
+#customer-info {
+	width: 100%;
+}
+
+.h5 {
+	font-family: 黑体;
+}
+
+.label-name {
+	font-family: 黑体;
+	font-weight: bold;
+	text-align: left;
+	width: 40%;
+}
+
+.label-value .input {
+	text-align: right;
+	border: 0px;
+	color: black;
+	width: 38%;
+	margin-right:0px;
+    padding-right:0px; 
+}
+
+.tr {
+	border-top: 1px solid #f2f2f2;
+	border-bottom: 1px solid #f2f2f2;
+	height: 50px;
+}
+
+.customerinfo-title {
+	background-color: #1E90FF;
+	height: 40px;
+	padding-top: 10px;
+	color: #ffffff;
+}
+
+.return-icon {
+	float: left;
+	height: 20px;
+	margin-left: 15px;
+}
+
+.update-icon,.save-icon,.add-icon {
+	float: right;
+	height: 25px;
+	margin-right: 15px;
+	font-family: 黑体;
+}
+
+.input:disabled {
+	background-color: #dddddd;
+}
+
+.panel {
+	position: absolute;
+	top: 0px;
+	left: 0;
+	z-index: 2;
+	background-color: #FFFFFF;
+	width: 100%;
+	height: 100%;
+}
+
+#remark {
+	margin-top: 25px;
+	margin-right:0px;
+	padding-right:0px; 
+}
+</style>
+</head>
+<body class="body">
+	<div class="text-center customerinfo-title">
+		<img class="return-icon"
+			src="../images/iconfont-ordinaryjiantou1zuo.png" /> <img
+			class="update-icon" src="../images/iconfont-kaoshibi.png" /> <img
+			class="save-icon" src="../images/iconfont-baocun_1.png" />
+		<h5 class="h5">
+			<b id="page_title_name">客户信息</b>
+		</h5>
+	</div>
+	<form id="myform" action="" method="post">
+		<div class="div-table">
+			<input type="hidden" id="customer_id" name="customer_id">
+			<table class="customer-info" id="customer-info">
+				<tbody>
+					<tr class="customer_title_name tr">
+						<td colspan="2" class=" text-center"><span id="title_name"></span>
+						</td>
+					</tr>
+					<tr class="customer_update tr">
+						<td class="label-name  text-center">客户名称</td>
+						<td class="label-value  text-right"><input type="text"
+							class="input_text input" id="customer_name1"
+							name="customer_name1" /> </td>
+						<td class="warning_img_div"><img class='customer_name1_warning warning' 
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="customer_update tr">
+						<td class="label-name  text-center">手机号码</td>
+						<td class="label-value  text-right"><input type="tel"
+							class="input_text input" id="contact_number"
+							name="contact_number" /> </td>
+						<td class="warning_img_div"><img class='contact_number_warning warning' 
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="customer_update tr">
+						<td class="label-name text-center">固定电话</td>
+						<td class="label-value text-right"><input type="text"
+							class="input_text input" id="other_contact_way"
+							name="other_contact_way" /> </td>
+						<td class="warning_img_div"><img class='other_contact_way_warning warning' 
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="customer_level tr">
+						<td class="label-name text-center">客户等级</td>
+						<td class="label-value text-right"><input type="text"
+							class="input_dict input" id="customer_level"
+							name="customer_level" /> </td>
+						<td class="warning_img_div"><img class='customer_level_warning warning' 
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="customer_state tr">
+						<td class="label-name  text-center">客户状态</td>
+						<td class="label-value  text-right"><input type="text"
+							class="input_dict input" id="customer_state"
+							name="customer_state" /> 
+							</td>
+						<td><img class='customer_state_warning warning' 
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="customer_sources tr">
+						<td class="label-name text-center">客户来源</td>
+						<td class="label-value text-right"><input type="text"
+							class="input_dict input" id="customer_sources"
+							name="customer_sources" /> </td>
+						<td class="warning_img_div"><img class='customer_sources_warning warning'
+							src='../images/validatebox_warning.png'></td>
+					</tr>
+					<tr class="remark tr">
+						<td class="label-name text-center">备注</td>
+						<td class="label-value text-right remark_background_image"><textarea
+								class="input" id="remark" rows="3" cols="25"></textarea></td>
+						<td class="warning_img_div"></td>
+					</tr>
+					<tr class="remark tr">
+						<td class="label-name  prompt_infomation" colspan=3><b
+							style="color: red;">此签单客户与WMS系统数据不一致</b>
+						</td>
+						
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</form>
+</body>
+</html>

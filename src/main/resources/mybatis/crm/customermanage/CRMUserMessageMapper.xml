@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.crm.customermanage.persist.CustomerDao">
+
+	<select id="getInfoAll" parameterType="map" resultType="map">
+		select
+
+		costomer_id,
+		customer_name,
+		if(sign_check is null,0,sign_check) as
+		sign_check,
+		date_format(create_timestamp,"%Y-%m-%d") as
+		create_timestamp
+		from
+		crm_customer_info
+		<where>
+			and
+			enable_flag = 1
+			and
+			exec_plan_state =1
+			and
+			personnel_id =
+			#{personnel_id}
+			<if test="search != null and search !=''">
+				and customer_name like "%"#{search}"%"
+			</if>
+			<if test="drop != null and drop != ''">
+				<if test="drop == 1">
+					and sign_check =1
+				</if>
+			</if>
+		</where>
+		GROUP BY costomer_id
+		ORDER BY costomer_id desc
+		<if test="page !=null and size != null">
+			limit ${(page-1)*size},${size}
+		</if>
+	</select>
+	<select id="countInfoAll" parameterType="map" resultType="Integer">
+		select
+		count(*)
+		from
+		crm_customer_info
+		<where>
+			and
+			enable_flag = 1
+			and
+			exec_plan_state =1
+			and
+			personnel_id =
+			#{personnel_id}
+			<if test="search != null and search !=''">
+				and customer_name like "%"#{search}"%"
+			</if>
+			<if test="drop != null and drop != ''">
+				<if test="drop == 1">
+					and sign_check =1
+				</if>
+			</if>
+		</where>
+	</select>
+
+	<!-- 按id查询客户信息 -->
+	<select id="selectCustomerById" parameterType="map" resultType="map">
+		select
+		customer_name,
+		customer_level,
+		customer_state,
+		customer_sources,
+		c.remark,
+		level_data.value_meaning as customer_level_str,
+		state_data.value_meaning as customer_state_str,
+		sources_data.value_meaning as customer_sources_str,
+		if(sign_check is
+		null,'',sign_check) as sign_check
+		from
+		crm_customer_info c
+		left join
+		sys_dict_data level_data on c.customer_level =
+		level_data.sys_dict_data_id
+		left join sys_dict_data state_data on
+		c.customer_state =
+		state_data.sys_dict_data_id
+		left join sys_dict_data
+		sources_data on c.customer_sources =
+		sources_data.sys_dict_data_id
+		<where>
+			c.enable_flag =1 and costomer_id = #{costomer_id}
+		</where>
+	</select>
+
+	<!--查看电话是否重复 -->
+	<select id="whetherConcatNumberRepeat" parameterType="com.zx.moa.crm.customermanage.vo.CRMCustomerInfo"
+		resultType="int">
+	select
+		count(*)
+		from
+		crm_customer_info join crm_contact_information on crm_customer_info.costomer_id =
+		crm_contact_information.costomer_id
+		where
+		crm_customer_info.exec_plan_state = 1 and
+		crm_contact_information.oper_state between '1' and '2'
+		and crm_customer_info.enable_flag = 1
+		and
+		(
+		crm_customer_info.contact_number = #{number}
+		or
+		crm_customer_info.other_contact_way = #{number}
+		or
+		crm_contact_information.contact_number = #{number}
+		)
+		<if test="number == null or number==''">
+		and 
+		1=2
+		</if>
+	</select>
+	<!-- 查看身份证是否重复 -->
+	<select id="whetherIdCardRepeat" parameterType="com.zx.moa.crm.customermanage.vo.CRMCustomerInfo"
+		resultType="int">
+		SELECT
+		COUNT(*)
+		FROM
+		crm_customer_info
+		WHERE
+		id_card_number = #{id_card_number}
+		AND exec_plan_state = 1
+		<if test="costomer_id !=null">
+			and costomer_id !=#{costomer_id}
+		</if>
+		
+	</select>
+
+	
+	<select id="selectCustomerByIdV121" parameterType="map" resultType="map">
+       select 
+       c.customer_name,
+       c.customer_level,
+       c.customer_state,
+       c.customer_sources,
+       c.remark,
+       if(level_data.value_meaning is null,'',level_data.value_meaning) as customer_level_str,
+       if(state_data.value_meaning is null,'',state_data.value_meaning) as customer_state_str,
+       if(sources_data.value_meaning is null,'',sources_data.value_meaning) as customer_sources_str,
+       if(sign_check is null,0,sign_check) as sign_check,
+       c.id_card_number,
+       c.certificate_type,
+       c.domicile_place
+       from 
+       crm_customer_info c 
+       left join sys_dict_data level_data on c.customer_level = level_data.sys_dict_data_id
+       left join sys_dict_data state_data on c.customer_state = state_data.sys_dict_data_id
+       left join sys_dict_data sources_data on c.customer_sources = sources_data.sys_dict_data_id
+       <where>
+           c.enable_flag =1   and costomer_id = #{costomer_id}
+       </where>
+    </select>
+
+<!-- 	如果放弃客户超过三天，电话号码不能存入数据库 -->
+	<select id="getTelAbandonTimeOut" parameterType="map"
+		resultType="String">
+		select
+		date_format(last_update_timestamp,"%Y-%m-%d") as last_update_timestamp
+		from
+		crm_customer_info join crm_contact_information on crm_customer_info.costomer_id =
+		crm_contact_information.costomer_id
+		where
+		crm_customer_info.exec_plan_state = 2 and
+		crm_contact_information.oper_state between '1' and '2'
+		and
+		personnel_id = #{personnel_id}
+		and
+		(
+		crm_customer_info.contact_number = #{phone_number}
+		or
+		crm_customer_info.other_contact_way = #{phone_number}
+		or
+		crm_contact_information.contact_number = #{phone_number}
+		)
+		order by last_update_timestamp desc
+		limit 1
+	</select>
+
+</mapper>

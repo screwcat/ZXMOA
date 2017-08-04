@@ -1,0 +1,75 @@
+package com.zx.moa.ioa.timeAttendance.persist;
+
+import java.util.List;
+import java.util.Map;
+
+import com.zx.moa.util.mybatis.MyBatisRepository;
+
+/**
+ * 获取IOA我的考勤数据层接口
+ * @author zWei
+ *
+ */
+@MyBatisRepository
+public interface AttendanceDao
+{
+    public List<Map<String, Object>> getAttendanceList(Map<String, Object> map);
+
+    /**
+     * @Title: findAllVacateSetting
+     * @Description: 查询所有请假设置信息
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月5日 下午6:06:47
+     * history:
+     * 1、2017年7月5日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> findAllVacateSetting();
+
+    /**
+     * @Title: findAllDept
+     * @Description: 查询部门
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月5日 下午6:10:24
+     * history:
+     * 1、2017年7月5日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> findAllDept();
+
+    /**
+     * @Title: findTimeVacateHistory
+     * @Description: 获取请假历史集合
+     * @param personnel_id
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 上午11:00:11
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public Integer findTimeVacateHistory(Map<String, Object> map);
+
+    /**
+     * @Title: getVolumeInfo
+     * @Description: 获取这段时间内的个人排班
+     * @param date_start
+     * @param date_end
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 下午1:27:06
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> getVolumeInfo(Map<String, Object> map);
+
+    /**
+    * @Title: getWarnAttendancePersonnelList
+    * @Description: 得前一天考勤有问题需发通知的人
+    * @return 
+    * @author: sunlq
+    * @time:2017年7月5日 下午6:33:48
+    * history:
+    * 1、2017年7月5日 sunlq 创建方法
+    */
+    public List<Map<String, Object>> getWarnAttendancePersonnelList();
+}

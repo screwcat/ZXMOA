@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>我</title>
+<script type="text/javascript">
+function initMePage(){
+	$('#myself_person_img img').width($(window).width());
+	//当前登录人信息
+	myselfInfo();
+	//跳转页面
+	$('#myself_telephone').on("click",function(){
+		showViewInfo('contact_us');
+	});
+	//注销登录
+	$('#loginout').click(function(){
+		$.zx.confirm('提示','确定要注销登录吗?',function(r){
+			if(r){
+				//注销用户session
+		    	$.ajax({
+		            type: 'get',
+		            url: _base_param.context_name+'/logout.do',
+		            async: false,
+		            success: function(json) {
+		            		window.location.href = _base_param.context_name+'/login.html';
+		            }
+		        });	
+			}
+		});
+	});
+	$(window).on('resize',function(){
+		meResize();
+	});
+};
+function meResize(){
+	$('#myself_person_img img').width($(window).width());
+}
+function myselfInfo(){
+	$.ajax({
+		 type: "get",
+	     url: _base_param.context_name+ "/getUser.do",
+	     async: false,
+	     success: function(json) {
+	    	 if(json.ret_code == '000'){
+				$('.myself_code').text(json.ret_data.personnel_shortcode);
+				$('.myself_name').text(json.ret_data.personnel_name);
+				$('.myself_dept').text(json.ret_data.personnel_deptname);
+//   				$('#myself_person_img img').width('100%');
+  				$('#myself_person_img img').height($("#myself_personnel_info").height());
+				
+			}else if(json.ret_code != null){
+				$.message(json.ret_msg);
+			}else{
+				window.location.href = _base_param.context_name+'/login.html';
+			}
+    	 }
+	});
+}
+
+</script>
+<style type="text/css">
+.myself_personnel_panel{position: relative;width: 100%;}
+.myself_person_img{position: absolute;top: 0px;left: 0px;z-index: -1;}
+.myself_img,.myself_personnel{display: inline-block;}
+.myself_img{padding: 10px; padding-left: 10%;}
+.myself_personnel{font-size: 16px;height: 40px;position: relative;top: 15px;}
+#myself_telephone{border-bottom:1px solid #d0d0d0;padding: 15px 0px 12px 0px;text-align: center;}
+#loginout{border-bottom:1px solid #d0d0d0;padding: 15px 0px 12px 0px;text-align: center;}
+.myself_print{margin-top: 25px;padding-right: 40%;}
+.myself_font{margin-left:-40px;}
+.myself_boult{padding-left: 42%;margin-top: 6px;text-align: center;}
+</style>
+</head>
+<body>
+   <nav class="navbar navbar-dark navbar-static-top bg-inverse zxnav" style="height:46px;padding-top: 5px;">
+	  <div class="nav_title" style="font-size: 20px;">我的信息</div>
+  </nav>
+  <div class="myself_personnel_panel">
+	  <div id="myself_person_img" class="myself_person_img"><img src="../images/me-bg.png"/></div>
+	  <div class="myself_personnel_info" id="myself_personnel_info">
+	  	<div class="myself_img">
+	  		<img width="70px" height="70px" alt="" src="../images/044.png">
+	  	</div>
+	  	<div class="myself_personnel">
+	  	<div class="myself_name_code"><span class="myself_name"></span>(<span class="myself_code"></span>)</div>
+	  		<div class="myself_dept"></div>
+	  	</div>
+	  </div>
+	  <div class="container">
+	  <div class="row" id="myself_telephone" >
+
+     	<div class="col-xs-6 col-sm-4"><span class="myself_print" style=""><img height="40px;" width="40px;" alt="图片加载中..." src="../images/042-.png"/></span>
+     		<span class="myself_font">联系我们</span>
+     	</div>
+   		<div class="col-xs-6 col-sm-4 myself_boult"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1you.png"></div>
+  		</div>
+   		<div class="row" id="loginout" >
+     	 <div class="col-xs-6 col-sm-4"><span class="myself_print"><img height="40px;" width="40px;" alt="图片加载中..." src="../images/iconfont-zhuxiao.png"/></span>
+     		<span class="myself_font">注销登录</span></div>
+   		<div class="col-xs-6 col-sm-4 myself_boult"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1you.png"></div>
+   	 </div>
+   	 </div>
+  </div>
+</body>
+</html>

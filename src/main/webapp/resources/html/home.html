@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript">
+
+function inithomepage(){
+	initmainmenu();
+	inithomedatas();
+	$(window).on('resize',function(){
+		homeResize();
+	})
+}
+/**
+ * 初始化HOME页面顶部菜单
+ */
+function initmainmenu(){
+	var num = gethomecount(mainmenus.length);
+	//初始化结构
+	$('#mainmenu').datashow({
+		colsize:{'col-xs-':num,'col-sm-':num,'col-md-':num,'col-lg-':num,'col-xl-':num},
+		adapter:function(data){
+// 			return '<div class="mainmenu_item"><div class="mainmenu_item_img"><img src="'+_base_param.context_name+'/resources/images/bottom_menu/'+data.img+'"/></div><div class="mainmenu_item_text">'+data.text+'</div></div>'
+			return '<div class="home_mainmenu_item"><div class="home_mainmenu_item_img"><img width="47px" height="56px" src="'+_base_param.context_name+'/resources/images/bottom_menu/'+data.img+'"/></div></div>'
+		},
+		onitemclick:function(data,index,list){isShowNewViewFlag = true;showViewInfo(data.view,data.costomer_id,0);}
+	});
+	//加载数据
+	$('#mainmenu').datashow('adds',mainmenus);
+	var _w = $('#mainmenu').width();
+	var _wi = $('#mainmenu_img img').width();
+	var imgscale = _w/_wi;
+	var imgWidth = imgscale*_wi;
+	var imgHeight = imgscale*$('#mainmenu_img img').height();
+	$('#mainmenu_img img').width($('#mainmenu').width());
+	$('#mainmenu_img img').height($('#mainmenu').height());
+}
+function homeResize(){
+	$('#mainmenu_img img').width($('#mainmenu').width());
+	$('#mainmenu_img img').height($('#mainmenu').height());
+}
+//处理顶部菜单每行个数
+function gethomecount(num){
+	if(num<=4){
+		return num;
+	}else if(num<=6){
+		return 3;
+	}else{
+		return 4;
+	}
+}
+var home_page = 1;
+var home_size = 1000;
+//初始化首页待审批数据
+function inithomedatas(){
+	//初始化结构
+	$('#home_datas').datashow({
+		//不同分别率下显示个数
+		colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+		//是否使用上拉刷新和下拉加载
+		isScroll:true,
+		isup:false,
+		datas_wapper:'home_datas_wapper',
+		//每个数据结构显示视图
+		adapter:function(data){
+			return '<div class="home_datas_item"><div class="home_datas_item_left"><div class="home_datas_item_sys">'+data.sys_name+
+					'</div><div class="home_datas_item_title"> 【'+data.apply_type_name+
+                    '申请】</div><div class="home_datas_item_info">'+data.original_apply_personnel_name+data.original_apply_personnel_no+
+                    ':'+data.content+'</div></div>'+
+					'<div class="home_datas_item_right"><div>'+data.create_timestamp.split(' ')[0]+
+					'</div></div>';
+		},
+		//点击每个数据视图时候的回调方法  data 单元数据 index 索引 list 所有数据
+		onitemclick:function(data,index,list){showViewInfo("ioa_approve_info",data.order_id,1,data.order_relation_id);},
+		//上拉时候回调函数
+		onup:function(){
+			home_page++;
+			loadHomeApproveData(false)
+		},
+		//下拉时候回调函数
+		ondown:function(){
+			loadHomeApproveData(true)
+		}
+	});
+	loadHomeApproveData(true);
+	$('#home_datas_wapper').css('margin-top',$('#mainmenu').height());
+}
+//请求数据 flag  是否是刷新
+function loadHomeApproveData(flag){
+	if(flag){
+		home_page = 1;
+	}
+	$.ajax({
+		url:_base_param.context_name+'/ioa/getApproveList.do',
+		type:'get',
+		data:{page:home_page,size:home_size},
+		success:function(result){
+			if(result.ret_code == '000'){
+				if(flag){
+					$('#home_datas').datashow('clearView');
+				}
+				$('#home_datas').datashow('adds',result.ret_data);
+				if(result.ret_data.length == 0){
+					$.message('没有更多数据了哦！');
+					home_page--;
+				}
+			}else if(result.ret_code != null){
+				$.message(result.ret_msg);
+			}else{
+				$('#home_datas').html(result);
+			}
+			$('#home_datas').datashow('clearPull');
+		}
+	});
+}
+// document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+</script>
+<style type="text/css">
+	body{font-size: 14px;}
+	.mainmenu_panel,.home_mainmenu {
+/*  		background-image: url(../images/main-menu-bg.png); */
+/* 		background-repeat: repeat; */
+		background-attachment:fixed;
+/* 		background-position: 100%; */
+		position: fixed;top: 0px;
+		width:100%;
+		z-index: 1000;
+	}
+	.home_mainmenu_item{text-align: center;}
+	.home_mainmenu_item_img{width:55px;height:55px;/* background-color: #508DC4;border-radius: 50%; */line-height: 50px;margin: 0px auto;opacity:0.5;}
+	.home_mainmenu_item_text{overflow: hidden;word-break:keep-all;white-space:nowrap;}
+ 	.home_menu_item_img{width:75px;height:75px;}
+/* 	#tabs{position: fixed;bottom: 0px;} */
+	.home_datas_item{text-align: left;position: relative;}
+	.home_datas_item_left{width:70%;display: inline-block;}
+	.home_datas_item_right{width:30%;display: inline-block;position: absolute;bottom: 10px;}
+/* 	.datas_item_center{width: 4%;display: inline-block;background-color: #ccc;height: inherit;} */
+	.home_datas_item_sys{color: #33CCFF; display: inline-block;}
+	.home_datas_item_title{display: inline-block;font-weight: bold;}
+	.home_datas_item_info{white-space: nowrap;  overflow: hidden;   text-overflow: ellipsis; }
+/* 	#datas{margin-bottom: 85px;} */
+	.home_datas_item_do{display: none;background-color: #ccc;text-align: right;}
+	.home_datas_item_do button{margin: 10px;}
+	.home_datashow_item {padding: 0px;}
+	#home_datas_wapper{position: absolute;top: 15px;bottom: 58px;width: 100%;z-index: 1;}
+</style>
+</head>
+<body>
+	<div class="mainmenu_panel">
+		<div id="mainmenu_img" class="mainmenu_img"><img src="../images/main-menu-bg.png"/></div>
+		<div class="home_mainmenu" id="mainmenu"></div>
+	</div>
+	<div id="home_datas_wapper">
+		<div class="datas" id="home_datas"></div>
+		
+		
+	</div>
+</body>
+</html>

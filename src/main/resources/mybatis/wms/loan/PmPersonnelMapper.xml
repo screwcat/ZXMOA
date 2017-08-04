@@ -1,0 +1,2369 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.PmPersonnelDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="PmPersonnel">
+		select
+		personnel_id,
+		personnel_encryptionid,
+		personnel_code,
+		personnel_shortcode,
+		personnel_name,
+		personnel_sex,
+		personnel_age,
+		date_format(personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		personnel_birthtime,
+		personnel_identitycode,
+		date_format(personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		personnel_identitytime,
+		personnel_account,
+		personnel_education,
+		personnel_politicsstatus,
+		personnel_marriage,
+		personnel_nation,
+		personnel_stature,
+		personnel_weight,
+		personnel_contacttel,
+		personnel_corporationtel,
+		personnel_extensiontel,
+		personnel_emial,
+		personnel_school,
+		personnel_specialty,
+		date_format(personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		personnel_entrancetime,
+		date_format(personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		personnel_graduatetime,
+		personnel_laborcontract,
+		personnel_reinstated,
+		personnel_confidential,
+		personnel_pay,
+		personnel_emergencyname,
+		personnel_emergencyremark,
+		personnel_accountaddress,
+		personnel_emergencytel,
+		personnel_othertel,
+		personnel_regionnumber,
+		personnel_organid,
+		personnel_organcode,
+		personnel_deptid,
+		personnel_deptcode,
+		personnel_deptname,
+		personnel_team,
+		personnel_postid,
+		personnel_postname,
+		personnel_postlevelid,
+		date_format(personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		personnel_trialstarttime,
+		date_format(personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		personnel_trialendtime,
+		date_format(personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		personnel_traintime,
+		personnel_trainremark,
+		personnel_employmentform,
+		date_format(personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		personnel_positivetime,
+		personnel_bankname,
+		personnel_bankcardcode,
+		personnel_socialsecurity,
+		personnel_socialinfo,
+		date_format(personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		personnel_contractstarttime,
+		date_format(personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		personnel_contractendtime,
+		personnel_workage,
+		personnel_seniority,
+		personnel_state,
+		personnel_remark,
+		personnel_accounttype,
+		enable_flag,
+		create_user,
+		date_format(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		create_timestamp,
+		last_update_user,
+		date_format(last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		last_update_timestamp,
+		leave_type,
+		leave_time,
+		date_format(leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		personnel_QQ,
+		personnel_enter_state,
+		flow1,
+		flow2,
+		flow3,
+		flow4,
+		flow5
+		from
+		pm_personnel
+		where
+		personnel_id = #{personnel_id}
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count(personnel_id) as count
+		from pm_personnel
+		<where>
+			<if test="paramname != null">
+				<!-- and columnName = #{columnName} -->
+			</if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select
+		personnel_id,
+		personnel_encryptionid,
+		personnel_code,
+		personnel_shortcode,
+		personnel_name,
+		personnel_sex,
+		personnel_age,
+		date_format(personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		personnel_birthtime,
+		personnel_identitycode,
+		date_format(personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		personnel_identitytime,
+		personnel_account,
+		personnel_education,
+		personnel_politicsstatus,
+		personnel_marriage,
+		personnel_nation,
+		personnel_stature,
+		personnel_weight,
+		personnel_contacttel,
+		personnel_corporationtel,
+		personnel_extensiontel,
+		personnel_emial,
+		personnel_school,
+		personnel_specialty,
+		date_format(personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		personnel_entrancetime,
+		date_format(personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		personnel_graduatetime,
+		personnel_laborcontract,
+		personnel_reinstated,
+		personnel_confidential,
+		personnel_pay,
+		personnel_emergencyname,
+		personnel_emergencyremark,
+		personnel_accountaddress,
+		personnel_emergencytel,
+		personnel_othertel,
+		personnel_regionnumber,
+		personnel_organid,
+		personnel_organcode,
+		personnel_deptid,
+		personnel_deptcode,
+		personnel_deptname,
+		personnel_team,
+		personnel_postid,
+		personnel_postname,
+		personnel_postlevelid,
+		date_format(personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		personnel_trialstarttime,
+		date_format(personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		personnel_trialendtime,
+		date_format(personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		personnel_traintime,
+		personnel_trainremark,
+		personnel_employmentform,
+		date_format(personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		personnel_positivetime,
+		personnel_bankname,
+		personnel_bankcardcode,
+		personnel_socialsecurity,
+		personnel_socialinfo,
+		date_format(personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		personnel_contractstarttime,
+		date_format(personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		personnel_contractendtime,
+		personnel_workage,
+		personnel_seniority,
+		personnel_state,
+		personnel_remark,
+		personnel_accounttype,
+		enable_flag,
+		create_user,
+		date_format(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		create_timestamp,
+		last_update_user,
+		date_format(last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		last_update_timestamp,
+		leave_type,
+		leave_time,
+		date_format(leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		personnel_QQ,
+		personnel_enter_state,
+		flow1,
+		flow2,
+		flow3,
+		flow4,
+		flow5
+		from pm_personnel
+		<where>
+			<if test="personnel_code != null">
+				personnel_code =#{personnel_code}
+			</if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="PmPersonnel" useGeneratedKeys="true"
+		keyProperty="personnel_id">
+		INSERT INTO pm_personnel
+		(
+		personnel_id,
+
+		personnel_encryptionid,
+
+		personnel_code,
+
+		personnel_shortcode,
+
+		personnel_name,
+
+		personnel_sex,
+
+		personnel_age,
+
+		personnel_birthtime,
+
+		personnel_identitycode,
+
+		personnel_identitytime,
+
+		personnel_account,
+
+		personnel_education,
+
+		personnel_politicsstatus,
+
+		personnel_marriage,
+
+		personnel_nation,
+
+		personnel_stature,
+
+		personnel_weight,
+
+		personnel_contacttel,
+
+		personnel_corporationtel,
+
+		personnel_extensiontel,
+
+		personnel_emial,
+
+		personnel_school,
+
+		personnel_specialty,
+
+		personnel_entrancetime,
+
+		personnel_graduatetime,
+
+		personnel_laborcontract,
+
+		personnel_reinstated,
+
+		personnel_confidential,
+
+		personnel_pay,
+
+		personnel_emergencyname,
+
+		personnel_emergencyremark,
+
+		personnel_accountaddress,
+
+		personnel_emergencytel,
+
+		personnel_othertel,
+
+		personnel_regionnumber,
+
+		personnel_organid,
+
+		personnel_organcode,
+
+		personnel_deptid,
+
+		personnel_deptcode,
+
+		personnel_deptname,
+
+		personnel_team,
+
+		personnel_postid,
+
+		personnel_postname,
+
+		personnel_postlevelid,
+
+		personnel_trialstarttime,
+
+		personnel_trialendtime,
+
+		personnel_traintime,
+
+		personnel_trainremark,
+
+		personnel_employmentform,
+
+		personnel_positivetime,
+
+		personnel_bankname,
+
+		personnel_bankcardcode,
+
+		personnel_socialsecurity,
+
+		personnel_socialinfo,
+
+		personnel_contractstarttime,
+
+		personnel_contractendtime,
+
+		personnel_workage,
+
+		personnel_seniority,
+
+		personnel_state,
+
+		personnel_remark,
+
+		personnel_accounttype,
+
+		enable_flag,
+
+		create_user,
+
+		create_timestamp,
+
+		last_update_user,
+
+		last_update_timestamp,
+
+		leave_type,
+
+		leave_time,
+
+		personnel_QQ,
+
+		personnel_enter_state,
+
+		flow1,
+
+		flow2,
+
+		flow3,
+
+		flow4,
+
+		flow5
+		)
+		VALUES
+		(
+		#{personnel_id},
+		#{personnel_encryptionid},
+		#{personnel_code},
+		#{personnel_shortcode},
+		#{personnel_name},
+		#{personnel_sex},
+		#{personnel_age},
+		#{personnel_birthtime},
+		#{personnel_identitycode},
+		#{personnel_identitytime},
+		#{personnel_account},
+		#{personnel_education},
+		#{personnel_politicsstatus},
+		#{personnel_marriage},
+		#{personnel_nation},
+		#{personnel_stature},
+		#{personnel_weight},
+		#{personnel_contacttel},
+		#{personnel_corporationtel},
+		#{personnel_extensiontel},
+		#{personnel_emial},
+		#{personnel_school},
+		#{personnel_specialty},
+		#{personnel_entrancetime},
+		#{personnel_graduatetime},
+		#{personnel_laborcontract},
+		#{personnel_reinstated},
+		#{personnel_confidential},
+		#{personnel_pay},
+		#{personnel_emergencyname},
+		#{personnel_emergencyremark},
+		#{personnel_accountaddress},
+		#{personnel_emergencytel},
+		#{personnel_othertel},
+		#{personnel_regionnumber},
+		#{personnel_organid},
+		#{personnel_organcode},
+		#{personnel_deptid},
+		#{personnel_deptcode},
+		#{personnel_deptname},
+		#{personnel_team},
+		#{personnel_postid},
+		#{personnel_postname},
+		#{personnel_postlevelid},
+		#{personnel_trialstarttime},
+		#{personnel_trialendtime},
+		#{personnel_traintime},
+		#{personnel_trainremark},
+		#{personnel_employmentform},
+		#{personnel_positivetime},
+		#{personnel_bankname},
+		#{personnel_bankcardcode},
+		#{personnel_socialsecurity},
+		#{personnel_socialinfo},
+		#{personnel_contractstarttime},
+		#{personnel_contractendtime},
+		#{personnel_workage},
+		#{personnel_seniority},
+		#{personnel_state},
+		#{personnel_remark},
+		#{personnel_accounttype},
+		#{enable_flag},
+		#{create_user},
+		#{create_timestamp},
+		#{last_update_user},
+		#{last_update_timestamp},
+		#{leave_type},
+		#{leave_time},
+		#{personnel_QQ},
+		#{personnel_enter_state},
+		#{flow1},
+		#{flow2},
+		#{flow3},
+		#{flow4},
+		#{flow5}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="PmPersonnel">
+		update pm_personnel
+		<set>
+			<if test="personnel_id != null">
+				personnel_id = #{personnel_id},
+			</if>
+			<if test="personnel_encryptionid != null">
+				personnel_encryptionid = #{personnel_encryptionid},
+			</if>
+			<if test="personnel_code != null">
+				personnel_code = #{personnel_code},
+			</if>
+			<if test="personnel_shortcode != null">
+				personnel_shortcode = #{personnel_shortcode},
+			</if>
+			<if test="personnel_name != null">
+				personnel_name = #{personnel_name},
+			</if>
+			<if test="personnel_sex != null">
+				personnel_sex = #{personnel_sex},
+			</if>
+			<if test="personnel_age != null">
+				personnel_age = #{personnel_age},
+			</if>
+			<if test="personnel_birthtime != null">
+				personnel_birthtime = #{personnel_birthtime},
+			</if>
+			<if test="personnel_identitycode != null">
+				personnel_identitycode = #{personnel_identitycode},
+			</if>
+			<if test="personnel_identitytime != null">
+				personnel_identitytime = #{personnel_identitytime},
+			</if>
+			<if test="personnel_account != null">
+				personnel_account = #{personnel_account},
+			</if>
+			<if test="personnel_education != null">
+				personnel_education = #{personnel_education},
+			</if>
+			<if test="personnel_politicsstatus != null">
+				personnel_politicsstatus = #{personnel_politicsstatus},
+			</if>
+			<if test="personnel_marriage != null">
+				personnel_marriage = #{personnel_marriage},
+			</if>
+			<if test="personnel_nation != null">
+				personnel_nation = #{personnel_nation},
+			</if>
+			<if test="personnel_stature != null">
+				personnel_stature = #{personnel_stature},
+			</if>
+			<if test="personnel_weight != null">
+				personnel_weight = #{personnel_weight},
+			</if>
+			<if test="personnel_contacttel != null">
+				personnel_contacttel = #{personnel_contacttel},
+			</if>
+			<if test="personnel_corporationtel != null">
+				personnel_corporationtel = #{personnel_corporationtel},
+			</if>
+			<if test="personnel_extensiontel != null">
+				personnel_extensiontel = #{personnel_extensiontel},
+			</if>
+			<if test="personnel_emial != null">
+				personnel_emial = #{personnel_emial},
+			</if>
+			<if test="personnel_school != null">
+				personnel_school = #{personnel_school},
+			</if>
+			<if test="personnel_specialty != null">
+				personnel_specialty = #{personnel_specialty},
+			</if>
+			<if test="personnel_entrancetime != null">
+				personnel_entrancetime = #{personnel_entrancetime},
+			</if>
+			<if test="personnel_graduatetime != null">
+				personnel_graduatetime = #{personnel_graduatetime},
+			</if>
+			<if test="personnel_laborcontract != null">
+				personnel_laborcontract = #{personnel_laborcontract},
+			</if>
+			<if test="personnel_reinstated != null">
+				personnel_reinstated = #{personnel_reinstated},
+			</if>
+			<if test="personnel_confidential != null">
+				personnel_confidential = #{personnel_confidential},
+			</if>
+			<if test="personnel_pay != null">
+				personnel_pay = #{personnel_pay},
+			</if>
+			<if test="personnel_emergencyname != null">
+				personnel_emergencyname = #{personnel_emergencyname},
+			</if>
+			<if test="personnel_emergencyremark != null">
+				personnel_emergencyremark = #{personnel_emergencyremark},
+			</if>
+			<if test="personnel_accountaddress != null">
+				personnel_accountaddress = #{personnel_accountaddress},
+			</if>
+			<if test="personnel_emergencytel != null">
+				personnel_emergencytel = #{personnel_emergencytel},
+			</if>
+			<if test="personnel_othertel != null">
+				personnel_othertel = #{personnel_othertel},
+			</if>
+			<if test="personnel_regionnumber != null">
+				personnel_regionnumber = #{personnel_regionnumber},
+			</if>
+			<if test="personnel_organid != null">
+				personnel_organid = #{personnel_organid},
+			</if>
+			<if test="personnel_organcode != null">
+				personnel_organcode = #{personnel_organcode},
+			</if>
+			<if test="personnel_deptid != null">
+				personnel_deptid = #{personnel_deptid},
+			</if>
+			<if test="personnel_deptcode != null">
+				personnel_deptcode = #{personnel_deptcode},
+			</if>
+			<if test="personnel_deptname != null">
+				personnel_deptname = #{personnel_deptname},
+			</if>
+			<if test="personnel_team != null">
+				personnel_team = #{personnel_team},
+			</if>
+			<if test="personnel_postid != null">
+				personnel_postid = #{personnel_postid},
+			</if>
+			<if test="personnel_postname != null">
+				personnel_postname = #{personnel_postname},
+			</if>
+			<if test="personnel_postlevelid != null">
+				personnel_postlevelid = #{personnel_postlevelid},
+			</if>
+			<if test="personnel_trialstarttime != null">
+				personnel_trialstarttime = #{personnel_trialstarttime},
+			</if>
+			<if test="personnel_trialendtime != null">
+				personnel_trialendtime = #{personnel_trialendtime},
+			</if>
+			<if test="personnel_traintime != null">
+				personnel_traintime = #{personnel_traintime},
+			</if>
+			<if test="personnel_trainremark != null">
+				personnel_trainremark = #{personnel_trainremark},
+			</if>
+			<if test="personnel_employmentform != null">
+				personnel_employmentform = #{personnel_employmentform},
+			</if>
+			<if test="personnel_positivetime != null">
+				personnel_positivetime = #{personnel_positivetime},
+			</if>
+			<if test="personnel_bankname != null">
+				personnel_bankname = #{personnel_bankname},
+			</if>
+			<if test="personnel_bankcardcode != null">
+				personnel_bankcardcode = #{personnel_bankcardcode},
+			</if>
+			<if test="personnel_socialsecurity != null">
+				personnel_socialsecurity = #{personnel_socialsecurity},
+			</if>
+			<if test="personnel_socialinfo != null">
+				personnel_socialinfo = #{personnel_socialinfo},
+			</if>
+			<if test="personnel_contractstarttime != null">
+				personnel_contractstarttime = #{personnel_contractstarttime},
+			</if>
+			<if test="personnel_contractendtime != null">
+				personnel_contractendtime = #{personnel_contractendtime},
+			</if>
+			<if test="personnel_workage != null">
+				personnel_workage = #{personnel_workage},
+			</if>
+			<if test="personnel_seniority != null">
+				personnel_seniority = #{personnel_seniority},
+			</if>
+			<if test="personnel_state != null">
+				personnel_state = #{personnel_state},
+			</if>
+			<if test="personnel_remark != null">
+				personnel_remark = #{personnel_remark},
+			</if>
+			<if test="personnel_accounttype != null">
+				personnel_accounttype = #{personnel_accounttype},
+			</if>
+			<if test="enable_flag != null">
+				enable_flag = #{enable_flag},
+			</if>
+			<if test="create_user != null">
+				create_user = #{create_user},
+			</if>
+			<if test="create_timestamp != null">
+				create_timestamp = #{create_timestamp},
+			</if>
+			<if test="last_update_user != null">
+				last_update_user = #{last_update_user},
+			</if>
+			<if test="last_update_timestamp != null">
+				last_update_timestamp = #{last_update_timestamp},
+			</if>
+			<if test="leave_type !=null">
+				leave_type =#{leave_type},
+			</if>
+			<if test="leave_time !=null">
+				leave_time =#{leave_time},
+			</if>
+			<if test="personnel_QQ !=null">
+				personnel_QQ =#{personnel_QQ},
+			</if>
+			<if test="personnel_enter_state !=null">
+				personnel_enter_state =#{personnel_enter_state},
+			</if>
+			<if test="flow1 != null">
+				flow1 = #{flow1},
+			</if>
+			<if test="flow2 != null">
+				flow2 = #{flow2},
+			</if>
+			<if test="flow3 != null">
+				flow3 = #{flow3},
+			</if>
+			<if test="flow4 != null">
+				flow4 = #{flow4},
+			</if>
+			<if test="flow5 != null">
+				flow5 = #{flow5},
+			</if>
+		</set>
+		where
+		personnel_id = #{personnel_id}
+	</update>
+	<select id="getListByEntity" parameterType="PmPersonnel"
+		resultType="PmPersonnel">
+		select
+		personnel_id,
+		personnel_encryptionid,
+		personnel_code,
+		personnel_shortcode,
+		personnel_name,
+		personnel_sex,
+		personnel_age,
+		date_format(personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		personnel_birthtime,
+		personnel_identitycode,
+		date_format(personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		personnel_identitytime,
+		personnel_account,
+		personnel_education,
+		personnel_politicsstatus,
+		personnel_marriage,
+		personnel_nation,
+		personnel_stature,
+		personnel_weight,
+		personnel_contacttel,
+		personnel_corporationtel,
+		personnel_extensiontel,
+		personnel_emial,
+		personnel_school,
+		personnel_specialty,
+		date_format(personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		personnel_entrancetime,
+		date_format(personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		personnel_graduatetime,
+		personnel_laborcontract,
+		personnel_reinstated,
+		personnel_confidential,
+		personnel_pay,
+		personnel_emergencyname,
+		personnel_emergencyremark,
+		personnel_accountaddress,
+		personnel_emergencytel,
+		personnel_othertel,
+		personnel_regionnumber,
+		personnel_organid,
+		personnel_organcode,
+		personnel_deptid,
+		personnel_deptcode,
+		personnel_deptname,
+		personnel_team,
+		personnel_postid,
+		personnel_postname,
+		personnel_postlevelid,
+		date_format(personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		personnel_trialstarttime,
+		date_format(personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		personnel_trialendtime,
+		date_format(personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		personnel_traintime,
+		personnel_trainremark,
+		personnel_employmentform,
+		date_format(personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		personnel_positivetime,
+		personnel_bankname,
+		personnel_bankcardcode,
+		personnel_socialsecurity,
+		personnel_socialinfo,
+		date_format(personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		personnel_contractstarttime,
+		date_format(personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		personnel_contractendtime,
+		personnel_workage,
+		personnel_seniority,
+		personnel_state,
+		personnel_remark,
+		personnel_accounttype,
+		enable_flag,
+		create_user,
+		date_format(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		create_timestamp,
+		last_update_user,
+		date_format(last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		last_update_timestamp,
+		leave_type,
+		leave_time,
+		date_format(leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		personnel_QQ,
+		personnel_enter_state,
+		flow1,
+		flow2,
+		flow3,
+		flow4,
+		flow5
+		from
+		pm_personnel
+		<where>
+			<if test="personnel_id != null">
+				and personnel_id = #{personnel_id}
+			</if>
+			<if test="personnel_encryptionid != null">
+				and personnel_encryptionid = #{personnel_encryptionid}
+			</if>
+			<if test="personnel_code != null">
+				and personnel_code = #{personnel_code}
+			</if>
+			<if test="personnel_shortcode != null">
+				and personnel_shortcode = #{personnel_shortcode}
+			</if>
+			<if test="personnel_name != null">
+				and personnel_name = #{personnel_name}
+			</if>
+			<if test="personnel_sex != null">
+				and personnel_sex = #{personnel_sex}
+			</if>
+			<if test="personnel_age != null">
+				and personnel_age = #{personnel_age}
+			</if>
+			<if test="personnel_birthtime != null">
+				and personnel_birthtime = #{personnel_birthtime}
+			</if>
+			<if test="personnel_identitycode != null">
+				and personnel_identitycode = #{personnel_identitycode}
+			</if>
+			<if test="personnel_identitytime != null">
+				and personnel_identitytime = #{personnel_identitytime}
+			</if>
+			<if test="personnel_account != null">
+				and personnel_account = #{personnel_account}
+			</if>
+			<if test="personnel_education != null">
+				and personnel_education = #{personnel_education}
+			</if>
+			<if test="personnel_politicsstatus != null">
+				and personnel_politicsstatus = #{personnel_politicsstatus}
+			</if>
+			<if test="personnel_marriage != null">
+				and personnel_marriage = #{personnel_marriage}
+			</if>
+			<if test="personnel_nation != null">
+				and personnel_nation = #{personnel_nation}
+			</if>
+			<if test="personnel_stature != null">
+				and personnel_stature = #{personnel_stature}
+			</if>
+			<if test="personnel_weight != null">
+				and personnel_weight = #{personnel_weight}
+			</if>
+			<if test="personnel_contacttel != null">
+				and personnel_contacttel = #{personnel_contacttel}
+			</if>
+			<if test="personnel_corporationtel != null">
+				and personnel_corporationtel = #{personnel_corporationtel}
+			</if>
+			<if test="personnel_extensiontel != null">
+				and personnel_extensiontel = #{personnel_extensiontel}
+			</if>
+			<if test="personnel_emial != null">
+				and personnel_emial = #{personnel_emial}
+			</if>
+			<if test="personnel_school != null">
+				and personnel_school = #{personnel_school}
+			</if>
+			<if test="personnel_specialty != null">
+				and personnel_specialty = #{personnel_specialty}
+			</if>
+			<if test="personnel_entrancetime != null">
+				and personnel_entrancetime = #{personnel_entrancetime}
+			</if>
+			<if test="personnel_graduatetime != null">
+				and personnel_graduatetime = #{personnel_graduatetime}
+			</if>
+			<if test="personnel_laborcontract != null">
+				and personnel_laborcontract = #{personnel_laborcontract}
+			</if>
+			<if test="personnel_reinstated != null">
+				and personnel_reinstated = #{personnel_reinstated}
+			</if>
+			<if test="personnel_confidential != null">
+				and personnel_confidential = #{personnel_confidential}
+			</if>
+			<if test="personnel_pay != null">
+				and personnel_pay = #{personnel_pay}
+			</if>
+			<if test="personnel_emergencyname != null">
+				and personnel_emergencyname = #{personnel_emergencyname}
+			</if>
+			<if test="personnel_emergencyremark != null">
+				and personnel_emergencyremark = #{personnel_emergencyremark}
+			</if>
+			<if test="personnel_accountaddress != null">
+				and personnel_accountaddress = #{personnel_accountaddress}
+			</if>
+			<if test="personnel_emergencytel != null">
+				and personnel_emergencytel = #{personnel_emergencytel}
+			</if>
+			<if test="personnel_othertel != null">
+				and personnel_othertel = #{personnel_othertel}
+			</if>
+			<if test="personnel_regionnumber != null">
+				and personnel_regionnumber = #{personnel_regionnumber}
+			</if>
+			<if test="personnel_organid != null">
+				and personnel_organid = #{personnel_organid}
+			</if>
+			<if test="personnel_organcode != null">
+				and personnel_organcode = #{personnel_organcode}
+			</if>
+			<if test="personnel_deptid != null">
+				and personnel_deptid = #{personnel_deptid}
+			</if>
+			<if test="personnel_deptcode != null">
+				and personnel_deptcode = #{personnel_deptcode}
+			</if>
+			<if test="personnel_deptname != null">
+				and personnel_deptname = #{personnel_deptname}
+			</if>
+			<if test="personnel_team != null">
+				and personnel_team = #{personnel_team}
+			</if>
+			<if test="personnel_postid != null">
+				and personnel_postid = #{personnel_postid}
+			</if>
+			<if test="personnel_postname != null">
+				and personnel_postname = #{personnel_postname}
+			</if>
+			<if test="personnel_postlevelid != null">
+				and personnel_postlevelid = #{personnel_postlevelid}
+			</if>
+			<if test="personnel_trialstarttime != null">
+				and personnel_trialstarttime = #{personnel_trialstarttime}
+			</if>
+			<if test="personnel_trialendtime != null">
+				and personnel_trialendtime = #{personnel_trialendtime}
+			</if>
+			<if test="personnel_traintime != null">
+				and personnel_traintime = #{personnel_traintime}
+			</if>
+			<if test="personnel_trainremark != null">
+				and personnel_trainremark = #{personnel_trainremark}
+			</if>
+			<if test="personnel_employmentform != null">
+				and personnel_employmentform = #{personnel_employmentform}
+			</if>
+			<if test="personnel_positivetime != null">
+				and personnel_positivetime = #{personnel_positivetime}
+			</if>
+			<if test="personnel_bankname != null">
+				and personnel_bankname = #{personnel_bankname}
+			</if>
+			<if test="personnel_bankcardcode != null">
+				and personnel_bankcardcode = #{personnel_bankcardcode}
+			</if>
+			<if test="personnel_socialsecurity != null">
+				and personnel_socialsecurity = #{personnel_socialsecurity}
+			</if>
+			<if test="personnel_socialinfo != null">
+				and personnel_socialinfo = #{personnel_socialinfo}
+			</if>
+			<if test="personnel_contractstarttime != null">
+				and personnel_contractstarttime = #{personnel_contractstarttime}
+			</if>
+			<if test="personnel_contractendtime != null">
+				and personnel_contractendtime = #{personnel_contractendtime}
+			</if>
+			<if test="personnel_workage != null">
+				and personnel_workage = #{personnel_workage}
+			</if>
+			<if test="personnel_seniority != null">
+				and personnel_seniority = #{personnel_seniority}
+			</if>
+			<if test="personnel_state != null">
+				and personnel_state = #{personnel_state}
+			</if>
+			<if test="personnel_remark != null">
+				and personnel_remark = #{personnel_remark}
+			</if>
+			<if test="personnel_accounttype != null">
+				and personnel_accounttype = #{personnel_accounttype}
+			</if>
+			<if test="enable_flag != null">
+				and enable_flag = #{enable_flag}
+			</if>
+			<if test="create_user != null">
+				and create_user = #{create_user}
+			</if>
+			<if test="create_timestamp != null">
+				and create_timestamp = #{create_timestamp}
+			</if>
+			<if test="last_update_user != null">
+				and last_update_user = #{last_update_user}
+			</if>
+			<if test="last_update_timestamp != null">
+				and last_update_timestamp = #{last_update_timestamp}
+			</if>
+			<if test="leave_type !=null">
+				leave_type =#{leave_type},
+			</if>
+			<if test="leave_time !=null">
+				leave_time =#{leave_time},
+			</if>
+			<if test="personnel_QQ !=null">
+				personnel_QQ =#{personnel_QQ},
+			</if>
+			<if test="personnel_enter_state !=null">
+				personnel_enter_state =#{personnel_enter_state},
+			</if>
+			<if test="flow1 != null">
+				and flow1 = #{flow1}
+			</if>
+			<if test="flow2 != null">
+				and flow2 = #{flow2}
+			</if>
+			<if test="flow3 != null">
+				and flow3 = #{flow3}
+			</if>
+			<if test="flow4 != null">
+				and flow4 = #{flow4}
+			</if>
+			<if test="flow5 != null">
+				and flow5 = #{flow5}
+			</if>
+
+		</where>
+	</select>
+	
+	<select id="getListByEntity2" parameterType="PmPersonnel"
+		resultType="java.util.Map">
+		select
+		personnel_id,
+		personnel_encryptionid,
+		personnel_code,
+		personnel_shortcode,
+		personnel_name,
+		personnel_sex,
+		personnel_age,
+		date_format(personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		personnel_birthtime,
+		personnel_identitycode,
+		date_format(personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		personnel_identitytime,
+		personnel_account,
+		personnel_education,
+		personnel_politicsstatus,
+		personnel_marriage,
+		personnel_nation,
+		personnel_stature,
+		personnel_weight,
+		personnel_contacttel,
+		personnel_corporationtel,
+		personnel_extensiontel,
+		personnel_emial,
+		personnel_school,
+		personnel_specialty,
+		date_format(personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		personnel_entrancetime,
+		date_format(personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		personnel_graduatetime,
+		personnel_laborcontract,
+		personnel_reinstated,
+		personnel_confidential,
+		personnel_pay,
+		personnel_emergencyname,
+		personnel_emergencyremark,
+		personnel_accountaddress,
+		personnel_emergencytel,
+		personnel_othertel,
+		personnel_regionnumber,
+		personnel_organid,
+		personnel_organcode,
+		personnel_deptid,
+		personnel_deptcode,
+		personnel_deptname,
+		personnel_team,
+		personnel_postid,
+		personnel_postname,
+		personnel_postlevelid,
+		date_format(personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		personnel_trialstarttime,
+		date_format(personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		personnel_trialendtime,
+		date_format(personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		personnel_traintime,
+		personnel_trainremark,
+		personnel_employmentform,
+		date_format(personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		personnel_positivetime,
+		personnel_bankname,
+		personnel_bankcardcode,
+		personnel_socialsecurity,
+		personnel_socialinfo,
+		date_format(personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		personnel_contractstarttime,
+		date_format(personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		personnel_contractendtime,
+		personnel_workage,
+		personnel_seniority,
+		personnel_state,
+		personnel_remark,
+		personnel_accounttype,
+		enable_flag,
+		create_user,
+		date_format(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		create_timestamp,
+		last_update_user,
+		date_format(last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		last_update_timestamp,
+		leave_type,
+		leave_time,
+		date_format(leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		personnel_QQ,
+		personnel_enter_state,
+		flow1,
+		flow2,
+		flow3,
+		flow4,
+		flow5
+		from
+		pm_personnel
+		<where>
+			<if test="personnel_id != null">
+				and personnel_id = #{personnel_id}
+			</if>
+			<if test="personnel_encryptionid != null">
+				and personnel_encryptionid = #{personnel_encryptionid}
+			</if>
+			<if test="personnel_code != null">
+				and personnel_code = #{personnel_code}
+			</if>
+			<if test="personnel_shortcode != null">
+				and personnel_shortcode = #{personnel_shortcode}
+			</if>
+			<if test="personnel_name != null">
+				and personnel_name = #{personnel_name}
+			</if>
+			<if test="personnel_sex != null">
+				and personnel_sex = #{personnel_sex}
+			</if>
+			<if test="personnel_age != null">
+				and personnel_age = #{personnel_age}
+			</if>
+			<if test="personnel_birthtime != null">
+				and personnel_birthtime = #{personnel_birthtime}
+			</if>
+			<if test="personnel_identitycode != null">
+				and personnel_identitycode = #{personnel_identitycode}
+			</if>
+			<if test="personnel_identitytime != null">
+				and personnel_identitytime = #{personnel_identitytime}
+			</if>
+			<if test="personnel_account != null">
+				and personnel_account = #{personnel_account}
+			</if>
+			<if test="personnel_education != null">
+				and personnel_education = #{personnel_education}
+			</if>
+			<if test="personnel_politicsstatus != null">
+				and personnel_politicsstatus = #{personnel_politicsstatus}
+			</if>
+			<if test="personnel_marriage != null">
+				and personnel_marriage = #{personnel_marriage}
+			</if>
+			<if test="personnel_nation != null">
+				and personnel_nation = #{personnel_nation}
+			</if>
+			<if test="personnel_stature != null">
+				and personnel_stature = #{personnel_stature}
+			</if>
+			<if test="personnel_weight != null">
+				and personnel_weight = #{personnel_weight}
+			</if>
+			<if test="personnel_contacttel != null">
+				and personnel_contacttel = #{personnel_contacttel}
+			</if>
+			<if test="personnel_corporationtel != null">
+				and personnel_corporationtel = #{personnel_corporationtel}
+			</if>
+			<if test="personnel_extensiontel != null">
+				and personnel_extensiontel = #{personnel_extensiontel}
+			</if>
+			<if test="personnel_emial != null">
+				and personnel_emial = #{personnel_emial}
+			</if>
+			<if test="personnel_school != null">
+				and personnel_school = #{personnel_school}
+			</if>
+			<if test="personnel_specialty != null">
+				and personnel_specialty = #{personnel_specialty}
+			</if>
+			<if test="personnel_entrancetime != null">
+				and personnel_entrancetime = #{personnel_entrancetime}
+			</if>
+			<if test="personnel_graduatetime != null">
+				and personnel_graduatetime = #{personnel_graduatetime}
+			</if>
+			<if test="personnel_laborcontract != null">
+				and personnel_laborcontract = #{personnel_laborcontract}
+			</if>
+			<if test="personnel_reinstated != null">
+				and personnel_reinstated = #{personnel_reinstated}
+			</if>
+			<if test="personnel_confidential != null">
+				and personnel_confidential = #{personnel_confidential}
+			</if>
+			<if test="personnel_pay != null">
+				and personnel_pay = #{personnel_pay}
+			</if>
+			<if test="personnel_emergencyname != null">
+				and personnel_emergencyname = #{personnel_emergencyname}
+			</if>
+			<if test="personnel_emergencyremark != null">
+				and personnel_emergencyremark = #{personnel_emergencyremark}
+			</if>
+			<if test="personnel_accountaddress != null">
+				and personnel_accountaddress = #{personnel_accountaddress}
+			</if>
+			<if test="personnel_emergencytel != null">
+				and personnel_emergencytel = #{personnel_emergencytel}
+			</if>
+			<if test="personnel_othertel != null">
+				and personnel_othertel = #{personnel_othertel}
+			</if>
+			<if test="personnel_regionnumber != null">
+				and personnel_regionnumber = #{personnel_regionnumber}
+			</if>
+			<if test="personnel_organid != null">
+				and personnel_organid = #{personnel_organid}
+			</if>
+			<if test="personnel_organcode != null">
+				and personnel_organcode = #{personnel_organcode}
+			</if>
+			<if test="personnel_deptid != null">
+				and personnel_deptid = #{personnel_deptid}
+			</if>
+			<if test="personnel_deptcode != null">
+				and personnel_deptcode = #{personnel_deptcode}
+			</if>
+			<if test="personnel_deptname != null">
+				and personnel_deptname = #{personnel_deptname}
+			</if>
+			<if test="personnel_team != null">
+				and personnel_team = #{personnel_team}
+			</if>
+			<if test="personnel_postid != null">
+				and personnel_postid = #{personnel_postid}
+			</if>
+			<if test="personnel_postname != null">
+				and personnel_postname = #{personnel_postname}
+			</if>
+			<if test="personnel_postlevelid != null">
+				and personnel_postlevelid = #{personnel_postlevelid}
+			</if>
+			<if test="personnel_trialstarttime != null">
+				and personnel_trialstarttime = #{personnel_trialstarttime}
+			</if>
+			<if test="personnel_trialendtime != null">
+				and personnel_trialendtime = #{personnel_trialendtime}
+			</if>
+			<if test="personnel_traintime != null">
+				and personnel_traintime = #{personnel_traintime}
+			</if>
+			<if test="personnel_trainremark != null">
+				and personnel_trainremark = #{personnel_trainremark}
+			</if>
+			<if test="personnel_employmentform != null">
+				and personnel_employmentform = #{personnel_employmentform}
+			</if>
+			<if test="personnel_positivetime != null">
+				and personnel_positivetime = #{personnel_positivetime}
+			</if>
+			<if test="personnel_bankname != null">
+				and personnel_bankname = #{personnel_bankname}
+			</if>
+			<if test="personnel_bankcardcode != null">
+				and personnel_bankcardcode = #{personnel_bankcardcode}
+			</if>
+			<if test="personnel_socialsecurity != null">
+				and personnel_socialsecurity = #{personnel_socialsecurity}
+			</if>
+			<if test="personnel_socialinfo != null">
+				and personnel_socialinfo = #{personnel_socialinfo}
+			</if>
+			<if test="personnel_contractstarttime != null">
+				and personnel_contractstarttime = #{personnel_contractstarttime}
+			</if>
+			<if test="personnel_contractendtime != null">
+				and personnel_contractendtime = #{personnel_contractendtime}
+			</if>
+			<if test="personnel_workage != null">
+				and personnel_workage = #{personnel_workage}
+			</if>
+			<if test="personnel_seniority != null">
+				and personnel_seniority = #{personnel_seniority}
+			</if>
+			<if test="personnel_state != null">
+				and personnel_state = #{personnel_state}
+			</if>
+			<if test="personnel_remark != null">
+				and personnel_remark = #{personnel_remark}
+			</if>
+			<if test="personnel_accounttype != null">
+				and personnel_accounttype = #{personnel_accounttype}
+			</if>
+			<if test="enable_flag != null">
+				and enable_flag = #{enable_flag}
+			</if>
+			<if test="create_user != null">
+				and create_user = #{create_user}
+			</if>
+			<if test="create_timestamp != null">
+				and create_timestamp = #{create_timestamp}
+			</if>
+			<if test="last_update_user != null">
+				and last_update_user = #{last_update_user}
+			</if>
+			<if test="last_update_timestamp != null">
+				and last_update_timestamp = #{last_update_timestamp}
+			</if>
+			<if test="leave_type !=null">
+				and leave_type =#{leave_type}
+			</if>
+			<if test="leave_time !=null">
+				and leave_time =#{leave_time}
+			</if>
+			<if test="personnel_QQ !=null">
+				and personnel_QQ =#{personnel_QQ}
+			</if>
+			<if test="personnel_enter_state !=null">
+				and personnel_enter_state =#{personnel_enter_state}
+			</if>
+			<if test="flow1 != null">
+				and flow1 = #{flow1}
+			</if>
+			<if test="flow2 != null">
+				and flow2 = #{flow2}
+			</if>
+			<if test="flow3 != null">
+				and flow3 = #{flow3}
+			</if>
+			<if test="flow4 != null">
+				and flow4 = #{flow4}
+			</if>
+			<if test="flow5 != null">
+				and flow5 = #{flow5}
+			</if>
+
+		</where>
+	</select>
+	<!--根据提供的业务员部门ID以及职务编码 查找部门经理 -->
+	<select id="searchforlcjl" parameterType="map" resultType="java.util.HashMap">
+		select
+		pm.personnel_id,
+		pm.personnel_encryptionid,
+		pm.personnel_code,
+		pm.personnel_shortcode,
+		pm.personnel_name,
+		pm.personnel_sex,
+		pm.personnel_age,
+		date_format(pm.personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		pm.personnel_birthtime,
+		pm.personnel_identitycode,
+		date_format(pm.personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		pm.personnel_identitytime,
+		pm.personnel_account,
+		pm.personnel_education,
+		pm.personnel_politicsstatus,
+		pm.personnel_marriage,
+		pm.personnel_nation,
+		pm.personnel_stature,
+		pm.personnel_weight,
+		pm.personnel_contacttel,
+		pm.personnel_corporationtel,
+		pm.personnel_extensiontel,
+		pm.personnel_emial,
+		pm.personnel_school,
+		pm.personnel_specialty,
+		date_format(pm.personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		pm.personnel_entrancetime,
+		date_format(pm.personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		pm.personnel_graduatetime,
+		pm.personnel_laborcontract,
+		pm.personnel_reinstated,
+		pm.personnel_confidential,
+		pm.personnel_pay,
+		pm.personnel_emergencyname,
+		pm.personnel_emergencyremark,
+		pm.personnel_accountaddress,
+		pm.personnel_emergencytel,
+		pm.personnel_othertel,
+		pm.personnel_regionnumber,
+		pm.personnel_organid,
+		pm.personnel_organcode,
+		pm.personnel_deptid,
+		pm.personnel_deptcode,
+		pm.personnel_deptname,
+		pm.personnel_team,
+		pm.personnel_postid,
+		pm.personnel_postname,
+		pm.personnel_postlevelid,
+		date_format(pm.personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		pm.personnel_trialstarttime,
+		date_format(pm.personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		pm.personnel_trialendtime,
+		date_format(pm.personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		pm.personnel_traintime,
+		pm.personnel_trainremark,
+		pm.personnel_employmentform,
+		date_format(pm.personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		pm.personnel_positivetime,
+		pm.personnel_bankname,
+		pm.personnel_bankcardcode,
+		pm.personnel_socialsecurity,
+		pm.personnel_socialinfo,
+		date_format(pm.personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		pm.personnel_contractstarttime,
+		date_format(pm.personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		pm.personnel_contractendtime,
+		pm.personnel_workage,
+		pm.personnel_seniority,
+		pm.personnel_state,
+		pm.personnel_remark,
+		pm.personnel_accounttype,
+		pm.enable_flag,
+		pm.create_user,
+		date_format(pm.create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		pm.create_timestamp,
+		pm.last_update_user,
+		date_format(pm.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		pm.last_update_timestamp,
+		pm.leave_type,
+		pm.leave_time,
+		date_format(pm.leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		pm.personnel_QQ,
+		pm.personnel_enter_state,
+		pm.flow1,
+		pm.flow2,
+		pm.flow3,
+		pm.flow4,
+		pm.flow5
+		from
+
+		pm_personnel pm,sys_post post,sys_dept dept
+
+		WHERE
+
+		pm.personnel_postId=post.post_id
+
+		AND
+
+		post.post_deptId=dept.dept_id
+
+		AND
+
+		pm.personnel_deptId=dept.dept_id
+		
+		AND
+
+		post.post_number=#{post_number}
+
+		AND
+
+		dept.dept_id=#{dept_Id}  and pm.enable_flag=1
+	</select>
+	<!-- 根据提供的业务员部门ID以及职务编码 查找父级部门 副总经理？ -->
+	<select id="searchforlcfzjl" parameterType="map" resultType="java.util.HashMap">
+		SELECT
+		pm.personnel_id,
+		pm.personnel_encryptionid,
+		pm.personnel_code,
+		pm.personnel_shortcode,
+		pm.personnel_name,
+		pm.personnel_sex,
+		pm.personnel_age,
+		date_format(pm.personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		pm.personnel_birthtime,
+		pm.personnel_identitycode,
+		date_format(pm.personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		pm.personnel_identitytime,
+		pm.personnel_account,
+		pm.personnel_education,
+		pm.personnel_politicsstatus,
+		pm.personnel_marriage,
+		pm.personnel_nation,
+		pm.personnel_stature,
+		pm.personnel_weight,
+		pm.personnel_contacttel,
+		pm.personnel_corporationtel,
+		pm.personnel_extensiontel,
+		pm.personnel_emial,
+		pm.personnel_school,
+		pm.personnel_specialty,
+		date_format(pm.personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		pm.personnel_entrancetime,
+		date_format(pm.personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		pm.personnel_graduatetime,
+		pm.personnel_laborcontract,
+		pm.personnel_reinstated,
+		pm.personnel_confidential,
+		pm.personnel_pay,
+		pm.personnel_emergencyname,
+		pm.personnel_emergencyremark,
+		pm.personnel_accountaddress,
+		pm.personnel_emergencytel,
+		pm.personnel_othertel,
+		pm.personnel_regionnumber,
+		pm.personnel_organid,
+		pm.personnel_organcode,
+		pm.personnel_deptid,
+		pm.personnel_deptcode,
+		pm.personnel_deptname,
+		pm.personnel_team,
+		pm.personnel_postid,
+		pm.personnel_postname,
+		pm.personnel_postlevelid,
+		date_format(pm.personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		pm.personnel_trialstarttime,
+		date_format(pm.personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		pm.personnel_trialendtime,
+		date_format(pm.personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		pm.personnel_traintime,
+		pm.personnel_trainremark,
+		pm.personnel_employmentform,
+		date_format(pm.personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		pm.personnel_positivetime,
+		pm.personnel_bankname,
+		pm.personnel_bankcardcode,
+		pm.personnel_socialsecurity,
+		pm.personnel_socialinfo,
+		date_format(pm.personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		pm.personnel_contractstarttime,
+		date_format(pm.personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		pm.personnel_contractendtime,
+		pm.personnel_workage,
+		pm.personnel_seniority,
+		pm.personnel_state,
+		pm.personnel_remark,
+		pm.personnel_accounttype,
+		pm.enable_flag,
+		pm.create_user,
+		date_format(pm.create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		pm.create_timestamp,
+		pm.last_update_user,
+		date_format(pm.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		pm.last_update_timestamp,
+		pm.leave_type,
+		pm.leave_time,
+		date_format(pm.leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		pm.personnel_QQ,
+		pm.personnel_enter_state,
+		pm.flow1,
+		pm.flow2,
+		pm.flow3,
+		pm.flow4,
+		pm.flow5
+		FROM
+		pm_personnel pm,sys_personnel_dept_concern pc,sys_post post
+		WHERE
+		pm.personnel_id=pc.personnel_id
+		AND
+		pm.personnel_postId=post.post_id
+		AND
+		pm.personnel_deptId=post.post_deptId
+		AND
+		post.post_number=#{post_number}
+		AND
+		pc.dept_id=(select dept_pid from sys_dept where dept_id=#{dept_Id}) and pc.dept_type='dept'  and pm.enable_flag=1
+	</select>
+	<!-- 根据提供的业务员部门ID以及职务编码 查找父级部门 总经理？ -->
+	<select id="searchforlczjl" parameterType="map" resultType="java.util.HashMap">
+		select
+		pm.personnel_id,
+		pm.personnel_encryptionid,
+		pm.personnel_code,
+		pm.personnel_shortcode,
+		pm.personnel_name,
+		pm.personnel_sex,
+		pm.personnel_age,
+		date_format(pm.personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		pm.personnel_birthtime,
+		pm.personnel_identitycode,
+		date_format(pm.personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		pm.personnel_identitytime,
+		pm.personnel_account,
+		pm.personnel_education,
+		pm.personnel_politicsstatus,
+		pm.personnel_marriage,
+		pm.personnel_nation,
+		pm.personnel_stature,
+		pm.personnel_weight,
+		pm.personnel_contacttel,
+		pm.personnel_corporationtel,
+		pm.personnel_extensiontel,
+		pm.personnel_emial,
+		pm.personnel_school,
+		pm.personnel_specialty,
+		date_format(pm.personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		pm.personnel_entrancetime,
+		date_format(pm.personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		pm.personnel_graduatetime,
+		pm.personnel_laborcontract,
+		pm.personnel_reinstated,
+		pm.personnel_confidential,
+		pm.personnel_pay,
+		pm.personnel_emergencyname,
+		pm.personnel_emergencyremark,
+		pm.personnel_accountaddress,
+		pm.personnel_emergencytel,
+		pm.personnel_othertel,
+		pm.personnel_regionnumber,
+		pm.personnel_organid,
+		pm.personnel_organcode,
+		pm.personnel_deptid,
+		pm.personnel_deptcode,
+		pm.personnel_deptname,
+		pm.personnel_team,
+		pm.personnel_postid,
+		pm.personnel_postname,
+		pm.personnel_postlevelid,
+		date_format(pm.personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		pm.personnel_trialstarttime,
+		date_format(pm.personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		pm.personnel_trialendtime,
+		date_format(pm.personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		pm.personnel_traintime,
+		pm.personnel_trainremark,
+		pm.personnel_employmentform,
+		date_format(pm.personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		pm.personnel_positivetime,
+		pm.personnel_bankname,
+		pm.personnel_bankcardcode,
+		pm.personnel_socialsecurity,
+		pm.personnel_socialinfo,
+		date_format(pm.personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		pm.personnel_contractstarttime,
+		date_format(pm.personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		pm.personnel_contractendtime,
+		pm.personnel_workage,
+		pm.personnel_seniority,
+		pm.personnel_state,
+		pm.personnel_remark,
+		pm.personnel_accounttype,
+		pm.enable_flag,
+		pm.create_user,
+		date_format(pm.create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		pm.create_timestamp,
+		pm.last_update_user,
+		date_format(pm.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		pm.last_update_timestamp,
+		pm.leave_type,
+		pm.leave_time,
+		date_format(pm.leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		pm.personnel_QQ,
+		pm.personnel_enter_state,
+		pm.flow1,
+		pm.flow2,
+		pm.flow3,
+		pm.flow4,
+		pm.flow5
+		from
+		pm_personnel pm,sys_dept dept,sys_post post
+		WHERE
+		pm.personnel_deptId=dept.dept_pid
+		AND
+		pm.personnel_postId=post.post_id
+		AND
+		post.post_deptId=dept.dept_pid
+		AND
+		post.post_number=#{post_number}
+		AND
+		dept.dept_id=(select dept_pid from sys_dept where dept_id=#{dept_Id})  and pm.enable_flag=1
+	</select>
+
+	<!-- 根据提供的短工号查询员工的ID -->
+	<select id="searchforNodept" parameterType="map" resultType="java.util.HashMap">
+		select
+		personnel_id,
+		personnel_encryptionid,
+		personnel_code,
+		personnel_shortcode,
+		personnel_name,
+		personnel_sex,
+		personnel_age,
+		date_format(personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		personnel_birthtime,
+		personnel_identitycode,
+		date_format(personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		personnel_identitytime,
+		personnel_account,
+		personnel_education,
+		personnel_politicsstatus,
+		personnel_marriage,
+		personnel_nation,
+		personnel_stature,
+		personnel_weight,
+		personnel_contacttel,
+		personnel_corporationtel,
+		personnel_extensiontel,
+		personnel_emial,
+		personnel_school,
+		personnel_specialty,
+		date_format(personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		personnel_entrancetime,
+		date_format(personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		personnel_graduatetime,
+		personnel_laborcontract,
+		personnel_reinstated,
+		personnel_confidential,
+		personnel_pay,
+		personnel_emergencyname,
+		personnel_emergencyremark,
+		personnel_accountaddress,
+		personnel_emergencytel,
+		personnel_othertel,
+		personnel_regionnumber,
+		personnel_organid,
+		personnel_organcode,
+		personnel_deptid,
+		personnel_deptcode,
+		personnel_deptname,
+		personnel_team,
+		personnel_postid,
+		personnel_postname,
+		personnel_postlevelid,
+		date_format(personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		personnel_trialstarttime,
+		date_format(personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		personnel_trialendtime,
+		date_format(personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		personnel_traintime,
+		personnel_trainremark,
+		personnel_employmentform,
+		date_format(personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		personnel_positivetime,
+		personnel_bankname,
+		personnel_bankcardcode,
+		personnel_socialsecurity,
+		personnel_socialinfo,
+		date_format(personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		personnel_contractstarttime,
+		date_format(personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		personnel_contractendtime,
+		personnel_workage,
+		personnel_seniority,
+		personnel_state,
+		personnel_remark,
+		personnel_accounttype,
+		enable_flag,
+		create_user,
+		date_format(create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		create_timestamp,
+		last_update_user,
+		date_format(last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		last_update_timestamp,
+		leave_type,
+		leave_time,
+		date_format(leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		personnel_QQ,
+		personnel_enter_state,
+		flow1,
+		flow2,
+		flow3,
+		flow4,
+		flow5
+		from pm_personnel
+		<where>
+			<if test="personnel_shortcode != null">
+				personnel_shortcode =#{personnel_shortcode}
+			</if>
+		</where>
+	</select>
+	<select id="getPostInfo" parameterType="int" resultType="java.util.HashMap">
+	 SELECT * from sys_post where post_id= (SELECT personnel_postId from pm_personnel where personnel_id=#{personnel_id})  and post_number="CJZG"
+	</select>
+	
+	<!-- 获取部门上级信息 -->
+	<select id="getByPost" parameterType="map" resultType="PmPersonnel">
+		select
+        				l.personnel_id,
+        				l.personnel_encryptionid,
+        				l.personnel_code,
+        				l.personnel_shortcode,
+        				l.personnel_attendancecode,
+        				l.personnel_name,
+        				l.personnel_sex,
+        				l.personnel_age,
+						date_format(l.personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+        				l.personnel_birthtime,
+        				l.personnel_identitycode,
+						date_format(l.personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+        				l.personnel_identitytime,
+        				l.personnel_account,
+        				l.personnel_education,
+        				l.personnel_politicsstatus,
+        				l.personnel_marriage,
+        				l.personnel_nation,
+        				l.personnel_stature,
+        				l.personnel_weight,
+        				l.personnel_contacttel,
+        				l.personnel_corporationtel,
+        				l.personnel_extensiontel,
+        				l.personnel_emial,
+        				l.personnel_school,
+        				l.personnel_specialty,
+						date_format(l.personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+        				l.personnel_entrancetime,
+						date_format(l.personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+        				l.personnel_graduatetime,
+        				l.personnel_laborcontract,
+        				l.personnel_reinstated,
+        				l.personnel_confidential,
+        				l.personnel_pay,
+        				l.personnel_emergencyname,
+        				l.personnel_emergencyremark,
+        				l.personnel_accountaddress,
+        				l.personnel_emergencytel,
+        				l.personnel_othertel,
+        				l.personnel_regionnumber,
+        				l.personnel_organid,
+        				l.personnel_organcode,
+        				l.personnel_deptid,
+        				l.personnel_deptcode,
+        				l.personnel_deptname,
+        				l.personnel_team,
+        				l.personnel_postid,
+        				l.personnel_postname,
+        				l.personnel_postlevelid,
+						date_format(l.personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+        				l.personnel_trialstarttime,
+						date_format(l.personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+        				l.personnel_trialendtime,
+						date_format(l.personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+        				l.personnel_traintime,
+        				l.personnel_trainremark,
+        				l.personnel_employmentform,
+						date_format(l.personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+        				l.personnel_positivetime,
+        				l.personnel_bankname,
+        				l.personnel_bankcardcode,
+        				l.personnel_socialsecurity,
+        				l.personnel_socialinfo,
+						date_format(l.personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+        				l.personnel_contractstarttime,
+						date_format(l.personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+        				l.personnel_contractendtime,
+        				l.personnel_workage,
+        				l.personnel_seniority,
+        				l.personnel_state,
+        				l.personnel_remark,
+        				l.personnel_accounttype,
+        				l.personnel_salary,
+        				l.enable_flag,
+        				l.create_user,
+						date_format(l.create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+        				l.create_timestamp,
+        				l.last_update_user,
+						date_format(l.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+        				l.last_update_timestamp,
+        				l.leave_type,
+        				l.leave_time,
+        				date_format(l.leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+        				l.personnel_QQ,
+        				l.personnel_enter_state,
+        				l.personnel_shortTel,
+        				l.flow1,
+        				l.flow2,
+        				l.flow3,
+        				l.flow4,
+        				l.flow5
+        	from
+        		pm_personnel  l,sys_post p
+        	where
+        			l.enable_flag=1 and p.enable_flag=0
+        			and	p.post_deptid = #{post_deptid}
+        			and	p.post_number = #{post_number}
+        			and	personnel_postId =p.post_id
+        			and	personnel_deptId =p.post_deptid
+	</select>
+	<select id="getPmPersonnelByIds" parameterType="java.util.List" resultType="java.util.Map">
+		select 
+			personnel_id,
+			personnel_shortcode,
+			personnel_name,
+			(SELECT job_code from wms_inve_job where job_encode=(SELECT  post_number from sys_post where post_id=personnel_postId )) as post_number
+		from pm_personnel 
+		where enable_flag='1' and personnel_id in
+		<foreach item="idItem" collection="list" open="(" separator="," close=")">
+			#{idItem}
+		</foreach>
+	</select>
+	<!-- 通过传递的部门ID和相关职务 查询相对应的数据信息 -->
+	<select id="searchforlcjxjl" parameterType="map" resultType="java.util.HashMap">
+		select
+		pm.personnel_id,
+		pm.personnel_encryptionid,
+		pm.personnel_code,
+		pm.personnel_shortcode,
+		pm.personnel_name,
+		pm.personnel_sex,
+		pm.personnel_age,
+		date_format(pm.personnel_birthtime,'%Y-%m-%d') as personnel_birthtime_str,
+		pm.personnel_birthtime,
+		pm.personnel_identitycode,
+		date_format(pm.personnel_identitytime,'%Y-%m-%d') as personnel_identitytime_str,
+		pm.personnel_identitytime,
+		pm.personnel_account,
+		pm.personnel_education,
+		pm.personnel_politicsstatus,
+		pm.personnel_marriage,
+		pm.personnel_nation,
+		pm.personnel_stature,
+		pm.personnel_weight,
+		pm.personnel_contacttel,
+		pm.personnel_corporationtel,
+		pm.personnel_extensiontel,
+		pm.personnel_emial,
+		pm.personnel_school,
+		pm.personnel_specialty,
+		date_format(pm.personnel_entrancetime,'%Y-%m-%d') as personnel_entrancetime_str,
+		pm.personnel_entrancetime,
+		date_format(pm.personnel_graduatetime,'%Y-%m-%d') as personnel_graduatetime_str,
+		pm.personnel_graduatetime,
+		pm.personnel_laborcontract,
+		pm.personnel_reinstated,
+		pm.personnel_confidential,
+		pm.personnel_pay,
+		pm.personnel_emergencyname,
+		pm.personnel_emergencyremark,
+		pm.personnel_accountaddress,
+		pm.personnel_emergencytel,
+		pm.personnel_othertel,
+		pm.personnel_regionnumber,
+		pm.personnel_organid,
+		pm.personnel_organcode,
+		pm.personnel_deptid,
+		pm.personnel_deptcode,
+		pm.personnel_deptname,
+		pm.personnel_team,
+		pm.personnel_postid,
+		pm.personnel_postname,
+		pm.personnel_postlevelid,
+		date_format(pm.personnel_trialstarttime,'%Y-%m-%d') as personnel_trialstarttime_str,
+		pm.personnel_trialstarttime,
+		date_format(pm.personnel_trialendtime,'%Y-%m-%d') as personnel_trialendtime_str,
+		pm.personnel_trialendtime,
+		date_format(pm.personnel_traintime,'%Y-%m-%d') as personnel_traintime_str,
+		pm.personnel_traintime,
+		pm.personnel_trainremark,
+		pm.personnel_employmentform,
+		date_format(pm.personnel_positivetime,'%Y-%m-%d') as personnel_positivetime_str,
+		pm.personnel_positivetime,
+		pm.personnel_bankname,
+		pm.personnel_bankcardcode,
+		pm.personnel_socialsecurity,
+		pm.personnel_socialinfo,
+		date_format(pm.personnel_contractstarttime,'%Y-%m-%d') as personnel_contractstarttime_str,
+		pm.personnel_contractstarttime,
+		date_format(pm.personnel_contractendtime,'%Y-%m-%d') as personnel_contractendtime_str,
+		pm.personnel_contractendtime,
+		pm.personnel_workage,
+		pm.personnel_seniority,
+		pm.personnel_state,
+		pm.personnel_remark,
+		pm.personnel_accounttype,
+		pm.enable_flag,
+		pm.create_user,
+		date_format(pm.create_timestamp,'%Y-%m-%d %H:%i:%s') as create_timestamp_str,
+		pm.create_timestamp,
+		pm.last_update_user,
+		date_format(pm.last_update_timestamp,'%Y-%m-%d %H:%i:%s') as last_update_timestamp_str,
+		pm.last_update_timestamp,
+		pm.leave_type,
+		pm.leave_time,
+		date_format(pm.leave_time,'%Y-%m-%d %H:%i:%s') as leave_time_str,
+		pm.personnel_QQ,
+		pm.personnel_enter_state,
+		pm.flow1,
+		pm.flow2,
+		pm.flow3,
+		pm.flow4,
+		pm.flow5
+		from
+
+		pm_personnel pm,sys_post post,sys_dept dept
+
+		WHERE
+
+		pm.personnel_postId=post.post_id
+
+		AND
+
+		post.post_deptId=dept.dept_id
+
+		AND
+
+		pm.personnel_deptId=dept.dept_id
+		
+		AND
+
+		post.post_number=#{post_number}
+
+		AND
+
+		dept.dept_id=#{dept_Id}  and pm.enable_flag=1
+	</select>
+	<!--getApplyInfo获取贷款申请权限-->
+	<select id="getApplyInfo" parameterType="int" resultType="java.util.HashMap">
+				SELECT
+				post_id
+		FROM
+			sys_post
+		WHERE
+			post_id = (
+				SELECT
+					personnel_postId
+				FROM
+					pm_personnel
+				WHERE
+					personnel_id =#{salesman_id}
+			)
+		AND post_number IN ('KHJL', 'TDJL', 'MDJL','JXTDJL')
+		AND enable_flag = 0
+	</select>
+	<!--getApplyInfobyDept获取贷款申请权限-->
+	<select id="getApplyInfobyDept" parameterType="map" resultType="int">
+		select  FIND_IN_SET(#{dept_id},queryChildrenDeptInfoAll((select dept_id from sys_dept where  dept_code =#{top_dept_code} and enable_flag=1 LIMIT 0,1)))>0
+	</select>
+	<!-- 获取用户权限 -->
+	<select id="getJurisdictionInfo" parameterType="int" resultType="String">
+		SELECT  menu_id from sys_user_role r, sys_role_menu_function f where user_id=#{personnel_id} and f.role_id=r.role_id
+	</select>
+	
+	<!-- 获取特殊菜单项  -->
+	<select id="getSpecialMenuInfosMoa" parameterType="int" resultType="map">
+		SELECT
+			DISTINCT
+			m.menu_remark as menu_code,
+			m.menu_name,
+			m.menu_level,m.menu_sort,
+		    (case  when m.menu_remark like "D0301%" or m.menu_remark like "D0302%" or m.menu_remark like "D0303%"  then 1 when t.role_id is null then 0 else 1 end )as menu_is_show
+		FROM
+			sys_menu m
+			left join (
+				select rm.role_id,rm.menu_id,r.user_id from sys_role_menu_function rm,sys_user_role r where r.role_id = rm.role_id
+			) t on m.id=t.menu_id	and t.user_id = #{personnel_id}		
+			WHERE LEFT(m.menu_remark,3) = 'D03'
+		order by m.menu_remark,m.menu_sort
+	</select>
+	<!--getBizDataAuthority获取数据权限-->
+	<select id="getBizDataAuthority" parameterType="map" resultType="java.lang.String">
+		select queryChildrenDeptInfoLevel(#{personnel_id},(SELECT  GROUP_CONCAT(id) from sys_menu where find_in_set(menu_remark,#{menu_code})),#{dept_level})
+	</select>
+	
+	<!-- 成员按照金额排名-->
+	<select id="getBizTeamAmountRanking" parameterType="map" resultType="map">
+		SET @last_month_day = DATE_SUB(CONCAT(#{date_info},'-01'),INTERVAL 1 MONTH);
+		SET @last_month =DATE_FORMAT(@last_month_day,'%Y-%m');
+		SELECT 
+			CAST(
+				@x:=@x+1
+			AS CHAR) 
+			AS ranking_info,
+			CONCAT(ar.personnel_name,ar.personnel_shortCode) AS salesman_name,
+			REPLACE(CAST(ar.amount/10000 AS DECIMAL(10,2)),'.00','') AS appro_limit,
+			CAST((SELECT (CASE WHEN ar.amount=0 THEN 0 ELSE lar.last_ranking - @x END)
+			FROM(
+				######################################################################
+				SELECT 
+					@y:=@y+1 AS last_ranking,
+					ar.personnel_id,
+					ar.personnel_name,
+					ar.personnel_shortCode,
+					ar.amount
+				FROM (
+					SELECT
+						@y:=0,
+						p.*,
+						SUM(IFNULL(nw.appro_limit,0)) AS amount
+					FROM 
+					(SELECT 
+						pp.personnel_id,
+						pp.personnel_name,
+						pp.personnel_shortCode
+					FROM pm_personnel pp
+					INNER JOIN (
+						SELECT 
+							d.dept_id
+						FROM  sys_dept d
+						WHERE
+							d.enable_flag=1
+							<if test="is_range=='3'.toString()">
+								AND d.dept_pid =31
+								AND FIND_IN_SET(d.dept_id,#{dataAuthority})
+							</if>
+							<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+								AND d.dept_code =#{dept_info}
+							</if>
+						UNION ALL
+						SELECT 
+							de.dept_id
+						FROM sys_dept de 
+						WHERE 
+							de.enable_flag=1
+							AND de.dept_pid IN(
+								SELECT 
+									d.dept_id 
+								FROM  sys_dept d
+								WHERE
+									d.enable_flag=1
+									<if test="is_range=='3'.toString()">
+										AND d.dept_pid =31
+									</if>
+									<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+										AND d.dept_code =#{dept_info}
+									</if>
+							)
+							<if test="is_range=='3'.toString()">
+								AND FIND_IN_SET(de.dept_id,#{dataAuthority})
+							</if>
+						) AS dept ON  pp.personnel_deptId = dept.dept_id AND pp.enable_flag = 1
+					) AS p 
+					LEFT JOIN wms_cre_credit_notary_warn nw ON nw.salesman_shortcode = p.personnel_shortCode
+					AND DATE_FORMAT(nw.protocol_date,'%Y-%m') = @last_month AND nw.is_achievement = '1'
+					GROUP BY p.personnel_shortCode,DATE_FORMAT(protocol_date,'%Y-%m')
+					ORDER BY amount DESC,convert(personnel_name using gbk) ASC
+					) AS ar
+				########################################################################
+			) AS lar
+			WHERE lar.personnel_id = ar.personnel_id
+			) AS CHAR ) AS change_situation 
+		FROM (
+			SELECT
+				@x:=#{x},
+				p.*,
+				SUM(IFNULL(nw.appro_limit,0)) AS amount
+			FROM 
+			(SELECT 
+				pp.personnel_id,
+				pp.personnel_name,
+				pp.personnel_shortCode
+			FROM pm_personnel pp
+			INNER JOIN (
+					SELECT 
+						d.dept_id
+					FROM  sys_dept d
+					WHERE
+						d.enable_flag=1
+						<if test="is_range=='3'.toString()">
+							AND d.dept_pid =31
+							AND FIND_IN_SET(d.dept_id,#{dataAuthority})
+						</if>
+						<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+							AND d.dept_code =#{dept_info}
+						</if>
+					UNION ALL
+					SELECT 
+						de.dept_id
+					FROM sys_dept de 
+					WHERE 
+						de.enable_flag=1
+						AND de.dept_pid IN(
+							SELECT 
+								d.dept_id 
+							FROM  sys_dept d
+							WHERE
+								d.enable_flag=1
+								<if test="is_range=='3'.toString()">
+									AND d.dept_pid =31
+								</if>
+								<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+									AND d.dept_code =#{dept_info}
+								</if>
+						)
+						<if test="is_range=='3'.toString()">
+							AND FIND_IN_SET(de.dept_id,#{dataAuthority})
+						</if>
+					) AS dept ON  pp.personnel_deptId = dept.dept_id AND pp.enable_flag = 1
+			) AS p 
+			LEFT JOIN wms_cre_credit_notary_warn nw ON nw.salesman_shortcode = p.personnel_shortCode
+			AND DATE_FORMAT(nw.protocol_date,'%Y-%m') = #{date_info} AND nw.is_achievement = '1'
+			GROUP BY p.personnel_shortCode,DATE_FORMAT(protocol_date,'%Y-%m')
+			ORDER BY amount DESC,convert(personnel_name using gbk) ASC
+			) AS ar
+		<if test="offset != null and pagesize != null">
+            LIMIT ${offset}, ${pagesize}
+        </if>
+	</select>
+	<!-- 成员按照件数排名 -->
+	<select id="getBizTeamNumberRanking" parameterType="map" resultType="map">
+		SET @last_month_day = DATE_SUB(CONCAT(#{date_info},'-01'),INTERVAL 1 MONTH);
+		SET @last_month =DATE_FORMAT(@last_month_day,'%Y-%m');
+		SELECT 
+			CAST(
+				@x:=@x+1 
+			AS CHAR)
+			AS ranking_info,
+			#ar.personnel_id,
+			CONCAT(ar.personnel_name,ar.personnel_shortCode) AS salesman_name,
+			CAST(
+				ar.amount
+			AS CHAR)
+			AS number_sum,
+			CAST((SELECT (CASE WHEN ar.amount=0 THEN 0 ELSE lar.last_ranking - @x END)
+			FROM(
+				######################################################################
+				SELECT 
+					@y:=@y+1 AS last_ranking,
+					ar.personnel_id,
+					ar.personnel_name,
+					ar.personnel_shortCode,
+					ar.amount
+				FROM (
+					SELECT
+						@y:=0,
+						p.*,
+						#SUM(CASE WHEN nw.appro_limit IS NULL THEN 0 ELSE 1 END) AS amount
+						SUM(CASE WHEN nw.appro_limit IS NOT NULL AND bill_code_group IS NULL THEN 1 ELSE 0 END) + COUNT(DISTINCT nw.bill_code_group) AS amount
+					FROM 
+					(SELECT 
+						pp.personnel_id,
+						pp.personnel_name,
+						pp.personnel_shortCode
+					FROM pm_personnel pp
+					INNER JOIN (
+							SELECT 
+								d.dept_id
+							FROM  sys_dept d
+							WHERE
+								d.enable_flag=1
+								<if test="is_range=='3'.toString()">
+									AND d.dept_pid =31
+									AND FIND_IN_SET(d.dept_id,#{dataAuthority})
+								</if>
+								<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+									AND d.dept_code =#{dept_info}
+								</if>
+							UNION ALL
+							SELECT 
+								de.dept_id
+							FROM sys_dept de 
+							WHERE 
+								de.enable_flag=1
+								AND de.dept_pid IN(
+									SELECT 
+										d.dept_id 
+									FROM  sys_dept d
+									WHERE
+										d.enable_flag=1
+										<if test="is_range=='3'.toString()">
+											AND d.dept_pid =31
+										</if>
+										<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+											AND d.dept_code =#{dept_info}
+										</if>
+								)
+								<if test="is_range=='3'.toString()">
+									AND FIND_IN_SET(de.dept_id,#{dataAuthority})
+								</if>
+							) AS dept ON  pp.personnel_deptId = dept.dept_id AND pp.enable_flag = 1
+					) AS p 
+					LEFT JOIN wms_cre_credit_notary_warn nw ON nw.salesman_shortcode = p.personnel_shortCode
+					AND DATE_FORMAT(nw.protocol_date,'%Y-%m') = @last_month AND nw.is_achievement = '1'
+					GROUP BY p.personnel_shortCode,DATE_FORMAT(protocol_date,'%Y-%m')
+					ORDER BY amount DESC,convert(personnel_name using gbk) ASC
+					) AS ar
+				########################################################################
+			) AS lar
+			WHERE lar.personnel_id = ar.personnel_id
+			) AS CHAR ) AS change_situation 
+		FROM (
+			SELECT
+				@x:=#{x},
+				p.*,
+				#SUM(CASE WHEN nw.appro_limit IS NULL THEN 0 ELSE 1 END) AS amount
+				SUM(CASE WHEN nw.appro_limit IS NOT NULL AND bill_code_group IS NULL THEN 1 ELSE 0 END) + COUNT(DISTINCT nw.bill_code_group) AS amount
+			FROM 
+			(SELECT 
+				pp.personnel_id,
+				pp.personnel_name,
+				pp.personnel_shortCode
+			FROM pm_personnel pp
+			INNER JOIN (
+					SELECT 
+						d.dept_id
+					FROM  sys_dept d
+					WHERE
+						d.enable_flag=1
+						<if test="is_range=='3'.toString()">
+							AND d.dept_pid =31
+							AND FIND_IN_SET(d.dept_id,#{dataAuthority})
+						</if>
+						<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+							AND d.dept_code =#{dept_info}
+						</if>
+					UNION ALL
+					SELECT 
+						de.dept_id
+					FROM sys_dept de 
+					WHERE 
+						de.enable_flag=1
+						AND de.dept_pid IN(
+							SELECT 
+								d.dept_id 
+							FROM  sys_dept d
+							WHERE
+								d.enable_flag=1
+								<if test="is_range=='3'.toString()">
+									AND d.dept_pid =31
+								</if>
+								<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+									AND d.dept_code =#{dept_info}
+								</if>
+						)
+						<if test="is_range=='3'.toString()">
+							AND FIND_IN_SET(de.dept_id,#{dataAuthority})
+						</if>
+					) AS dept ON  pp.personnel_deptId = dept.dept_id AND pp.enable_flag = 1
+			) AS p 
+			LEFT JOIN wms_cre_credit_notary_warn nw ON nw.salesman_shortcode = p.personnel_shortCode
+			AND DATE_FORMAT(nw.protocol_date,'%Y-%m') = #{date_info} AND nw.is_achievement = '1'
+			GROUP BY p.personnel_shortCode,DATE_FORMAT(protocol_date,'%Y-%m')
+			ORDER BY amount DESC,convert(personnel_name using gbk) ASC
+			) AS ar
+		<if test="offset != null and pagesize != null">
+            LIMIT ${offset}, ${pagesize}
+       	</if>
+	</select>
+	<!-- 根据某月统计开单人数（公司、门店、团队） -->
+	<select id="calBillingNumber" resultType="map" parameterType="map">
+		SELECT 
+			CAST(SUM(CASE WHEN amount=0 THEN 0 ELSE 1 END) AS CHAR) AS billing_number,
+			CAST(COUNT(ar.personnel_id) AS CHAR) AS billing_number_total
+		FROM (
+			SELECT
+				p.*,
+				SUM(CASE WHEN nw.appro_limit IS NULL THEN 0 ELSE 1 END) AS amount
+			FROM 
+			(SELECT 
+				pp.personnel_id,
+				pp.personnel_name,
+				pp.personnel_shortCode
+			FROM pm_personnel pp
+			INNER JOIN (
+					SELECT 
+						d.dept_id
+					FROM  sys_dept d
+					WHERE
+						d.enable_flag=1
+						<if test="is_range=='3'.toString()">
+							AND d.dept_pid =31
+							AND FIND_IN_SET(d.dept_id,#{dataAuthority})
+						</if>
+						<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+							AND d.dept_code =#{dept_info}
+						</if>
+					UNION ALL
+					SELECT 
+						de.dept_id
+					FROM sys_dept de 
+					WHERE 
+						de.enable_flag=1
+						AND de.dept_pid IN(
+							SELECT 
+								d.dept_id 
+							FROM  sys_dept d
+							WHERE
+								d.enable_flag=1
+								<if test="is_range=='3'.toString()">
+									AND d.dept_pid =31
+								</if>
+								<if test="is_range=='2'.toString() or is_range=='1'.toString()">
+									AND d.dept_code =#{dept_info}
+								</if>
+						)
+						<if test="is_range=='3'.toString()">
+							AND FIND_IN_SET(de.dept_id,#{dataAuthority})
+						</if>
+					) AS dept ON  pp.personnel_deptId = dept.dept_id AND pp.enable_flag = 1
+			) AS p 
+			LEFT JOIN wms_cre_credit_notary_warn nw ON nw.salesman_shortcode = p.personnel_shortCode
+			AND DATE_FORMAT(nw.protocol_date,'%Y-%m') = #{date_info} AND nw.is_achievement = '1'
+			GROUP BY p.personnel_shortCode,DATE_FORMAT(protocol_date,'%Y-%m')
+			ORDER BY amount DESC,personnel_name ASC
+			) AS ar
+	</select>
+	
+</mapper> 

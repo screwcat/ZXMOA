@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsCreCreditNotificationMessageDao">
+	<select id="getMessage" parameterType="map" resultType="int">
+	    SELECT 
+	    	COUNT(wms_cre_credit_notification_message_id ) 
+	    FROM 
+	    	wms_cre_credit_notification_message 
+	    WHERE 
+	   		personnel_id = #{user_id} 
+	    AND 
+	    	is_read = 1 
+	    AND 
+	    	enable_flag ='1'
+	    AND 
+	    	FIND_IN_SET(app_name,#{app_name})
+	</select>
+	
+	<select id="searchMessageList" parameterType="map" resultType="java.util.HashMap">
+	    SELECT 
+	    	wms_cre_credit_notification_message_id,
+	    	bill_code,
+	    	wms_cre_credit_head_id,
+	    	notification_message,
+	    	personnel_id,
+	    	personnel_shortCode,
+	    	personnel_name,
+	    	is_read,
+	    	bill_status,
+	    	create_user_id,
+	    	create_user_name,
+	    	create_timestamp,
+	    	date_format(create_timestamp,'%Y-%m-%d') as create_timestamp_str,
+	    	last_update_user_id,
+	    	last_update_timestamp,
+	    	enable_flag 
+	    FROM
+	    	wms_cre_credit_notification_message
+	    WHERE 
+	    	personnel_id=#{userId}
+	    AND 
+	    	enable_flag='1'
+	    AND  
+	        FIND_IN_SET(app_name,#{app_name})
+	    ORDER BY 
+	    	wms_cre_credit_notification_message_id
+	    DESC
+	</select>
+	
+	<delete id="deleteMessage" parameterType="int">
+	    DELETE 
+	    FROM 
+	    	wms_cre_credit_notification_message 
+	    WHERE 
+	    	enable_flag='1'
+	    AND 
+	    	wms_cre_credit_notification_message_id = #{messageid}
+	    
+	</delete>
+	
+	
+	
+	<select id="getMessageForFour" parameterType="map" resultType="int">
+	    SELECT 
+	    	COUNT(wms_cre_credit_notification_message_id ) 
+	    FROM 
+	    	wms_cre_credit_notification_message 
+	    WHERE 
+	   		personnel_id = #{user_id} 
+	   	AND  
+	   		FIND_IN_SET(app_name,#{app_name})
+	    AND 
+	    	is_read = 1 
+	    AND 
+	    	enable_flag ='1'
+	</select>
+	
+	<select id="searchMessageListForFour" parameterType="map" resultType="java.util.HashMap">
+	    SELECT 
+	    	wms_cre_credit_notification_message_id,
+	    	bill_code,
+	    	wms_cre_credit_head_id,
+	    	notification_message,
+	    	personnel_id,
+	    	personnel_shortCode,
+	    	personnel_name,
+	    	is_read,
+	    	bill_status,
+	    	create_user_id,
+	    	create_user_name,
+	    	create_timestamp,
+	    	date_format(create_timestamp,'%Y-%m-%d') as create_timestamp_str,
+	    	last_update_user_id,
+	    	last_update_timestamp,
+	    	enable_flag 
+	    FROM
+	    	wms_cre_credit_notification_message
+	    WHERE 
+	    	personnel_id=#{user_id}
+	    AND  
+	    	FIND_IN_SET(app_name,#{app_name})
+	    AND 
+	    	enable_flag='1'
+	    ORDER BY 
+	    	wms_cre_credit_notification_message_id
+	    DESC
+	</select>
+</mapper> 

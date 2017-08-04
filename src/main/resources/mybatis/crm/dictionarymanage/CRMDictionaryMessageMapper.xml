@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.crm.dictionarymanage.persist.DictionaryDao">
+   <select id="selectDictByCode" parameterType="map" resultType="com.zx.moa.crm.dictionarymanage.vo.SysDictData">
+    select
+      sdd.sys_dict_data_id,
+      sdd.value_meaning
+     from 
+     sys_dict_data sdd 
+     left join 
+     sys_dict sd
+     on sd.sys_dict_id = sdd.sys_dict_id
+     <where>
+       sd.dict_code=#{dict_code}
+       and 
+       sdd.enable_flag="1"
+       </where>
+        order by sdd.sort_number asc , sdd.sys_dict_data_id asc
+   </select>
+   
+   
+</mapper>

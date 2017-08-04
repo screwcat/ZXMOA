@@ -1,0 +1,597 @@
+package com.zx.moa.ioa.timeAttendance.service.impl;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.zx.moa.ioa.timeAttendance.persist.AttendanceDao;
+import com.zx.moa.ioa.timeAttendance.service.IAttendanceService;
+import com.zx.moa.ioa.util.CheckingUtil;
+import com.zx.moa.ioa.util.PushManage;
+import com.zx.moa.util.GlobalVal;
+import com.zx.moa.util.gen.entity.ioa.PmPersonnel;
+import com.zx.moa.util.gen.entity.wms.SysDept;
+
+@Service("IAttendanceService")
+public class IAttendanceServiceImpl implements IAttendanceService
+{
+
+    @Autowired
+    private AttendanceDao attendanceDao;
+
+    @Override
+    public List<Map<String, Object>> getAttendanceList(HttpServletRequest request, int month_add)
+    {
+        List<Map<String, Object>> reslist = null;
+        String date_start = "";
+        String date_end = "";
+        // 获取当前登录人
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        if (month_add == 0)
+        {// 当月
+         // 获取当前月第一天：
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.MONTH, month_add);
+            c.set(Calendar.DAY_OF_MONTH, 1);
+            date_start = format.format(c.getTime());
+
+            // 获取当前月最后一天
+            Calendar ca = Calendar.getInstance();
+            ca.set(Calendar.DAY_OF_MONTH, ca.getActualMaximum(Calendar.DAY_OF_MONTH));
+            date_end = format.format(ca.getTime());
+        }
+        else
+        {// 上月
+         // 获取前月的第一天
+            Calendar cal_1 = Calendar.getInstance();
+            cal_1.add(Calendar.MONTH, month_add);
+            cal_1.set(Calendar.DAY_OF_MONTH, 1);
+            date_start = format.format(cal_1.getTime());
+            // 获取前月的最后一天
+            Calendar cale = Calendar.getInstance();
+            cale.add(Calendar.MONTH, month_add + 1);
+            cale.set(Calendar.DAY_OF_MONTH, 0);
+            date_end = format.format(cale.getTime());
+        }
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("attendance_code", pm.getPersonnel_shortcode());
+        map.put("date_start", date_start);
+        map.put("date_end", date_end);
+
+        reslist = attendanceDao.getAttendanceList(map);
+
+        for (Map<String, Object> ma : reslist)
+        {
+            if (ma.get("attendance_workEnd") == null)
+            {
+                ma.put("attendance_workEnd", "");
+            }
+
+            if (ma.get("attendance_workStart") == null)
+            {
+                ma.put("attendance_workStart", "");
+            }
+        }
+
+        for (Map<String, Object> m : reslist)
+        {
+            // 根据上班日期 往map放星期
+            try
+            {
+                m.put("attendance_week", getWeekday(m.get("attendance_date").toString()));
+            }
+            catch (Throwable e)
+            {
+                e.printStackTrace();
+            }
+
+            /*switch (Integer.parseInt(m.get("attentdance_status").toString())) {
+            case 0:
+            case 3:
+            m.put("attentdance_status", "03");
+            m.put("attentdance_status_name", "正常");
+            case 1:
+            case 2:
+            case 8:
+            case 11:
+            case '3,1':
+            case '1,3':
+            m.put("attentdance_status", "128");
+            m.put("attentdance_status_name", "未打卡");
+            case 9:
+            case 14:
+            case '3,9':
+            case '9,3':
+            }*/
+
+            if ("0".equals(m.get("attentdance_status").toString()) || "3".equals(m.get("attentdance_status").toString()) || "5".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "03");
+                m.put("attentdance_status_name", "正常");
+            }
+            else if ("1".equals(m.get("attentdance_status").toString()) || "2".equals(m.get("attentdance_status").toString()) || "8".equals(m.get("attentdance_status").toString()) || "11".equals(m.get("attentdance_status").toString()) || "3,1".equals(m.get("attentdance_status").toString()) || "1,3".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "128");
+                m.put("attentdance_status_name", "未打卡");
+            }
+            else if ("9".equals(m.get("attentdance_status").toString()) || "14".equals(m.get("attentdance_status").toString()) || "3,9".equals(m.get("attentdance_status").toString()) || "9,3".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "9");
+                m.put("attentdance_status_name", "迟到");
+            }
+            else if ("10,3".equals(m.get("attentdance_status").toString()) || "3,10".equals(m.get("attentdance_status").toString()) || "10".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "10");
+                m.put("attentdance_status_name", "早退");
+            }
+            else if ("2,9".equals(m.get("attentdance_status").toString()) || "9,2".equals(m.get("attentdance_status").toString()) || "13".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "92");
+                m.put("attentdance_status_name", "迟到、未打卡");
+            }
+            else if ("1,10".equals(m.get("attentdance_status").toString()) || "10,1".equals(m.get("attentdance_status").toString()) || "12".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "110");
+                m.put("attentdance_status_name", "未打卡、早退");
+            }
+            else if ("9,10".equals(m.get("attentdance_status").toString()) || "10,9".equals(m.get("attentdance_status").toString()) || "9,10,3".equals(m.get("attentdance_status").toString()) || "10,9,3".equals(m.get("attentdance_status").toString()) || "15".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "910");
+                m.put("attentdance_status_name", "迟到、早退");
+            }
+            else if ("4".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "4");
+                m.put("attentdance_status_name", "请假");
+            }
+            else if ("6".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "6");
+                m.put("attentdance_status_name", "调休");
+            }
+            else if ("7".equals(m.get("attentdance_status").toString()))
+            {
+                m.put("attentdance_status", "7");
+                m.put("attentdance_status_name", "出差");
+            }
+
+        }
+        return reslist;
+    }
+
+    /**
+    * 指定日期 判断是星期几
+    * @param date
+    * @return
+    */
+    public static String getWeekday(String date)
+    {// 必须yyyy-MM-dd
+
+        SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");
+
+        SimpleDateFormat sdw = new SimpleDateFormat("E", Locale.CHINESE);
+
+        java.util.Date d = null;
+
+        try
+        {
+
+            d = sd.parse(date);
+
+        }
+        catch (ParseException e)
+        {
+
+            e.printStackTrace();
+
+        }
+
+        return sdw.format(d);
+
+    }
+
+    /**
+     * @Title: getAttendanceList
+     * @Description: MOA_OUT_003 读取申请表单
+     * @param request
+     * @param apply_type_id
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月5日 下午3:35:26
+     * history:
+     * 1、2017年7月5日 zhaowei 创建方法
+    */
+    @SuppressWarnings("null")
+    @Override
+    public Map<String, Object> getOrderAppleFrom(HttpServletRequest request, int apply_type_id)
+    {
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+
+        // 事假31、病假32、年假33、产假34、婚假35、丧假36、工伤假37、哺乳假38、护理假39、路程假54、27补签申请、29调休申请、28.酬勤申请、52.出差申请、64.项目酬勤申请
+        // 返回集合(一级)
+        Map<String, Object> resMap = new HashMap<String, Object>();
+        // 申请类型(二级)
+        List<Map<String, Object>> apply_type_list = new ArrayList<Map<String, Object>>();
+        // 请假限制集合
+        List<Map<String, Object>> holiList = findVacateSetting(pm);
+        // 当前月份第一天跟最后一天
+        Map<String, Object> MonthFeistAndFinal = CheckingUtil.getMonthFeistAndFinal();
+        // 班次信息(默认当天)
+        List<Map<String, Object>> shiftMap = getVolumeInfo(CheckingUtil.getNow(), CheckingUtil.getNow(), pm.getPersonnel_id());
+        // 没有班次 直接返回
+        if (shiftMap != null && shiftMap.size() > 0)
+        {
+            return null;
+        }
+        String day_type = shiftMap.get(0).get("day_type").toString(); // 0工作1休息2节假
+        String start = "";
+        String off = "";
+        String start1 = shiftMap.get(0).get("start1").toString();
+        String start2 = shiftMap.get(0).get("start2").toString();
+        String off1 = shiftMap.get(0).get("off1").toString();
+        String off2 = shiftMap.get(0).get("off2").toString();
+        String rest1 = shiftMap.get(0).get("rest1").toString();
+        String rest2 = shiftMap.get(0).get("rest2").toString();
+
+        // 是时间段 上班时间取后面的
+        if (start2 == "" || start2 == null)
+        {
+            start = start1;
+        }
+        else
+        {
+            start = start2;
+        }
+        // 是时间段 下班时间取后面的
+        if (off2 == "" || off2 == null)
+        {
+            off = off1;
+        }
+        else
+        {
+            off = off2;
+        }
+        // 工作时间(默认当天)
+        long workTime = 0;
+
+        // 获取当前登录人信息(二级)
+        resMap.put("personnel_name", pm.getPersonnel_name());
+        resMap.put("personnel_shortcode", pm.getPersonnel_shortcode());
+        resMap.put("personnel_deptname", pm.getPersonnel_deptname());
+        resMap.put("personnel_postname", pm.getPersonnel_postname());
+        resMap.put("personnel_trialStartTime", pm.getPersonnel_trialstarttime());
+
+        // 试用员工 只有事假病假
+        String personnel_state = pm.getPersonnel_state();
+        if ("0".equals(personnel_state))
+        {
+            // 事假放入集合
+            if (true)
+            {
+                // 每个月的总额度 不扣除使用(请假没有申请次数 -- 无限制)
+                Integer holi_dayAll = 0;
+                // 公休假标示0 有效1无效
+                String general_holiday = "1";
+                // 法定假标示0 有效1无效
+                String legal_holiday = "1";
+                // 事假 限制集合
+                Map<String, Object> thingMap = getSelectBase(holiList, 31);
+
+                if (thingMap.get("general_holiday") != null)
+                {
+                    general_holiday = thingMap.get("general_holiday").toString();
+                }
+                if (thingMap.get("legal_holiday") != null)
+                {
+                    legal_holiday = thingMap.get("legal_holiday").toString();
+                }
+                getRealTime(start, off, rest1, rest2, general_holiday, legal_holiday, day_type);
+                holi_dayAll = Integer.parseInt(thingMap.get("holi_day").toString());
+                // 当前月份请假总时间(小时)
+                Integer historyTime = findTimeVacateHistory(pm.getPersonnel_id() + "", MonthFeistAndFinal.get("date_start") + "", MonthFeistAndFinal.get("date_end") + "", 31);
+                Integer holi_day = holi_dayAll - historyTime;
+                AddList(31, "事假", holi_day, null, apply_type_list);
+            }
+
+            // AddList(32, "病假", holi_day, null, apply_type_list);
+
+        }
+        return resMap;
+    }
+
+    /**
+     * @Title: getSelectBase
+     * @Description: 获取对应请假类型的限制配置
+     * @param holiList
+     * @param holi_type
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 上午10:58:25
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public Map<String, Object> getSelectBase(List<Map<String, Object>> holiList, Integer holi_type)
+    {
+        Map<String, Object> selectBase = new HashMap<String, Object>();
+        // 遍历获取所选择的请假类型 限制集合
+        for (Map<String, Object> m : holiList)
+        {
+            if ((holi_type + "").equals(m.get("holi_type")))
+            {
+                selectBase = m;
+                break;
+            }
+        }
+        return selectBase;
+    }
+
+    /**
+     * @Title: AddList
+     * @Description: 往list塞数据
+     * @param apply_type_id
+     * @param apply_type_name
+     * @param holi_day
+     * @param holi_count
+     * @param list
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月5日 下午5:19:18
+     * history:
+     * 1、2017年7月5日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> AddList(Integer apply_type_id, String apply_type_name, long holi_day, Integer holi_count, List<Map<String, Object>> list)
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("apply_type_id", apply_type_id);
+        map.put("apply_type_name", apply_type_name);
+        map.put("holi_day", holi_day);
+        map.put("holi_count", holi_count);
+        list.add(map);
+        return list;
+    };
+
+    /**
+     * @Title: findVacateSetting
+     * @Description: 获取请假时间次数限制
+     * @param personnel_id
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月5日 下午6:01:30
+     * history:
+     * 1、2017年7月5日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> findVacateSetting(PmPersonnel pmPersonnel)
+    {
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        if (pmPersonnel == null)
+        {
+            return null;
+        }
+        List<Map<String, Object>> vacates = attendanceDao.findAllVacateSetting();
+        Integer dept_id = pmPersonnel.getPersonnel_deptid();
+        List<Map<String, Object>> deptMaps = attendanceDao.findAllDept();
+        List<SysDept> depts = getSysDeptList(deptMaps);
+        Map<Integer, List<Map<String, Object>>> vMap = doVacateSetting(vacates);
+        List<Integer> vIds = new ArrayList<Integer>();
+        while (dept_id != null && !dept_id.equals(0))
+        {
+            SysDept dept = findDeptByid(dept_id, depts);
+            List<Map<String, Object>> list = vMap.get(dept_id);
+            if (list != null)
+            {
+                for (Map<String, Object> map : list)
+                {
+                    Integer holi_type = (Integer) map.get("holi_type");
+                    if (!vIds.contains(holi_type))
+                    {
+                        vIds.add(holi_type);
+                        result.add(map);
+                    }
+                }
+            }
+            dept_id = dept.getDept_pid();
+        }
+        return result;
+    }
+
+    private List<SysDept> getSysDeptList(List<Map<String, Object>> list)
+    {
+        List<SysDept> result = new ArrayList<SysDept>();
+        for (Map<String, Object> map : list)
+        {
+            try
+            {
+                SysDept dept = CheckingUtil.MapToBean(map, SysDept.class);
+                result.add(dept);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 处理请假参考数据
+     * 根据部门id进行分类
+     * @param vacates
+     * @return
+     */
+    private Map<Integer, List<Map<String, Object>>> doVacateSetting(List<Map<String, Object>> vacates)
+    {
+        Map<Integer, List<Map<String, Object>>> result = new HashMap<Integer, List<Map<String, Object>>>();
+        for (Map<String, Object> map : vacates)
+        {
+            Integer deptid = (Integer) map.get("organization_id");
+            List<Map<String, Object>> list = result.get(deptid);
+            if (list == null)
+            {
+                list = new ArrayList<Map<String, Object>>();
+                result.put(deptid, list);
+            }
+            list.add(map);
+        }
+        return result;
+    }
+
+    private SysDept findDeptByid(Integer id, List<SysDept> depts)
+    {
+        for (SysDept d : depts)
+        {
+            if (d.getDept_id().equals(id))
+            {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @Title: findTimeVacateHistory
+     * @Description: 获取请假历史数据集合
+     * @param personnel_id
+     * @param vacateS
+     * @param vacateE
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 上午11:06:24
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public Integer findTimeVacateHistory(String personnel_id, String vacateS, String vacateE, int hoil_type)
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("personnel_id", personnel_id);
+        map.put("vacateS", vacateS);
+        map.put("vacateE", vacateE);
+        map.put("hoil_type", hoil_type);
+        // 返回小时数
+        Integer VacateHistory = attendanceDao.findTimeVacateHistory(map);
+        return VacateHistory;
+    }
+
+    /**
+     * @Title: getVolumeInfo
+     * @Description: 获取这段时间内的个人排班
+     * @param date_start
+     * @param date_end
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 下午1:27:06
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public List<Map<String, Object>> getVolumeInfo(String date_start, String date_end, Integer personnel_id)
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("date_start", date_start);
+        map.put("date_end", date_end);
+        map.put("personnel_id", personnel_id);
+        return attendanceDao.getVolumeInfo(map);
+    }
+
+    /**
+     * @Title: getRealTime
+     * @Description: 算出一天工作小时数 也可以算出请假小时数
+     * @param s 上班时间(请假开始时间) 格式09:00
+     * @param e 下班时间(请假结束时间) 格式18:00
+     * @param r1 午休开始时间  格式12:00
+     * @param r2 午休结束时间  格式13:00
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 下午1:45:01
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public static long getRealTime(String s, String e, String r1, String r2, String general_holiday, String legal_holiday, String day_type)
+    {
+        long overTime = 0;
+        String start_work = s;
+        String off_work = e;
+        if (start_work.compareTo(r1) < 0)
+        {
+            if (off_work.compareTo(r1) > 0)
+            {
+                overTime += CheckingUtil.calculateTwoTime(r1, start_work);
+                if (off_work.compareTo(r2) > 0)
+                {
+                    overTime += CheckingUtil.calculateTwoTime(off_work, r2);
+                }
+            }
+            else
+            {
+                long ot = CheckingUtil.calculateTwoTime(off_work, start_work);
+                overTime += ot < 0 ? 0 : ot;
+            }
+        }
+        else if (start_work.compareTo(r2) < 0)
+        {
+            if (off_work.compareTo(r2) > 0)
+            {
+                overTime += CheckingUtil.calculateTwoTime(off_work, r2);
+            }
+        }
+        else
+        {
+            overTime += CheckingUtil.calculateTwoTime(off_work, start_work);
+        }
+
+        if ("0".equals(day_type))
+        {
+            // 工作日 肯定有工作时间
+            return overTime / (1000 * 60 * 60);
+        }
+        else if ("1".equals(day_type) && "0".equals(general_holiday))
+        {
+            // 休息日 看general_holiday g==0 正常上班有工作时间
+            return overTime / (1000 * 60 * 60);
+        }
+        else if ("2".equals(day_type) && "0".equals(legal_holiday))
+        {
+            // 节假日 看legal_holiday l==0 正常上班有工作时间
+            return overTime / (1000 * 60 * 60);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    /**
+     * @Title: timeAttendance
+     * @Description: 考勤异常提醒
+     * @author: sunlq
+     * @time:2017年7月5日 下午5:34:48
+     * @see com.zx.moa.ioa.timeAttendance.service.IAttendanceService#timeAttendance()
+     * history:
+     * 1、2017年7月5日 sunlq 创建方法
+     */
+    @Override
+    public void timeAttendance()
+    {
+        List<Map<String, Object>> list = attendanceDao.getWarnAttendancePersonnelList();
+        // 循环
+        for (Map<String, Object> map : list)
+        {
+            PushManage.pushMessageByMsgContext(PushManage.DEF_APP_NAME, "【提醒】考勤异常。", map.get("alias").toString(), null, map);
+        }
+    }
+
+}

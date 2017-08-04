@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport"content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="shortcut icon" href="/MOA/resources/images/logo_16.ico" type="image/x-icon" />
+<!-- <script type="text/javascript" src="/MOA/resources/js/zx-all.js"></script> -->
+<script type="text/javascript">
+$(function(){
+// 	initdatas();
+});
+var home_page = 1;
+var home_size = 10;
+
+var sortname = "bill_code";
+var bill_status = "C";
+
+function initdatas(){
+	initForm();
+	 /* $('#pp1').on('click',function(){
+		 window.history.back();
+	 }); */
+	 initWmsAboutMeDrop();
+}
+//初始化页面信息
+function initForm(){
+	$('#whc_datas').datashow({
+		//不同分别率下显示个数
+		colsize:{'col-xs-':1,'col-sm-':1,'col-md-':1,'col-lg-':1,'col-xl-':1},
+		//是否使用上拉刷新和下拉加载
+		isScroll:true,
+		datas_wapper:'whc_datas_wapper',
+		adapter:function(data){
+			return		'<div class="datas_item">' +
+							'<div class="datas_item_left">' +
+				            '<div class="datas_item_sys">' + '订单编号' + data.bill_code + '</div>' +
+				        '</div>' +
+				        '<div class="datas_item_right">' +
+				            '<div>' + data.bill_status_name + '</div>' +
+				        '</div>' +
+			            '<hr style="height:1px;border-top:1px dashed #0066CC;line-height:1px;margin:2px;" />' +
+			            '<div class="datas_item_left">' + '申请时间:' + data.create_timestamp + '</div>' +
+			            '<div class="datas_item_left">' + '客户姓名:' + data.customer_name + '</div>' +
+			            '<div class="datas_item_left">' + '业务员:' + data.salesman_name_str + '</div>' +
+			            '<div class="datas_item_left">' + '房产地址:' + data.house_address + '</div>' +
+			            '<div class="datas_item_left">' + '房产预估值:' + (typeof(data.vehicle_evaluation_price) == 'undefined' ? '' : data.vehicle_evaluation_price) + '万元' + '</div>' +
+			            '<div class="datas_item_right">' + '<button class="btn" onclick="btnClick(\'' + data.wms_cre_credit_head_id + '\');">办件</button></div>' +
+			            '<hr style="height:1px;border-top:1px solid #6B6B6B;line-height:1px;" />' +
+			        '</div>';
+		},
+		//页面点击事件
+		onitemclick:function(data,index,list){
+
+		},
+		//上拉时候回调函数
+		onup:function(){
+			home_page++;
+			loadWhcData(false);
+		},
+		//下拉时候回调函数
+		ondown:function(){
+			loadWhcData(true);
+		}
+	});
+	loadWhcData(true);
+}
+
+// 	function changeSortName(_sortname) {
+// 		sortname = _sortname;
+// 		loadWhcData(true);
+// 	}
+	function sbform() {
+		loadWhcData(true);
+	}
+	
+	//页面排序按钮显示效果
+	function initWmsAboutMeDrop(){
+		$('#wms_aboutme_dropdown').find('ul li a').off('click');
+		$('#wms_aboutme_dropdown').find('ul li a').click(function(){
+			var value = $(this).data('value')+'';
+			var text = $(this).text();
+			$('#wms_aboutme_dropdown').find('button span.drop_selected').text(text.trim());
+			sortname = value;
+			loadWhcData(true);
+		});
+	}
+	
+	
+//请求数据flag为刷新标识
+function loadWhcData(flag) {
+    if(flag) {
+        home_page = 1;
+    }
+    $.ajax({
+        url: _base_param.context_name + '/loan/wmsHousingCertificatesList.do?sortname=' + sortname + '&sortorder=desc',
+        type: 'POST',
+        data: {page: home_page, pagesize: home_size, bill_status: bill_status, many_column_like: $('#many_column_like').val()},
+        async: false,
+        success: function(data) {
+            if(data.ret_code == '000'){
+                if(flag){
+                    $('#whc_datas').datashow('clearView');
+                }
+                $('#whc_datas').datashow('adds',data.ret_data);
+                if(data.ret_data.length == 0){
+                    $.message('没有更多数据了哦！');
+                    home_page--;
+                }
+            }else if(data.ret_code != null){
+                $.message(data.ret_msg);
+            }else{
+                $('#whc_datas').html(data);
+            }
+            $('#whc_datas').datashow('clearPull');
+        }
+    });
+    
+}
+
+//办件
+function btnClick(wms_cre_credit_head_id, e){
+    e = e || window.event;  
+    if(e.stopPropagation) { //W3C阻止冒泡方法  
+        e.stopPropagation();  
+    } else {  
+        e.cancelBubble = true; //IE阻止冒泡方法  
+    }
+    showViewInfo('add_house_loan_certificate', wms_cre_credit_head_id, 848, 2, '房贷办件', 'house_loan_certificate');
+}
+
+// document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+
+
+</script>
+<style type="text/css">
+	.mainmenu_item{text-align: center;}
+	.mainmenu_item_text{overflow: hidden;word-break:keep-all;white-space:nowrap;}
+ 	.menu_item_img{width:75px;height:75px;}
+	.datas_item{text-align: left;font-weight: bold;margin:0px;}
+	.datas_item_left{width:60%;display: inline-block;padding-left: 15px;margin:0px;}
+	.datas_item_right{width:40%;display: inline-block;padding-left: 15px;margin:0px;}
+	.datas_item_sys{color: #33CCFF; display: inline-block;}
+	.datas_item_title{display: inline-block;}
+	.datas_item_info{white-space: nowrap;  overflow: hidden;   text-overflow: ellipsis;  }
+	.datas_item_do{display: none;background-color: #ccc;text-align: right;}
+	.datas_item_do button{margin: 10px;}
+	#housing_certificates_datas_wapper{position: absolute;top: 15px;bottom: 58px;width: 100%;z-index: 1;}
+ 	.pull_down,.pull_up{display: none;text-align: center;}
+.bianhao{Float:left}
+.daibanjian{Float:right}
+.khname{Float:left}
+.yewuyuan{Float:right}
+
+#whc_datas_wapper{position: absolute;top: 82px;bottom:58px;width: 100%;z-index: 1;}
+
+/*页面外框样式*/
+/* .bb{float:left;padding-top: 4px;} */
+
+.bb{float:left;padding-top: 4px;}
+.cc{margin-left:10px;width:100%;height:41px;}
+.dd{float:right;width:100%;}
+.tt{background-color:#66B3FF; height: 24px;width:120px;margin-right:25px;}
+.b{font-weight:bold;}
+.bb{font-weight:bold;color:#1E90FF;}
+#t{background-color:#1E90FF;}
+.t1{background-color: #33ccFF;}
+.t{float:left;margin-top:-1px;display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.form-control{width:100%;padding:.375rem .75rem;font-size:1rem;line-height:1.5;color:#55595c;background-color:#fff;background-image:none;}
+.form-control::-webkit-input-placeholder{color:#FFFFFF;font-weight:bold;}
+.bb1{feft:10px;font-weight:bold;color:#1E90FF;}
+.bb2{font-weight:bold;float:left;margin-left:2%;margin-top:-7px;}
+.i{text-align:left; display:block;white-space:nowrap; overflow:hidden; text-overflow:ellipsis;padding-felt:-30px;}
+.dropdown-menu{opacity:0.5;z-index: 1000;text-align:center;position:absolute;background-color:#ACD6FF;}
+.customer_drop_menu_ico{display: inline-block;width: 16px;margin: 1px 6px;color: #FFF;}
+ul.dropdown-menu{opacity:0.9;z-index: 1000;background-color:#ACD6FF;height:200px;}
+
+ .ev1{position:absolute; right:23px;top:-5px;opacity:0.6;z-index: 1000;}
+ 
+</style>
+</head>
+<body>
+<div style="width:100%;">
+
+
+  <nav  id="t" class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+   <div style="height:25px;">
+	  <span id="pp1" class="bb"><img alt="图片加载中..." src="../images/iconfont-ordinaryjiantou1zuo.png" onclick="history.back(-1);">
+	  </span>
+	  <div class="nav_title" style="font-size: 20px;">房产办件列表</div>
+	  </div>
+   <form class="bs-example bs-example-form" role="form" style="width:100%;">
+       <div class="row"  style="height:35px;text-align: center;">
+         <div class="col-lg-6 col-lg-offset-3" style="width: 300px;margin: 0px auto;">
+            <div class="input-group" style="margin-top: 10px;">
+               <div class="input-group-btn dropdown" id="wms_aboutme_dropdown">
+             
+                  <button id="customer_serach_dropdown" type="button" class="btn btn-default" data-toggle="dropdown" style="background-color:#ACD6FF;text-align:center;height:25px;width:75px; font-size:10px; padding-left: 0"> 
+                     	<div style="margin-top:-3px;padding-left:-10px"><span class="drop_selected" style="font-size:13px;line-height:13px;overflow:hidden;color:#FFFFFF;font-weight:bold;">默认排序</span>
+                     <span style="margin-top:10px;"><img alt="图片加载中..." src="../images/iconfont-jianjiaojiantouxia.png"></span></div>
+                     <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu"  aria-labelledby="customer_serach_dropdown">
+                     <li><a style="color: #FFF" data-value="create_timestamp">提交时间</a></li>
+                     <li><a style="color: #FFF" data-value="bill_code">单据编号</a></li>
+                  </ul>
+				
+               </div>
+               <input type="text" id="many_column_like" name="many_column_like" class="form-control" placeholder="客户姓名/业务员/工号" style="width:160px;height:25px;background-color:#ACD6FF;font-size:10px;">
+               <span  id="wmsSearch" style="background-color:#ACD6FF;line-height:25px;width:25px;float:left;" onclick="loadWhcData(true)">
+               		<img  src="../images/iconfont-search2.png">
+               </span>
+            </div>
+         </div><br>
+        </div>
+   </form>
+  </nav>
+  <div id="whc_datas_wapper">
+		<div class="datas" id="whc_datas"></div>
+  </div>
+
+  </div>	
+</body>
+</html>

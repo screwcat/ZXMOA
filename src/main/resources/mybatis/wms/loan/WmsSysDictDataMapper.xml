@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.zx.moa.wms.loan.persist.WmsSysDictDataDao">
+	<!-- get entity by pk -->
+	<select id="get" parameterType="int" resultType="WmsSysDictData">
+		select
+        				wms_sys_dict_data_id,
+        				value_code,
+        				value_meaning,
+        				wms_sys_dict_id,
+        				p_wms_sys_dict_data_id,
+        				sort_order,
+        				weighted_value
+        	from
+        		wms_sys_dict_data
+        	where
+        				wms_sys_dict_data_id = #{wms_sys_dict_data_id}
+	</select>
+
+	<!-- count num -->
+	<select id="findCount" parameterType="map" resultType="int">
+		select count(wms_sys_dict_data_id) as count
+		from wms_sys_dict_data
+		<where>
+			<if test="p_wms_sys_dict_data_id != null">
+                and p_wms_sys_dict_data_id = #{p_wms_sys_dict_data_id}
+            </if>
+		</where>
+	</select>
+
+	<!-- list -->
+	<select id="search" parameterType="map" resultType="java.util.HashMap">
+		select 
+				wms_sys_dict_data_id,
+				value_code,
+				value_meaning,
+				wms_sys_dict_id,
+				p_wms_sys_dict_data_id,
+				sort_order
+		from wms_sys_dict_data
+		<where>
+			<if test="p_wms_sys_dict_data_id != null">
+                and p_wms_sys_dict_data_id = #{p_wms_sys_dict_data_id}
+            </if>
+            <if test="wms_sys_dict_id != null">
+                and wms_sys_dict_id = #{wms_sys_dict_id}
+            </if>
+            <if test="wms_sys_dict_data_id != null">
+                and wms_sys_dict_data_id = #{wms_sys_dict_data_id}
+            </if>
+            <if test="sort_order != null">
+                and sort_order = #{sort_order}
+            </if>
+            <if test="value_code_xiao != null">
+                and cast(value_code as UNSIGNED INTEGER) &lt; #{value_code_xiao}
+            </if>
+            <if test="weighted_value != null">
+          		AND  CAST(weighted_value AS CHAR)LIKE  #{weighted_value}
+            </if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+
+	<!-- save -->
+	<insert id="save" parameterType="WmsSysDictData" useGeneratedKeys="true" keyProperty="wms_sys_dict_data_id">
+		INSERT INTO wms_sys_dict_data
+		(
+				wms_sys_dict_data_id,
+
+				value_code,
+
+				value_meaning,
+
+				wms_sys_dict_id,
+
+				p_wms_sys_dict_data_id,
+
+				sort_order,
+
+				weighted_value
+		)
+		VALUES
+		(
+				#{wms_sys_dict_data_id},
+				#{value_code},
+				#{value_meaning},
+				#{wms_sys_dict_id},
+				#{p_wms_sys_dict_data_id},
+				#{sort_order},
+				#{weighted_value}
+		);
+	</insert>
+
+	<!-- 更新用户 -->
+	<update id="update" parameterType="WmsSysDictData">
+		update wms_sys_dict_data
+		<set>
+					<if test="wms_sys_dict_data_id != null">
+						 wms_sys_dict_data_id = #{wms_sys_dict_data_id},
+					</if>
+					<if test="value_code != null">
+						 value_code = #{value_code},
+					</if>
+					<if test="value_meaning != null">
+						 value_meaning = #{value_meaning},
+					</if>
+					<if test="wms_sys_dict_id != null">
+						 wms_sys_dict_id = #{wms_sys_dict_id},
+					</if>
+					<if test="p_wms_sys_dict_data_id != null">
+						 p_wms_sys_dict_data_id = #{p_wms_sys_dict_data_id},
+					</if>
+					<if test="sort_order != null">
+						 sort_order = #{sort_order},
+					</if>
+					<if test="weighted_value != null">
+						 weighted_value = #{weighted_value},
+					</if>
+	   </set>
+		 where 
+    				wms_sys_dict_data_id = #{wms_sys_dict_data_id}
+	</update>
+	<select id="getListByEntity" parameterType="WmsSysDictData" resultType="WmsSysDictData">
+		select 
+				wms_sys_dict_data_id,
+				value_code,
+				value_meaning,
+				wms_sys_dict_id,
+				p_wms_sys_dict_data_id,
+				sort_order,
+				weighted_value
+		from
+		wms_sys_dict_data
+		<where>
+					<if test="wms_sys_dict_data_id != null">
+						and wms_sys_dict_data_id = #{wms_sys_dict_data_id}
+					</if>
+					<if test="value_code != null">
+						and value_code = #{value_code}
+					</if>
+					<if test="value_meaning != null">
+						and value_meaning = #{value_meaning}
+					</if>
+					<if test="wms_sys_dict_id != null">
+						and wms_sys_dict_id = #{wms_sys_dict_id}
+					</if>
+					<if test="p_wms_sys_dict_data_id != null">
+						and p_wms_sys_dict_data_id = #{p_wms_sys_dict_data_id}
+					</if>
+					<if test="sort_order != null">
+						and sort_order = #{sort_order}
+					</if>
+					<if test="weighted_value != null">
+						and weighted_value = #{weighted_value}
+					</if>
+				 	<if test="isExcludePKFlag != null and isExcludePKFlag == true">
+		        				and wms_sys_dict_data_id != #{wms_sys_dict_data_id}
+					</if>
+		</where>
+	</select>
+	<!-- list -->
+	<select id="searchforApp" parameterType="map" resultType="java.util.HashMap">
+		select 
+				value_code,
+				value_meaning
+		from wms_sys_dict_data
+		<where>
+			<if test="p_wms_sys_dict_data_id != null">
+                and p_wms_sys_dict_data_id = #{p_wms_sys_dict_data_id}
+            </if>
+            <if test="wms_sys_dict_id != null">
+                and wms_sys_dict_id = #{wms_sys_dict_id}
+            </if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+	
+	<select id="getDictDataByDictId" resultType="WmsSysDictData">
+		select * from wms_sys_dict_data
+		where
+		wms_sys_dict_id = 121
+		order by sort_order
+	</select>
+	    	<!-- 根据主键 只返回value_code -->
+	<select id="getCodeByDictId" parameterType="int" resultType="java.lang.String">
+		select value_code from wms_sys_dict_data
+		where
+		wms_sys_dict_id = #{wms_sys_dict_id}
+		order by sort_order
+	</select>
+	 <!-- list -->
+	<select id="searchSpecial" parameterType="map" resultType="java.util.HashMap">
+		select 
+				wms_sys_dict_data_id,
+				value_code,
+				value_meaning,
+				wms_sys_dict_id,
+				p_wms_sys_dict_data_id,
+				sort_order
+		from wms_sys_dict_data
+		<where>
+			<if test="value_code_type == '1'.toString()">
+                and (length(value_code) = 1 and value_code!='A')
+            </if>
+            <if test="value_code_type == '2'.toString()">
+                and (value_code like "%T" or value_code = "EH")
+            </if>
+            <if test="value_code_type == '3'.toString()">
+                and (value_code like "%Z" or value_code like "%J")
+            </if>
+            <if test="value_code_type == '4'.toString()">
+                and (value_code ="W" or value_code like "%Z" or value_code like "%J")
+            </if>
+            <if test="wms_sys_dict_id != null">
+                and wms_sys_dict_id = #{wms_sys_dict_id}
+            </if>
+            <if test="wms_sys_dict_data_id != null">
+                and wms_sys_dict_data_id = #{wms_sys_dict_data_id}
+            </if>
+             <if test="sort_order != null">
+                and sort_order = #{sort_order}
+            </if>
+		</where>
+		<if test="sortname != '' and sortorder !=''">
+			ORDER BY ${sortname} ${sortorder}
+		</if>
+		<if test="offset != null and pagesize !=null">
+			LIMIT ${offset} , ${pagesize}
+		</if>
+	</select>
+	    
+	
+	
+	<select id="getAllForWmsSysDictId" parameterType="int" resultType="java.util.HashMap">
+		select
+        				wms_sys_dict_data_id,
+        				value_code,
+        				value_meaning,
+        				wms_sys_dict_id,
+        				p_wms_sys_dict_data_id,
+        				sort_order,
+        				weighted_value
+        	from
+        		wms_sys_dict_data
+        	where
+        		wms_sys_dict_id = #{wms_sys_dict_id}
+	</select>
+	<!-- 获取登陆人的区域 -->
+	<select id="getCityInfo" parameterType="map" resultType="java.util.HashMap">
+			SELECT
+				substring_index(
+				substring_index(value_meaning, "省" ,- 1),'市',1) AS city
+				FROM
+					wms_sys_dict_data d
+				WHERE
+					d.wms_sys_dict_id = 25
+				AND d.value_code =  #{personnel_regionNumber}
+	</select>
+</mapper> 

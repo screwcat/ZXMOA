@@ -1,0 +1,586 @@
+package com.zx.moa.ioa.address.service.imp;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSONObject;
+import com.zx.moa.ioa.address.persist.AddressDao;
+import com.zx.moa.ioa.address.service.IAddressService;
+import com.zx.moa.ioa.util.PushConstant;
+import com.zx.moa.util.GlobalVal;
+import com.zx.moa.util.HttpClientUtil;
+import com.zx.moa.util.JsonUtil;
+import com.zx.moa.util.gen.entity.ioa.PmPersonnel;
+
+/**
+ * 版权所有：版权所有(C) 2016，卓信金控
+ * 系统名称：
+ * @ClassName: AddressServiceImpl
+ * 模块名称：
+ * @Description: 内容摘要：
+ * @author zhaowei
+ * @date 2017年7月26日
+ * @version V1.0
+ * history:
+ * 1、2017年7月26日 zhaowei 创建文件
+ */
+@Service("IAddressService")
+public class AddressServiceImpl implements IAddressService
+{
+
+    @Autowired
+    private AddressDao addressDao;
+
+    /**
+     * @Title: getContactsAndHotLines
+     * @Description: 用户向服务端请求读取我拥有的权限的联系人列表和热线电话列表
+     * @param request
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月26日 上午10:53:32
+     * @see com.zx.moa.ioa.address.service.IAddressService#getContactsAndHotLines(javax.servlet.http.HttpServletRequest)
+     * history:
+     * 1、2017年7月26日 zhaowei 创建方法
+    */
+    @Override
+    public List<List<Map<String, Object>>> getContactsAndHotLines(HttpServletRequest request)
+    {
+        // 获取当前登录人
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+        // 返回集合(一级)
+        List<List<Map<String, Object>>> ret_data = new ArrayList<List<Map<String, Object>>>();
+
+        // 如果是兼职没有联系人
+        if ("7".equals(pm.getPersonnel_state()))
+        {
+            return ret_data;
+        }
+        // 常用联系人
+        List<Map<String, Object>> LC = new ArrayList<Map<String, Object>>();
+        LC = addressDao.getContacts(pm.getPersonnel_id());
+        // 热线
+        List<Map<String, Object>> LH = new ArrayList<Map<String, Object>>();
+        LH = addressDao.getHot();
+        // 限制数量
+        String countBase = HttpClientUtil.getSysUrl("telLimit");
+        List<Map<String, Object>> LN = new ArrayList<Map<String, Object>>();
+        Map<String, Object> MC = new HashMap<String, Object>();
+        // 限制数量是否存在
+        if (countBase != null && countBase != "")
+        {
+            MC.put("countBase", Integer.parseInt(countBase));
+        }else{
+            // 默认给成5
+            MC.put("countBase", 5);
+        }
+        LN.add(MC);
+        // 联系人 = 同级部门+上级领导 +下级部门
+        List<Map<String, Object>> top = new ArrayList<Map<String, Object>>();// 上级
+        List<Map<String, Object>> under = new ArrayList<Map<String, Object>>();// 下级(包含同级)
+        // 获取当前人 职务 = 本职职务 + 兼职职务;
+        List<Map<String, Object>> deptAndPost = new ArrayList<Map<String, Object>>();
+        deptAndPost = addressDao.getDeptAndPost(pm.getPersonnel_shortcode());
+
+        /*---------------------------上级领导---------------------------*/
+        // 遍历此人 获取他所有部门的职务 获取上级联系人
+        for (int i = 0; i < deptAndPost.size(); i++)
+        {
+            // 获取一个部门的上级部门所有ID(1,2,3,4)包括当前部门
+            String ParentsDeptIds = addressDao.getParentsDeptIds(Integer.parseInt(deptAndPost.get(i).get("personnel_deptId").toString()));
+            String deptIds[] = ParentsDeptIds.split(",");
+
+            // 遍历deptIds[]
+            for (int j = 0; j < deptIds.length; j++)
+            {
+                // (1,2,3,4,5)先找当前部门分管 再找上层负责人 即是 找1的分管再找2的联系人
+                List<Map<String, Object>> Dmanage = addressDao.getDManageByDeptId(Integer.parseInt(deptIds[j]));
+                // 当前部门有分管的情况
+                if (Dmanage != null && Dmanage.size() > 0)
+                {
+                    // 可多个人分管一个部门
+                    for (int a = 0; a < Dmanage.size(); a++)
+                    {
+                        // 像上级list添加联系人
+                        top.add(addressDao.getPersonnel(Integer.parseInt(Dmanage.get(a).get("personnel_id").toString())));
+                    }
+                    // 不是最后一个元素 寻找上层负责人
+                    if (deptIds.length > 1)
+                    {
+                        // 再找一下上层负责人
+                        Integer dept_personID = addressDao.getDeptPerson(Integer.parseInt(deptIds[j + 1]));
+                        // 既有上级部门 负责人 也有分管
+                        if (dept_personID != null)
+                        {
+                            top.add(addressDao.getPersonnel(dept_personID));
+                        }
+                    }
+                    break;
+                }
+                // 当前部门没有分管 找上级联系人
+                else
+                {
+                    // 不是最后一个元素 寻找上层
+                    if (deptIds.length > 1)
+                    {
+                        // 上层负责人
+                        Integer dept_personID = addressDao.getDeptPerson(Integer.parseInt(deptIds[j + 1]));
+                        // 上级部门有负责人 但是没有分管 直接返回上级负责人
+                        if (dept_personID != null)
+                        {
+                            top.add(addressDao.getPersonnel(dept_personID));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /*---------------------------下属员工---------------------------*/
+        for (int i = 0; i < deptAndPost.size(); i++)
+        {
+            // 判断是不是负责人 是负责人 能看到所有deptIds
+            Integer dept_personID = addressDao.getDeptPerson(Integer.parseInt(deptAndPost.get(i).get("personnel_deptId").toString()))==null?-1:addressDao.getDeptPerson(Integer.parseInt(deptAndPost.get(i).get("personnel_deptId").toString()));
+            // 说明是负责人
+            if (dept_personID.equals(pm.getPersonnel_id()))
+            {
+                // 获取子部门所有ID(1,2,3,4)包括当前部门
+              String getChildrenDeptInfo = addressDao.queryChildrenDeptInfo(Integer.parseInt(deptAndPost.get(i).get("personnel_deptId").toString()));
+              String deptIds[] = getChildrenDeptInfo.split(",");
+                // 遍历deptIds[]
+              for (int j = 0; j < deptIds.length; j++)
+              {
+                    // 遍历deptIds 想下级list添加数据(包括当前部门 本级部门)
+                    AddList(addressDao.getPerEqual(Integer.parseInt(deptIds[j])), under);
+              }
+
+            }
+            // 不是负责人 找本部门员工集合 跟 看他分管了那些部门
+            else
+            {
+                AddList(addressDao.getPerEqual(Integer.parseInt(deptAndPost.get(i).get("personnel_deptId").toString())), under);
+                // 分管的哪些部门id集合
+                List<Map<String, Object>> fen = addressDao.getFenBypersonId(pm.getPersonnel_id());
+                // 有分管的部门
+                if (fen != null && fen.size() > 0)
+                {
+                    for (int x = 0; x < fen.size(); x++)
+                    {
+                        AddList(addressDao.getPerEqual(Integer.parseInt(fen.get(x).get("manage_deptId").toString())), under);
+                    }
+                }
+            }
+        }
+
+        AddList(top, under);
+
+        
+        // 数据权限
+        Integer menuid = 0;
+        String url = HttpClientUtil.getSysUrl("nozzleUrl");
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        nvps.add(new BasicNameValuePair("interface_num", "ESM_OUT_001"));
+        nvps.add(new BasicNameValuePair("sys_num", PushConstant.TASK_APP_NAME));
+        nvps.add(new BasicNameValuePair("encryptionId", pm.getPersonnel_encryptionid()));
+        nvps.add(new BasicNameValuePair("modules_name", "IOA"));
+        Map<String, Object> resmap = new HashMap<String, Object>();
+        try
+        {
+            resmap = HttpClientUtil.post(url, nvps, Map.class);
+
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            resmap.put("message", e.getMessage());
+        }
+        String result = resmap.get("result").toString();
+        if (result != null && !"".equals(result))
+        {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> messageMap = null;
+            try
+            {
+                messageMap = mapper.readValue(result, new TypeReference<Map<String, Object>>()
+                {
+                });
+            }
+            catch (Exception e1)
+            {
+                e1.printStackTrace();
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> listMenu = (List<Map<String, Object>>) messageMap.get("listMenu");
+
+            for (int i = 0; i < listMenu.size(); i++)
+            {
+                if ("通讯录".equals(listMenu.get(i).get("menuname")))
+                {
+                    menuid = Integer.parseInt(listMenu.get(i).get("menuid").toString());
+                }
+            }
+
+        }
+
+        // 说明有权限
+        if (menuid != 0)
+        {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("menuid", menuid);
+            map.put("personnel_id", pm.getPersonnel_id());
+            List<Map<String, Object>> menu = addressDao.getdeptIdByMenuid(map);
+            if (menu != null && menu.size() > 0)
+            {
+                // 添加数据权限
+                for (int i = 0; i < menu.size(); i++)
+                {
+                    AddList(addressDao.getPerEqual(Integer.parseInt(menu.get(i).get("dept_id").toString())), under);
+                }
+            }
+
+        }
+        // 把数据放入session中
+        HashSet h = new HashSet(under);
+        under.clear();
+        under.addAll(h);
+        /*自定义联系人先首字母在短工号*/
+        Collections.sort(under, new Comparator<Map<String, Object>>()
+        {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2)
+            {
+                if (o1.get("personnel_start").toString().compareTo(o2.get("personnel_start").toString()) == 0)
+                {
+                    return o1.get("personnel_shortcode").toString().compareTo(o2.get("personnel_shortcode").toString());
+                }
+                else
+                {
+                    return o1.get("personnel_start").toString().compareTo(o2.get("personnel_start").toString());
+                }
+            }
+
+        });
+        request.getSession().setAttribute("TelList", under);
+
+        Map<String, Map<String, Object>> mm = new HashMap<String, Map<String, Object>>();
+        // 去重复
+        for (int i = 0; i < under.size(); i++)
+        {
+            // 去重
+            if (under.get(i).get("is_native_post") == null || "1".equals(under.get(i).get("is_native_post").toString()))
+            {
+                // 讲本职职务列表放入一个map 人员id为key
+                mm.put(under.get(i).get("personnel_id").toString(), under.get(i));
+            }
+            else
+            {
+                // 如果是兼职职务 看本职职务map是否存在 不存在则放入mm
+                if (mm.get(under.get(i).get("personnel_id").toString()) == null)
+                {
+                    mm.put(under.get(i).get("personnel_id").toString(), under.get(i));
+                }
+            }
+
+        }
+
+        Collection<Map<String, Object>> valueCollection = mm.values();
+        List<Map<String, Object>> valueList = new ArrayList<Map<String, Object>>(valueCollection);
+
+        // 处理图片
+        for (int i = 0; i < valueList.size(); i++)
+        {
+            // 处理图片
+            if (valueList.get(i).get("img_mini_url") != null)
+            {
+                String url1 = valueList.get(i).get("img_mini_url").toString();
+                String miniUrl = url1.split("\\.")[0] + "_mini." + url1.split("\\.")[1];
+                valueList.get(i).put("img_mini_url", miniUrl);
+            }
+            else
+            {
+                valueList.get(i).put("img_mini_url", "");
+            }
+        }
+
+        /*自定义联系人先首字母在短工号*/
+        Collections.sort(valueList, new Comparator<Map<String, Object>>()
+        {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2)
+            {
+                if (o1.get("personnel_start").toString().compareTo(o2.get("personnel_start").toString()) == 0)
+                {
+                    return o1.get("personnel_shortcode").toString().compareTo(o2.get("personnel_shortcode").toString());
+                }
+                else
+                {
+                    return o1.get("personnel_start").toString().compareTo(o2.get("personnel_start").toString());
+                }
+            }
+
+        });
+        // 第一层常用联系人
+        ret_data.add(LC);
+        // 第二层热线
+        ret_data.add(LH);
+        // 第三层 联系人
+        ret_data.add(valueList);
+        // 第四层限制数量
+        ret_data.add(LN);
+
+        return ret_data;
+    }
+
+
+    /**
+     * @Title: getDeptsContact
+     * @Description: 获取部门联系人热线及下属部门
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月27日 下午2:14:09
+     * @see com.zx.moa.ioa.address.service.IAddressService#getDeptsContact(javax.servlet.http.HttpServletRequest)
+     * history:
+     * 1、2017年7月27日 Libo 创建方法
+    */
+    @Override
+    public List<List<Map<String, Object>>> getDeptsContact(HttpServletRequest request)
+    {
+        List<List<Map<String, Object>>> ret_data = new ArrayList<List<Map<String, Object>>>();
+
+        List<Map<String, Object>> deptList = new ArrayList<Map<String, Object>>();
+        
+        List<Map<String, Object>> contactList = new ArrayList<Map<String, Object>>();
+
+        List<Map<String, Object>> hotLineList = new ArrayList<Map<String, Object>>();
+
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+        int personDeptId = pm.getPersonnel_deptid();
+        int search_deptId = Integer.parseInt(request.getParameter("dept_id"));
+
+        // 子部门集合及热线集合
+        {
+            // 查询卓信金控部门
+            if (search_deptId == 1 )
+            {
+                if (personDeptId != 1)
+                {
+                    int personLevel2Dept = 0;
+    
+                    Map<String, Object> param = new HashMap<String, Object>();
+                    param.put("level", 2);
+    
+                    List<Map<String, Object>> deptLevel2List = addressDao.getDeptInfo(param);
+    
+                    String depts = addressDao.getPersonLevel2Dept(personDeptId);
+                    String[] array = depts.split(",");
+                    if (array.length > 0)
+                    {
+                        personLevel2Dept = Integer.parseInt(array[array.length - 2]);
+                    }
+    
+                    // 互联网中心用户
+                    if (personLevel2Dept == 2)
+                    {
+                        deptList.add(deptLevel2List.get(0));
+                        deptList.add(deptLevel2List.get(1));
+                        deptList.add(deptLevel2List.get(2));
+                    }
+                    if (personLevel2Dept == 26)
+                    {
+                        deptList.add(deptLevel2List.get(1));
+                    }
+    
+                    if (personLevel2Dept == 27)
+                    {
+                        deptList.add(deptLevel2List.get(2));
+                    }
+    
+                    deptList.add(deptLevel2List.get(3));
+                }
+
+                hotLineList = addressDao.getHotLine();
+            }
+            else
+            {
+                Map<String, Object> param = new HashMap<String, Object>();
+                param.put("dept_id", search_deptId);
+
+                deptList = addressDao.getDeptInfo(param);
+            }
+        }
+
+        // 联系人集合
+        {
+            Object str = session.getAttribute("TelList");
+            if (str != null)
+            {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> contacts = (List<Map<String, Object>>) str;
+                
+                for (Map<String, Object> m : contacts)
+                {
+                    if ((int) m.get("personnel_deptId") == search_deptId)
+                    {
+                        contactList.add(m);
+                    }
+                }
+            }
+        }
+        ret_data.add(deptList);
+        ret_data.add(contactList);
+        ret_data.add(hotLineList);
+        return ret_data;
+    }
+
+    /**
+     * @Title: uploadTopContacts
+     * @Description: 保存常用联系人
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 上午10:28:45
+     * @see com.zx.moa.ioa.address.service.IAddressService#uploadTopContacts(javax.servlet.http.HttpServletRequest)
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+    */
+    @Override
+    public List<Map<String, Object>> uploadTopContacts(HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+        
+        String personsStr = request.getParameter("person_list");
+        
+        List<Map<String, Object>> contacts = JsonUtil.jsonstrToListMap(personsStr);
+
+        Map<String, Object> param = new HashMap<String, Object>();
+
+        param.put("personnel_id", pm.getPersonnel_id());
+
+        param.put("list", contacts);
+
+        List<Map<String, Object>> leavePerson = addressDao.getPersonForList(param);
+
+        if (leavePerson.size() > 0)
+        {
+            for (int i = 0; i < contacts.size(); i++)
+            {
+                for (int j = 0; j < leavePerson.size(); j++)
+                {
+                    if (contacts.get(i).get("personnel_id") == leavePerson.get(j).get("personnel_id"))
+                    {
+                        contacts.remove(i);
+                        i--;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (contacts.size() > 0)
+        {
+            param.put("list", contacts);
+
+            String url = HttpClientUtil.getSysUrl("server.ioaUrl") + "/moa/uploadTopContacts.do";
+
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            String paramStr = JSONObject.toJSONString(param);
+            nvps.add(new BasicNameValuePair("param", paramStr));
+            try
+            {
+                Map<String, Object> result = HttpClientUtil.post(url, nvps, Map.class);
+
+            }
+            catch (IOException e)
+            {
+
+            }
+        }
+
+        return leavePerson;
+    }
+
+    /**
+     * @Title: getHostLines
+     * @Description: 获取热线电话
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 下午3:02:38
+     * @see com.zx.moa.ioa.address.service.IAddressService#getHostLines(javax.servlet.http.HttpServletRequest)
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+    */
+    @Override
+    public List<Map<String, Object>> getHostLines(HttpServletRequest request)
+    {
+        List<Map<String, Object>> hotLineList = new ArrayList<Map<String, Object>>();
+        hotLineList = addressDao.getHotLine();
+        return hotLineList;
+    }
+
+    /**
+     * @Title: getContactDetail
+     * @Description: 获取人员详细信息
+     * @param request
+     * @return 
+     * @author: Libo
+     * @time:2017年7月28日 下午3:56:04
+     * @see com.zx.moa.ioa.address.service.IAddressService#getContactDetail(javax.servlet.http.HttpServletRequest)
+     * history:
+     * 1、2017年7月28日 Libo 创建方法
+    */
+    @Override
+    public Map<String, Object> getContactDetail(HttpServletRequest request)
+    {
+        HttpSession session = request.getSession();
+        PmPersonnel pm = (PmPersonnel) session.getAttribute(GlobalVal.USER_SESSION);
+        Map<String, Object> result = addressDao.getContactDetail(pm.getPersonnel_id());
+        
+        String head_img_path = "";
+        String miniImgUrl = "";
+        if (result.get("head_img_path") != null && !"".equals(result.get("head_img_path").toString()))
+        {
+            String ioaUrl = HttpClientUtil.getSysUrl("server.ioaFileUrl");
+            String[] array = result.get("head_img_path").toString().split("\\.");
+            head_img_path = ioaUrl + result.get("head_img_path");
+            miniImgUrl = ioaUrl + array[0] + "_mini." + array[1];
+        }
+
+        result.put("img_url", head_img_path);
+        result.put("img_mini_url", miniImgUrl);
+        return result;
+    }
+
+    public static List<Map<String, Object>> AddList(List<Map<String, Object>> list1,List<Map<String, Object>> list2){
+        
+        // 循环遍历 list1
+        for (int i = 0; i < list1.size(); i++)
+        {
+            // 将list1中的值添加到list2中
+            list2.add(list1.get(i));
+        }
+        return list2;
+    }
+
+}

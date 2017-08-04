@@ -1,0 +1,160 @@
+  
+  /*左右晃动*/
+  @-webkit-keyframes 'shaking' {
+  	 0% {
+       -webkit-transform: translateX(0px);
+     }
+  	 25% {
+       -webkit-transform: translateX(10px);
+     }
+  	 50% {
+       -webkit-transform: translateX(0px);
+     }
+  	 75% {
+       -webkit-transform: translateX(-10px);
+     }
+     100% {
+       -webkit-transform: translateX(0px);
+     }
+  }
+  @-webkit-keyframes 'leftout' {
+  	 0% {
+       -webkit-transform: translateX(0%);
+     }
+  	 25% {
+       -webkit-transform: translateX(-25%);
+     }
+  	 50% {
+       -webkit-transform: translateX(-50%);
+     }
+  	 75% {
+       -webkit-transform: translateX(-75%);
+     }
+     99% {
+       -webkit-transform: translateX(-100%);
+     }
+     100% {
+       -webkit-transform: translateX(-100%);
+       display:none;
+     }
+  }
+   @-webkit-keyframes 'rightin' {
+  	 0% {
+       -webkit-transform: translateX(0%);
+       display:none;
+     }
+  	 25% {
+       -webkit-transform: translateX(25%);
+       display:block;
+     }
+  	 50% {
+       -webkit-transform: translateX(50%);
+     }
+  	 75% {
+       -webkit-transform: translateX(75%);
+     }
+     99% {
+       -webkit-transform: translateX(100%);
+     }
+     100% {
+       -webkit-transform: translateX(100%);
+     }
+  }
+  .shaking {
+	   -webkit-animation-name:'shaking';/*动画属性名，也就是我们前面keyframes定义的动画名*/
+	   -webkit-animation-duration: 200ms;/*动画持续时间*/
+	   -webkit-animation-timing-function: ease-in-out; /*动画频率，和transition-timing-function是一样的*/
+	   -webkit-animation-delay: 0s;/*动画延迟时间*/
+	   -webkit-animation-iteration-count: 2;/*定义循环资料，infinite为无限次*/
+	   -webkit-animation-direction: normal;/*定义动画方式*/
+	   -webkit-animation-play-state:running;
+  }
+  .leftout{
+  	   -webkit-animation-name:'leftout';
+	   -webkit-animation-duration: 200ms;
+	   -webkit-animation-timing-function: ease-in-out;
+	   -webkit-animation-delay: 50ms;
+	   -webkit-animation-iteration-count: 1;
+	   -webkit-animation-direction: normal;
+	   -webkit-animation-play-state:running;
+  }
+  
+  /*面板插件*/
+  .zxpanel{border: 1px solid #A9A9A9;position: absolute;display: none;overflow: hidden;z-index: 1111;padding-bottom: 10px; background-color: white;}
+  .zxpanel{-moz-border-radius: 0px 0px 10px 10px;;-webkit-border-radius: 0px 0px 10px 10px;;border-radius: 0px 0px 10px 10px;}
+  .panelcontent{float: left;height: 100%;width: 100%;display: inline-block;position: relative;}
+  
+  /*FORM*/
+  .zxForm{margin: 0px;}
+  /*日历插件*/
+  .date_header{text-align: center;padding: 4px 0px;}
+  .date_header div{display: inline-block;text-align: center;font-weight: bold;}
+  .date_prev{float: left;padding: 0px 10px; margin: 0px 5px;}
+  .date_next{float: right;padding: 0px 10px; margin: 0px 5px;}
+  .date_now{width: 150px;}
+  .date_fotter{position: absolute;bottom: 0px;width: 100%;padding: 4px 0px;}
+  .date_fotter div{width: 32%;display: inline-block;text-align: center;}
+  .date_fotter div:HOVER{background: gray;}
+  .date_calendar{width: 100%;text-align: center;}
+  .date_calendar tr{margin-left:1%;margin-right: 1%; }
+  .date_calendar td{width:14%;}
+  .date_calendar{cellspacing:10px;}
+  .date_calendar,.date_fotter,.date_header,.date_month_panel{font-size: 14px;font-weight: bold;}
+  .date_day_thismonth{}
+  .dtae_day_rest{color: #FF0000;}
+  .date_day_othermonth{filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;}
+  .date_month_panel{text-align: center;padding: 5px;margin: 0px;}
+  .date_month_panel .date_month{height: 35px;line-height: 35px;}
+  .date_month_panel .date_month:HOVER,.date_calendar tbody td:HOVER,.date_header div:HOVER{background: #1A8FEF;-moz-border-radius: 5px;-webkit-border-radius: 5px;border-radius:5px;}
+  .date_day_select{-moz-border-radius: 5px;-webkit-border-radius: 5px;border-radius:5px; }
+  .date_month_select{-moz-border-radius: 10px;-webkit-border-radius: 10px;border-radius:10px; }
+  
+  
+  
+  
+  .datashow_container{text-align: center;margin-bottom: 15px;}
+  .datashow_item{margin: 10px 0px;text-align: center;}
+  .pull_down, .pull_up {background:#fff;height:40px;line-height:40px;font-weight:bold;font-size:0.8em;color:#888}
+  .pull_down .pull_down_ico,.pull_up .pull_up_ico {display:block;float:left;opacity:0.4;width:40px;height:40px;background:url(../images/pull_to_refresh.png) 0 0 no-repeat;
+  -webkit-background-size:40px 80px;-ms-background-size:40px 80px; background-size:40px 80px;-webkit-transition-property:-webkit-transform;
+  -ms-transition-property:-webkit-transform;-webkit-transition-duration:250ms;-ms-transition-duration:250ms}
+  .pull_down .pull_down_ico {-webkit-transform:rotate(0deg) translateZ(0);-ms-transform:rotate(0deg) translateZ(0)}
+  .pull_up .pull_up_ico  {-webkit-transform:rotate(-180deg) translateZ(0);-ms-transform:rotate(-180deg) translateZ(0)}
+  .pull_down.flip .pull_down_ico {-webkit-transform:rotate(-180deg) translateZ(0);-ms-transform:rotate(-180deg) translateZ(0)}
+  .pull_up.flip .pull_up_ico {-webkit-transform:rotate(0deg) translateZ(0);-ms-transform:rotate(0deg) translateZ(0)}
+  
+  .pull_down.loading .pull_down_ico, .pull_up.loading .pull_up_ico {background-position:0 100%;-webkit-transform:rotate(0deg) translateZ(0);
+  -ms-transform:rotate(0deg) translateZ(0);-webkit-transition-duration:0ms;-ms-transition-duration:0ms;-webkit-animation-name:loading;-ms-animation-name:loading;
+  -webkit-animation-duration:1s;-ms-animation-duration:1s;-webkit-animation-iteration-count:infinite;-ms-animation-iteration-count:infinite;
+  -webkit-animation-timing-function:linear;-ms-animation-timing-function:linear}
+	@-webkit-keyframes loading {
+		from {-webkit-transform:rotate(0deg) translateZ(0)}
+		to {-webkit-transform:rotate(360deg) translateZ(0)}
+	}
+	@-ms-keyframes loading {
+		from {-ms-transform:rotate(0deg) translateZ(0)}
+		to {-ms-transform:rotate(360deg) translateZ(0)}
+	}
+  
+  
+  .tabview_title{border-right: 2px solid #575757;}
+  .tabview_title:last-child{border-right: 0px;}
+    
+  
+  .zxmessage{z-index: 1112;position: fixed;bottom: 50px;width: 100%;text-align:center;display: block;}
+  
+  
+  .zxnav{padding-left: 2px;text-align: center;}
+  .nav_body{padding-top: 54px;}
+  .nav_title{display: inline-block; margin-left: auto; margin-right: auto;height: 38px;line-height: 38px;font-weight: bolder;}
+  .pull-right2{float:right;}
+  
+  .zxtable_select{background-color: #025AA5;}
+  
+  
+  .zxbottommenu{position: fixed;bottom: 0px;width: 100%;z-index: 1060;background-color: white;text-align: center;font-weight: bolder;}
+  
+	.pull_down,.pull_up{display: none;text-align: center;}
+	
+	.datas_wapper{position: absolute;top: 15px;bottom: 58px;width: 100%;z-index: 1;}
+  

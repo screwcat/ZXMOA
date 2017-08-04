@@ -1,0 +1,267 @@
+package com.zx.moa.ioa.util;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import com.zx.platform.syscontext.util.StringUtil;
+
+/**
+ * 版权所有：版权所有(C) 2016，卓信金控
+ * 系统名称：
+ * @ClassName: CheckingUtil
+ * 模块名称：
+ * @Description: 内容摘要：
+ * @author zhaowei
+ * @date 2017年7月5日
+ * @version V1.0
+ * history:
+ * 1、2017年7月5日 zhaowei 创建文件
+ */
+public class CheckingUtil
+{
+
+    private static SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
+
+    private static SimpleDateFormat sdfWeek = new SimpleDateFormat("EEEE");
+
+    private static final Pattern dateTimeReg = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
+
+    private static final Pattern timeReg = Pattern.compile("\\d{2}:\\d{2}:\\d{2}$");
+
+    private static final Pattern dateReg = Pattern.compile("\\d{4}-\\d{2}-\\d{2}$");
+
+    @SuppressWarnings("unused")
+    private static SimpleDateFormat sdfDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    /**
+     * 讲传入map转为实体bean key 对应bean属性名称(区分大小写)
+     * @param map 参数map
+     * @param clazz 实体bean的class
+     * @return 
+     * @throws Exception 
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T> T MapToBean(Map<String, Object> map, Class<T> clazz) throws Exception
+    {
+        Class demo = Class.forName(clazz.getName());
+        T obj = (T) demo.newInstance();
+        Field[] field = demo.getDeclaredFields();
+        for (int i = 0; i < field.length; i++)
+        {
+            Object val = map.get(field[i].getName());
+            if (val != null)
+            {
+                val = changeType(val, field[i].getType().getSimpleName());
+                Method method = obj.getClass().getMethod("set" + doFirstLetterUp(field[i].getName()), field[i].getType());
+                method.invoke(obj, val);
+                // BeanUtils.setProperty(obj, field[i].getName(), val);
+            }
+        }
+        return obj;
+    }
+
+    public static Object changeType(Object val, String type)
+    {
+        if (type.equals("int") || type.equals("Integer"))
+        {
+            return Integer.parseInt(val.toString());
+        }
+        if (type.equals("String"))
+        {
+            return val.toString();
+        }
+        if (type.equals("Long") || type.equals("long"))
+        {
+            return Long.parseLong(val.toString());
+        }
+        if (type.equals("Double") || type.equals("double"))
+        {
+            return Double.parseDouble(val.toString());
+        }
+        if (type.equals("Float") || type.equals("float"))
+        {
+            return Float.parseFloat(val.toString());
+        }
+        if (type.equals("Byte") || type.equals("byte"))
+        {
+            return Byte.parseByte(val.toString());
+        }
+        if (type.equals("Short") || type.equals("Short"))
+        {
+            return Short.parseShort(val.toString());
+        }
+        if (type.equals("Char") || type.equals("char"))
+        {
+            return val.toString().charAt(0);
+        }
+        if (type.equals("Timestamp"))
+        {
+            if (StringUtil.isEmpty(val.toString()) || val instanceof Timestamp)
+            {
+                return val;
+            }
+            String t = dateStrFormatter(val.toString(), "yyyy-MM-dd HH:mm:ss");
+            Long l;
+            try
+            {
+                l = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(t).getTime();
+                return new Timestamp(l);
+            }
+            catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return val;
+    }
+
+    /**
+     * 日期字符串格式化
+     * @param dateStr 日期字符串（yyyy-MM-dd HH:mm:ss、yyyy-MM-dd、HH:mm:ss）
+     * @param format 返回字符串格式
+     * @return 如果日期参数错误返回空字符串
+     */
+    public static String dateStrFormatter(String dateStr, String format)
+    {
+        try
+        {
+            Date d;
+            if (dateTimeReg.matcher(dateStr).matches())
+            {
+                d = sdfDateTime.parse(dateStr);
+            }
+            else if (dateReg.matcher(dateStr).matches())
+            {
+                d = sdfDate.parse(dateStr);
+            }
+            else if (timeReg.matcher(dateStr).matches())
+            {
+                d = sdfTime.parse(dateStr);
+            }
+            else
+            {
+                throw new Exception("日期格式错误!");
+            }
+            return new SimpleDateFormat(format).format(d);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 首字母大写
+     * @param str
+     * @return
+     */
+    public static String doFirstLetterUp(String str)
+    {
+        String first = str.substring(0, 1);
+        String other = str.substring(1);
+        return first.toUpperCase() + other;
+    }
+
+    /**
+     * @Title: getMonthFeistAndFinal
+     * @Description: 获取当前月份第一天跟最后一天
+     * @return 
+     * @author: zhaowei
+     * @time:2017年7月6日 上午11:29:45
+     * history:
+     * 1、2017年7月6日 zhaowei 创建方法
+    */
+    public static Map<String, Object> getMonthFeistAndFinal()
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        // 当月
+        // 获取当前月第一天：
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 0);
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        map.put("date_start", format.format(c.getTime()));
+        // 获取当前月最后一天
+        Calendar ca = Calendar.getInstance();
+        ca.set(Calendar.DAY_OF_MONTH, ca.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        map.put("date_end", format.format(ca.getTime()));
+        return map;
+
+    }
+
+    /**
+     * 计算第一个时间 - 第二个时间的差值（毫秒）
+     * @param time1
+     * @param time2
+     * @return 毫秒值
+     */
+    public static long calculateTwoTime(String time1, String time2)
+    {
+        Date data1 = getTime(time1);
+        Date data2 = getTime(time2);
+        long l1 = data1.getTime();
+        long l2 = data2.getTime();
+        return l1 - l2;
+    }
+
+    /**
+     * 获取时间(非当前年月日的时间,是1970年1月1日（格林威治时间）的时间)
+     * 修改：如果传入数据为yyyy-MM-dd HH:mm:ss 时为传入日期的时间(2015-11-16)
+     * @param date 时间字符串,格式：HH:mm:ss或yyyy-MM-dd HH:mm:ss
+     * @return
+     */
+    public static Date getTime(String date)
+    {
+        String dt[] = date.split(" ");
+        if (dt.length == 2)
+        {
+            date = dt[1];
+        }
+        String a[] = date.split(":");
+        if (a.length == 2)
+        {
+            date += ":00";
+        }
+        else if (a.length == 3)
+        {
+            date = a[0] + ":" + a[1] + ":00";
+        }
+        if (date != null)
+        {
+            try
+            {
+                return dt.length == 2 ? sdfDateTime.parse(dt[0] + " " + date) : sdfTime.parse(date);
+            }
+            catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取时间 
+     * @param date 时间字符串,格式yyyy-MM-dd 
+     * @return
+     */
+    public static String getNow()
+    {
+        Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String time = format.format(date);
+        return time;
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.noticeManage.persist.NoticeListDao">
+	<select id="getNoticeList" resultType="map">
+		select 
+			notice_title,
+			date_format(publish_date,'%Y-%m-%d') as publish_date,
+			view_url,
+			notice_type
+		from sys_notice_head
+		where 
+			enable_flag=1
+		order by publish_date desc
+	</select>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.systemmanage.persist.DictDataDao">
+    <select id="getDataDict" parameterType="String" resultType="map">
+        select
+        	data.value_code,
+        	data.value_meaning
+        from
+        	sys_dict dict
+        left join
+        	sys_dict_data data
+        on
+        	dict.sys_dict_id = data.sys_dict_id
+        where
+        	dict.enable_flag = '1'
+        and
+        	data.enable_flag = '1'
+        and
+        	dict.dict_code = #{dict_code}
+        order by sort_number
+    </select>
+	
+</mapper>

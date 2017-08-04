@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style type="text/css">
+    .pull_down,.pull_up{display: none;text-align: center;}
+    #datas_wapper_info{position: absolute;top: 82px;bottom:58px;width: 100%;z-index: 1;}
+    .table td, .table th{padding: 0}
+</style>
+</head>
+<body>
+    <nav id="t" class="navbar navbar-dark navbar-static-top bg-inverse zxnav">
+        <div style="height:25px;">
+            <span id="pp1" class="bb">
+                <img alt="图片加载中..." src="/MOA/resources/images/iconfont-ordinaryjiantou1zuo.png" onclick="history.back(-1);">
+            </span>
+            <div class="nav_title">贷款单据详情</div>
+        </div>
+    </nav>
+    <div id="datas_wapper_info">
+    </div>
+    
+    <div id="imgModal" style="position: relative;z-index: 9999; display: none; background-color: white;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+            <h3 id="myModalLabel">图片详情</h3>
+        </div>
+        <div class="modal-body" id="imgInfo" style="height: 300px">
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true" onclick="closeImg()">关闭</button>
+        </div>
+    </div>
+<script type="text/javascript">
+var params = {};
+
+var wms_cre_credit_head_id = 569;//附件大类
+
+var p_wms_sys_dict_data_id = 843;//附件小类
+
+//初始化数据
+function initHouseLoanInfo(wms_cre_credit_head_id){
+	params.wms_cre_credit_head_id = wms_cre_credit_head_id;
+	params.data_type_name = p_wms_sys_dict_data_id;//附件大类
+	$.ajax({
+        url: _base_param.context_name + '/loan/searchHouseLoanInfo.do?sortname=wms_cre_housing_apply_att_id&sortorder=asc',
+        type: 'POST',
+        data: params,
+        async: false,
+        success: function(data) {
+            var works = data.works;
+            var attlist = data.attlist;
+            data = data.bean;
+            var addHTML = 
+                    '<div class="datas_item_left">' +
+                        '<div class="datas_item_sys">' + '订单编号' + data.bill_code + '</div>' +
+                    '</div>' +
+                    '<div class="datas_item_right">' +
+                        '<div>' + data.bill_status_name + '</div>' +
+                    '</div>' +
+                    '<hr style="height:1px;border-top:1px solid #6B6B6B;" />' +
+                    '<div class="datas_item_left">' + '申请时间:' + data.create_timestamp + '</div>' +
+                    '<div class="datas_item_left">' + '客户姓名:' + data.customer_name + '</div>' +
+                    '<div class="datas_item_left">' + '房产地址:' + data.house_address_province + data.house_address_city + data.house_address_district + '</div>' +
+                    '<div class="datas_item_left">' + '业务员:' + data.salesman_name + '</div>' +
+                    '<hr style="height:1px;border-top:1px dashed #0066CC;" />' +
+                    '<div class="datas_item_left">' + '流程历程' + '</div>' +
+                    //流程历程显示 样式待处理
+                    '<table class="table">'+
+	                	'<thead>'+
+		                	'<tr style="background-color: #D4D4D4;">'+
+		                		'<td>申请/审批人</td>' +
+		                		'<td>审批人部门</td>' +
+		                		'<td>审批结果</td>' +
+		                		//'<td>审批意见</td>' +
+		                		'<td>审批时间</td>' +
+		                	'</tr>'+
+	                	'</thead>'+
+	                	'<tbody>' +
+	                	    getProcessList(works) +				
+	                	'</tbody>' +
+                	'</table>' +
+                    '<hr style="height:1px;border-top:1px dashed #0066CC;" />' +
+                    '<div class="datas_item_left">' + '图片资料' + '</div><br />' + 
+                    initHouseLoanUpload(attlist);
+            $('#datas_wapper_info').html(addHTML);
+        }
+    });
+}
+
+// document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+//初始化数据--附件数据
+function initHouseLoanUpload(attlist) {
+	var imghtml = "";
+   	$(attlist).each(function(i, o){
+   		imghtml = imghtml + 
+	        '<a href="###" onclick="showImgInfo(\'' + attlist[i].attachment_address + '\')" data-toggle="modal">' +
+	            attlist[i].attachment_old_name +
+	        '</a><br />'
+  	 });
+  	return imghtml;
+}
+//初始化流程历程
+function getProcessList(works) {
+	var imghtml = "";
+  	$(works).each(function(i, o){
+  		imghtml +=
+  			'<tr>' +
+	  	        '<td>' + works[i].approvers + '</td>' + //审批人
+				'<td>' + works[i].personnel_deptName + '</td>' + //审批人部门
+				'<td>' + works[i].approveResult + '</td>' + //审批结果
+				//'<td>' + works[i].approveAdvice + '</td>' + //审批意见
+			    '<td>' + (works[i].approveTime == null ? '' : works[i].approveTime.split(' ')[0]) + '</td>' //审批时间(不显示时分秒)
+			'</tr>';
+ 	 });
+ 	 return imghtml;
+}
+
+function showImgInfo(url) {
+	$('#imgModal').slideDown("normal", function(){
+        $('#imgInfo').html('<img src="/MOA/wms/getImg.do?url=' + url + '" style="width:100%; height:100%" />');
+    });
+}
+
+function closeImg() {
+	$('#imgModal').slideUp("normal",function(){
+		$('#imgInfo').html('');
+	});
+}
+
+</script>    
+</body>
+</html>

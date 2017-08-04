@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zx.moa.ioa.task.persist.TaskListDao">
+
+	<select id="getTaskListByCondition" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="map">
+		select
+		task_id,
+		task_status,
+		task_title,
+		create_datetime as
+		create_datetime_order,
+		DATE_FORMAT(create_datetime,'%Y-%m-%d')
+		create_datetime,
+		publish_user_name,
+		publish_user_code,
+		create_user_name,
+		create_user_code,
+		feedback_user_name,
+		feedback_user_code,
+		publicsh_unread,
+		feedback_unread,
+		delay_time,
+		IF(#{user_id} =
+		accept_feedback_id,IF(publicsh_unread is
+		null,0,publicsh_unread),IF(#{user_id} =
+		feedback_user_id,if(feedback_unread is null,0,feedback_unread),0)) as
+		unread_num,
+		task_type_id,
+		task_type_name
+		from
+		tasklist
+		where
+		1=1
+		<if test="which_tab != 3">
+			and (accept_feedback_id = #{personnel_id} or
+			feedback_user_id
+			=#{personnel_id})
+		</if>
+		and task_status &lt;&gt; if(feedback_user_id = #{personnel_id},4,0)
+		<if test="search !=null and search !=''">
+			and
+			concat(task_title,publish_user_name,publish_user_code,create_user_name,create_user_code,feedback_user_name,feedback_user_code)
+			like "%"#{search}"%"
+		</if>
+		<if test="type!=null and type == 2">
+			and task_status in(1,2)
+		</if>
+		<if test="which_tab !=null and which_tab == 1">
+			and feedback_user_id = #{personnel_id}
+		</if>
+		<if test="which_tab !=null and which_tab == 2">
+			and accept_feedback_id = #{personnel_id}
+		</if>
+		<if test="task_type_id !=null and task_type_id !=''">
+			and
+			task_type_id = #{task_type_id}
+		</if>
+		<if test="which_tab !=null and which_tab == 3">
+			and create_id = #{personnel_id}
+			and feedback_user_id
+			&lt;&gt; #{personnel_id}
+			and accept_feedback_id &lt;&gt;
+			#{personnel_id}
+		</if>
+		<!-- 如果是全部查询排序按照任务状态正序、创建时间倒序、任务id正序排列 -->
+		<if test="which_tab==null and version_number==1">
+			order by
+			task_status asc ,
+			create_datetime_order desc,
+			task_id desc
+		</if>
+		<!-- 如果是已指派查询排序按照任务状态、进行中延误、进行中、创建时间倒序排列 -->
+		<if test="which_tab ==2">
+			ORDER BY if(task_status=2,0,if(task_status=1 and
+			delay_time>0,1,2))asc ,
+			task_status asc, create_datetime_order desc
+		</if>
+		<!-- 如果是需要反馈查询排序按照进行中延误、任务状态、创建时间倒序排列 -->
+		<if test="which_tab ==1">
+			ORDER BY
+			if(task_status=1 and delay_time>0,1,0) DESC,
+			task_status ASC,
+			create_datetime_order desc
+		</if>
+		<if test="which_tab ==3 and version_number == 2">
+			order by task_num DESC,
+			if(task_status=1 and delay_time>0,1,0) DESC,
+			task_status ASC
+		</if>
+		limit ${(page-1)*size},${size}
+
+	</select>
+
+	<select id="getChildenTaskList" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="map">
+		select
+		task_id,
+		task_status,
+		task_title,
+		create_datetime as
+		create_datetime_order,
+		DATE_FORMAT(create_datetime,'%Y-%m-%d')
+		create_datetime,
+		publish_user_name,
+		publish_user_code,
+		create_user_name,
+		create_user_code,
+		feedback_user_name,
+		feedback_user_code,
+		publicsh_unread,
+		feedback_unread,
+		delay_time,
+		IF(#{user_id} =
+		accept_feedback_id,IF(publicsh_unread is
+		null,0,publicsh_unread),IF(#{user_id} =
+		feedback_user_id,if(feedback_unread is null,0,feedback_unread),0)) as
+		unread_num,
+		task_type_id,
+		task_type_name
+		from
+		tasklist
+		where
+		1=1
+		<if test="task_id!=null">
+			and task_pid = #{task_id}
+		</if>
+		<if test="task_type_id !=null and task_type_id !=''">
+			and
+			task_type_id = #{task_type_id}
+		</if>
+		order by
+		task_status asc ,
+		create_datetime_order desc,
+		task_id desc
+
+		limit
+		${(page-1)*size},${size}
+	</select>
+
+
+	<select id="getTaskBaseInfo" parameterType="java.lang.Integer"
+		resultType="map">
+		select
+		task.task_id as task_id,
+		task.task_title as task_title,
+		date_format(task.finish_time,'%Y-%m-%d %H:%i') as finish_time,
+		task.create_id as create_id,
+		task.create_user_name as create_user_name,
+		task.create_user_code as create_user_code,
+		date_format(task.create_datetime,"%Y-%m-%d %T") as create_datetime,
+		task.accept_feedback_id as accept_feedback_id,
+		feed.feedback_user_id as
+		feedback_user_id,
+		task.task_num as task_num,
+		task.is_feedback as
+		is_feedback,
+		task.task_status as task_status,
+
+		feed.feedback_type as
+		feedback_type,
+		feed.create_user_name as create_user_name,
+		task.accept_feedback_name as accept_feedback_name,
+		task.accept_feedback_code as accept_feedback_code,
+		feed.feedback_user_name as feedback_user_name,
+		feed.feedback_user_code
+		as feedback_user_code,
+		task.task_pid as task_pid,
+		task.publish_title as
+		publish_title
+		from
+		sys_task task left join sys_task_feedback_user feed
+		on task.task_id =
+		feed.task_id
+		where
+		1=1
+		and task.enable_flag = 1
+		and
+		feed.enable_flag = 1
+		<if test="task_id!=null">
+			and task.task_id = #{task_id}
+		</if>
+	</select>
+
+	<select id="getTaskInfo" parameterType="map" resultType="map">
+		select
+		info_type ,
+		task_info,
+		info_date,
+		task_info_mini
+		from
+		sys_task_info
+		where
+		1=1
+		<if test="task_num!=null">
+			and task_num = #{task_num}
+		</if>
+
+
+	</select>
+
+	<select id="getFeedbackInfo" parameterType="java.lang.Integer"
+		resultType="map">
+		select
+		message_type,
+		message_info_type,
+		date_format(create_datetime,"%Y-%m-%d %T") as create_datetime,
+		message_info,
+		message_date,
+		task_message_id,
+		create_id,
+		create_user_name,
+		is_read
+		from
+		sys_task_message
+		where
+		1=1
+		and enable_flag = 1
+		<if test="task_id!=null">
+			and task_id = #{task_id}
+		</if>
+	</select>
+
+
+	<select id="getFeedbackInfo115" parameterType="java.lang.Integer"
+		resultType="map">
+		select
+		message_type,
+		message_info_type,
+		date_format(m.create_datetime,"%Y-%m-%d %T") as create_datetime,
+		message_info,
+		message_date,
+		m.task_message_id,
+		m.create_id,
+		m.create_user_name,
+		m.is_read,
+		message_info_mini
+		from
+		sys_task_message m
+		left JOIN tasklist t
+		on t.task_id = m.task_id
+		where
+		1=1
+		and enable_flag =
+		1
+		and m.create_id in (t.accept_feedback_id,t.feedback_user_id)
+		<if test="task_id!=null">
+			and m.task_id = #{task_id}
+		</if>
+		<if test="max_id != null and max_id &gt; 0 ">
+			and m.task_message_id &gt; #{max_id}
+		</if>
+
+	</select>
+
+
+
+
+	<select id="getTaskInfoById" parameterType="map" resultType="map">
+		select
+		task.task_id,
+		task_pid,
+		task_title,
+		task_num,
+		publish_user_id,
+		publish_user_name,
+		publish_user_code,
+		task_status,
+		DATE_FORMAT(finish_time,"%Y-%m-%d %H:%i") as finish_time,
+		DATE_FORMAT(inital_finish_datetime,"%Y-%m-%d %H:%i") as
+		inital_finish_datetime,
+		feedback_cycle,
+		remind_time,
+		accept_feedback_id,
+		accept_feedback_name,
+		accept_feedback_code,
+		is_feedback,
+		finish_type,
+		DATE_FORMAT(finish_datetime,"%Y-%m-%d %H:%i") as finish_datetime,
+		feedback_user_info,
+		task.create_id,
+		task.create_user_name,
+		task.create_user_code,
+		fb.feedback_user_id as feedback_user_id,
+		fb.feedback_user_name as feedback_user_name,
+		fb.feedback_user_code as
+		feedback_user_code,
+		task_type_id
+		from
+		sys_task task inner join
+		sys_task_feedback_user
+		fb
+		on task.task_id = fb.task_id
+		where
+		1=1
+		and
+		fb.enable_flag = 1
+		and
+		task.task_id = #{task_id}
+	</select>
+
+	<select id="getTaskIsDelay" parameterType="map" resultType="map">
+		select
+		count(*) as delay
+		from sys_task_message
+		where
+		1=1 and enable_flag
+		=1
+		and message_info_type = 11
+		<if test="task_id!=null">
+			and task_id = ${task_id}
+		</if>
+
+
+
+	</select>
+
+	<select id="getTaskByNum" parameterType="map" resultType="map">
+		select
+		task_id from sys_task
+		where
+		task_num = ${task_num}
+		and enable_flag = 1
+		and task_status IN (1,2)
+	</select>
+
+	<select id="getfeedbackUserBytaskid" parameterType="int"
+		resultType="map">
+		select
+		f.feedback_user_id as feedback_user_id,
+		f.feedback_user_name as feedback_user_name,
+		f.feedback_user_code as
+		feedback_user_code
+		from sys_task t INNER JOIN sys_task_feedback_user f
+		on t.task_id =
+		f.task_id
+		where
+		t.task_id = ${xtid}
+		and f.enable_flag = 1
+	</select>
+
+	<select id="getQuondamFeedbackUser" parameterType="map"
+		resultType="map">
+		select
+		fb.feedback_user_id as feedback_user_id,
+		fb.feedback_user_name as
+		feedback_user_name,
+		fb.feedback_user_code as feedback_user_code,
+		task.task_pid as task_pid,
+		task.task_id as task_id,
+		task.accept_feedback_id as accept_feedback_id,
+		task.accept_feedback_name as accept_feedback_name,
+		task.accept_feedback_code as accept_feedback_code,
+		task.publish_user_id as publish_user_id,
+		task.publish_user_name as
+		publish_user_name,
+		task.publish_user_code as publish_user_code
+
+
+		from
+		sys_task task inner join sys_task_feedback_user fb
+		on
+		task.task_id =
+		fb.task_id
+		where
+		1=1
+		<!-- and task.enable_flag = 1 -->
+
+		and task.task_id =#{task_id}
+		ORDER BY
+		fb.create_datetime asc
+		LIMIT 0,1
+
+	</select>
+
+	<select id="getTaskinfoByNumOrderbyCreatetime" parameterType="map"
+		resultType="map">
+		select
+		fb.feedback_user_id as feedback_user_id,
+		fb.feedback_user_name as feedback_user_name,
+		fb.feedback_user_code as
+		feedback_user_code,
+		task.task_pid as task_pid,
+		task.task_id as task_id,
+		task.accept_feedback_id as accept_feedback_id,
+		task.accept_feedback_name as accept_feedback_name,
+		task.accept_feedback_code as accept_feedback_code,
+		date_format(fb.create_datetime,"%Y-%m-%d %T") as create_datetime
+
+		from
+		sys_task task inner join sys_task_feedback_user fb
+		on
+		task.task_id =
+		fb.task_id
+		where
+		1=1
+		and task.task_num = #{task_num}
+		order by
+		create_datetime asc
+		limit 0,1
+	</select>
+
+
+	<!-- 查询反馈任务数量 -->
+
+	<select id="countFeedbackUser" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="int">
+		SELECT count(task_id)
+		from sys_task st
+		where
+		st.enable_flag =1
+
+		and
+		st.task_status in (1,2)
+		and
+		st.accept_feedback_id = #{personnel_id}
+
+	</select>
+
+
+	<!-- 查询指派任务数量 -->
+
+	<select id="countAcceptFeedback" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="int">
+		SELECT count(st.task_id)
+		from sys_task st
+		,sys_task_feedback_user stf
+		where st.enable_flag =1
+		and
+		stf.enable_flag
+		=1
+		and
+		st.task_status in (1,2)
+		and
+		stf.feedback_user_id = #{personnel_id}
+		and
+		st.task_id = stf.task_id
+
+	</select>
+
+
+	<!-- 查询进行中任务数量 -->
+
+	<select id="countDoing_num" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="int">
+		SELECT count(st.task_id) from sys_task st ,sys_task_feedback_user stf
+		where st.enable_flag =1 and stf.enable_flag =1
+		and
+		st.task_status =1
+
+		<if test="which_tab != null and which_tab ==2 ">
+			and
+			st.accept_feedback_id = #{personnel_id}
+		</if>
+		<if test="which_tab != null and which_tab ==1 ">
+			and
+			stf.feedback_user_id = #{personnel_id}
+		</if>
+
+		and
+		st.task_id = stf.task_id
+
+	</select>
+
+
+	<!-- 查询延误任务数量 -->
+
+	<select id="CountDelay_num" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="int">
+
+		SELECT count(st.task_id) from sys_task st ,sys_task_feedback_user stf
+		where st.enable_flag =1 and stf.enable_flag =1
+		and
+		st.task_status
+		in(1,2)
+		and now()>finish_time
+
+		<if test="which_tab != null and which_tab ==2 ">
+			and
+			st.accept_feedback_id = #{personnel_id}
+		</if>
+		<if test="which_tab != null and which_tab ==1 ">
+			and
+			stf.feedback_user_id = #{personnel_id}
+		</if>
+		and
+		st.task_id = stf.task_id
+	</select>
+
+
+	<!-- 查询待验收任务数量 -->
+
+	<select id="CountCheck_num" parameterType="com.zx.moa.ioa.task.vo.TaskListVO"
+		resultType="int">
+		SELECT count(st.task_id) from sys_task st ,sys_task_feedback_user stf
+		where st.enable_flag =1 and stf.enable_flag =1
+		and
+		st.task_status =2
+
+		<if test="which_tab != null and which_tab ==2 ">
+			and
+			st.accept_feedback_id = #{personnel_id}
+		</if>
+		<if test="which_tab != null and which_tab ==1 ">
+			and
+			stf.feedback_user_id = #{personnel_id}
+		</if>
+
+		and
+		st.task_id = stf.task_id
+
+	</select>
+
+	<!-- 首页待办任务列表 -->
+	<select id="taskIndexListSearch" parameterType="map" resultType="map">
+		select
+		task_id,
+		task_status,
+		task_title,
+		create_datetime as
+		create_datetime_order,
+		DATE_FORMAT(create_datetime,'%Y-%m-%d')
+		create_datetime,
+		publish_user_name,
+		publish_user_code,
+		create_user_name,
+		create_user_code,
+		feedback_user_name,
+		feedback_user_code,
+		publicsh_unread,
+		feedback_unread,
+		delay_time,
+		IF(#{user_id} =
+		accept_feedback_id,IF(publicsh_unread is
+		null,0,publicsh_unread),IF(#{user_id} =
+		feedback_user_id,if(feedback_unread is null,0,feedback_unread),0)) as
+		unread_num,
+		task_type_id,
+		task_type_name
+		from
+		tasklist <!-- tasklist数据库视图 -->
+		where
+		task_status = 1
+		and feedback_user_id = #{personnel_id}
+		<!-- 如果是需要反馈查询排序按照进行中延误、任务状态、创建时间倒序排列 -->
+		ORDER BY
+		if(task_status=1 and delay_time>0,1,0) DESC,
+		task_status ASC,
+		create_datetime_order desc
+		limit ${(page-1)*size},${size}
+	</select>
+
+	<!-- 首页待办任务列表 -->
+	<select id="taskIndexListSearchCount" parameterType="map"
+		resultType="int">
+		select
+		count(*)
+		from
+		tasklist <!-- tasklist数据库视图 -->
+		where
+		task_status = 1
+		and feedback_user_id = #{personnel_id}
+		<!-- 如果是需要反馈查询排序按照进行中延误、任务状态、创建时间倒序排列 -->
+		<if test="which_tab ==1">
+			ORDER BY
+			if(task_status=1 and delay_time>0,1,0) DESC,
+			task_status ASC,
+			create_datetime_order desc
+		</if>
+	</select>
+	
+	<!-- 首页待办任务列表(所有任务，包括无反馈周期的) -->
+	<select id="taskIndexListSearcho" parameterType="map" resultType="map">
+		select  
+		a.task_id as task_id,
+		a.task_status as task_status,
+		a.task_title as task_title,
+		DATE_FORMAT(a.create_datetime,'%Y-%m-%d %H:%i') as create_datetime_order,
+		DATE_FORMAT(a.create_datetime,'%Y-%m-%d') as create_datetime,
+		a.publish_user_name as publish_user_name,
+		a.publish_user_code as publish_user_code,
+		a.create_user_name as create_user_name,
+		a.create_user_code as create_user_code,
+		b.feedback_user_name as feedback_user_name,
+		b.feedback_user_code as feedback_user_code,
+		a.publicsh_unread as publicsh_unread,
+		a.feedback_unread as feedback_unread,
+		IF (((a.task_status = 3) OR (a.task_status = 4)),0,
+		IF ((now() &lt;= a.finish_time),0,
+			floor(((unix_timestamp(now()) - unix_timestamp(a.finish_time)) / 3600)))
+		) AS delay_time,
+		if(a.feedback_unread is null,0,a.feedback_unread) as unread_num,
+		a.task_type_id,
+		a.task_type_name
+		from sys_task a INNER JOIN sys_task_feedback_user b ON a.task_id = b.task_id
+		WHERE a.task_status = 1 and b.enable_flag = 1
+		and b.feedback_user_id = #{personnel_id}
+		<!-- 需要反馈的任务 -->
+		and (a.feedback_cycle != 0 or (a.task_type_id IN (2,3) and (select count(*) from sys_task_message where task_id = a.task_id and message_type = 1 and create_id=#{personnel_id})=0))
+		<!-- 查询排序按照 未反馈、 延误、创建时间倒序排列 -->
+		ORDER BY
+		if(
+		(datediff(CURDATE(), (select IFNULL(MAX(create_datetime),ADDDATE(a.create_datetime,-1)) from sys_task_message where task_id = a.task_id and message_type = 1 and create_id=#{personnel_id})) >= abs(a.feedback_cycle) and a.feedback_cycle != 0)
+		or
+		(task_type_id IN (2,3) and (select count(*) from sys_task_message where task_id = a.task_id and message_type = 1 and create_id=#{personnel_id})=0)
+		,1,0) desc,
+		delay_time DESC,
+		create_datetime_order desc
+		limit ${(page-1)*size},${size}
+	</select>
+	
+	<!-- 首页待办任务列表(超过反馈周期未反馈)或(会议公告) -->
+	<select id="taskIndexListSearchCounto" parameterType="map" resultType="int">
+		select  
+			count(*)
+		from sys_task a INNER JOIN sys_task_feedback_user b ON a.task_id = b.task_id
+		WHERE a.task_status = 1 and b.enable_flag = 1
+		and b.feedback_user_id = #{personnel_id}
+		and (
+		(datediff(CURDATE(), (select IFNULL(MAX(create_datetime),ADDDATE(a.create_datetime,-1)) from sys_task_message where task_id = a.task_id and message_type = 1 and create_id=#{personnel_id})) >= abs(a.feedback_cycle) and a.feedback_cycle != 0)
+		or
+		(task_type_id IN (2,3) and (select count(*) from sys_task_message where task_id = a.task_id and message_type = 1 and create_id=#{personnel_id})=0)
+		)
+	</select>
+	
+</mapper>

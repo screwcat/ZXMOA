@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper
+	namespace="com.zx.moa.wms.loan.persist.WmsCreCreditLineCustomerChangeHeadDao">
+	<select id="getContactHeadInfo" parameterType="com.zx.moa.wms.loan.vo.WmsCreCustomerChangeLineContactBeanVo" resultType="java.util.HashMap">
+	    SELECT 
+	    	t1.bill_code,
+			date_format(t1.create_timestamp,'%Y-%m-%d') as create_timestamp,
+			IFNULL(t2.customer_name,"") as customer_name,
+			case
+				when t2.gender='1' then '男'
+				when t2.gender='0' then '女'
+				else '' end as gender,
+			IFNULL((select value_meaning  from wms_sys_dict_data where wms_sys_dict_id=130 and value_code = t2.customer_age),'') as customer_age,
+			IFNULL(t3.debtor_identity_id,t2.id_card) as id_card,
+			IFNULL(t2.mobile_telephone1,"") as mobile_telephone,
+			IFNULL(
+				CONCAT( 
+					if(position('省' in t2.current_address_province) or t2.current_address_province is null or t2.current_address_province = '', t2.current_address_province, concat(t2.current_address_province, '省')), 
+					if(position('市' in t2.current_address_city) or t2.current_address_city is null or t2.current_address_city = '', t2.current_address_city, concat(t2.current_address_city, '市')), 
+					if(position('区(县)' in t2.current_address_district) or t2.current_address_district is null or t2.current_address_district = '', t2.current_address_district, concat(t2.current_address_district, '区(县)')), 
+					IFNULL(t2.current_address_more, '')
+				),
+			'') as house_address_more
+		FROM 
+			wms_cre_credit_head t1 
+		LEFT JOIN 
+			wms_cre_credit_line_customer_change_head t2
+		ON 
+			t1.wms_cre_credit_head_id=t2.wms_cre_credit_head_id and t1.enable_flag=1 and is_major=1
+		LEFT JOIN 
+			wms_cre_appro_borrow_protocol t3 
+		ON 
+			t1.wms_cre_credit_head_id=t3.wms_cre_credit_head_id and t3.enable_flag=1 
+	    where
+	    	t1.wms_cre_credit_head_id = #{wms_cre_credit_head_id}
+	</select>
+    
+</mapper> 
